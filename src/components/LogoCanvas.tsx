@@ -196,7 +196,7 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
         const reader = new FileReader();
         reader.onload = (e) => {
           const result = e.target?.result as string;
-          const id = `imported_${Date.now()}`;
+          const id = generateUUID();
           
           // Load image with original data
           const img = new window.Image();
@@ -227,6 +227,9 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
         reader.readAsDataURL(file);
       });
     }
+    
+    // Clear the file input to allow importing the same file again
+    event.target.value = '';
   };
 
   const removeImage = (id: string) => {
@@ -379,6 +382,15 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
       colorChangeTimeouts.current.clear();
     };
   }, []);
+
+  // Simple UUID generator
+  const generateUUID = (): string => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
 
   // Don't render until we're on the client side
   if (!isClient) {

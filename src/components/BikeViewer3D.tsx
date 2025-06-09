@@ -157,13 +157,13 @@ function SceneSetup({ children }: SceneSetupProps) {
       />
 
       {/* Fill Light - Softer light from the side */}
-      {/* <directionalLight position={[-3, 5, 2]} intensity={1.5} color="#ffffff" /> */}
+      <directionalLight position={[-3, 5, 2]} intensity={1.5} color="#ffffff" />
 
       {/* Ambient Light - Increased for brighter colors */}
       <ambientLight intensity={2} color="#ffffff" />
 
       {/* Environment for realistic reflections */}
-      <Environment preset="studio" background={true} />
+      <Environment preset="studio" background={false} />
 
       {/* Additional light for environment compensation */}
       <hemisphereLight intensity={4} color="#ffffff" groundColor="#ffffff" />
