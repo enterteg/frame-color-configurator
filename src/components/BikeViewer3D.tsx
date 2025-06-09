@@ -2,16 +2,9 @@
 
 import React, { useRef, Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Center, Environment, Decal, useTexture } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { RALColor } from '../data/ralColors';
-import LogoCanvas from './LogoCanvas';
-import { degToRad } from 'three/src/math/MathUtils.js';
-
-// Utility function for creating physical materials
-function getPhysicalMaterial(oldMat: THREE.MeshStandardMaterial) {
- return oldMat.clone();
-}
 
 // Color Indicators Component
 interface ColorIndicatorsProps {
@@ -27,14 +20,14 @@ function ColorIndicators({ frameColor, forkColor }: ColorIndicatorsProps) {
           className="w-4 h-4 rounded border border-gray-300"
           style={{ backgroundColor: frameColor }}
         />
-        <span className="text-sm font-medium">Frame</span>
+        <span className="text-sm text-black font-medium">Frame</span>
       </div>
       <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded px-3 py-1">
         <div
           className="w-4 h-4 rounded border border-gray-300"
           style={{ backgroundColor: forkColor }}
         />
-        <span className="text-sm font-medium">Fork</span>
+        <span className="text-sm text-black font-medium">Fork</span>
       </div>
     </div>
   );
@@ -71,6 +64,7 @@ function BikeModel({
 }: BikeModelProps & { canvasTexture: THREE.Texture | null, offsetX?: number, offsetY?: number }) {
   const { scene } = useGLTF(modelPath);
   const modelRef = useRef<THREE.Group>(null);
+  
   // Collect all meshes from the scene
   const meshes: THREE.Mesh[] = [];
   scene.traverse((child) => {
@@ -79,37 +73,50 @@ function BikeModel({
     }
   });
 
-  // Apply color/material logic
-  meshes.forEach((mesh) => {
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    const material: THREE.Material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
-    if (material instanceof THREE.MeshStandardMaterial) {
-      console.log("material", material.name,"mesh", mesh.name);
-      material.metalness = 0.85;
-      material.roughness = 0.1;
-      material.envMapIntensity = 1.0;
-      material.emissive.set(material.color.getHex());
-      material.emissiveIntensity = 0.1;
+  // Apply color/material logic whenever canvasTexture or colors change
+  useEffect(() => {
+    meshes.forEach((mesh) => {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const material: THREE.Material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
+      if (material instanceof THREE.MeshStandardMaterial) {
+        material.metalness = 0.85;
+        material.roughness = 0.1;
+        material.envMapIntensity = 1.0;
 
-      const objectName = mesh.name.toLowerCase();
+        const objectName = mesh.name.toLowerCase();
 
-      if (objectName.includes("frame")) {
-        material.color.set(frameColor);
-      } else if (objectName.includes("fork")) {
-        material.color.set(forkColor);
+        if (objectName.includes("frame")) {
+          material.color.set(frameColor);
+        } else if (objectName.includes("fork")) {
+          material.color.set(forkColor);
+        }
+        
+        if ((material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT") && canvasTexture) {
+          material.color.set('#ffffff'); // Set to white to show texture clearly
+          material.map = canvasTexture;
+          material.polygonOffset = true;
+          material.polygonOffsetFactor = -2;
+          material.transparent = true;
+          material.alphaTest = 0.5;
+          // Remove emissive for texture materials to avoid washing out colors
+          material.emissive.set('#000000');
+          material.emissiveIntensity = 0;
+        } else if (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT") {
+          // No texture, just use frame color
+          material.color.set(frameColor);
+          material.map = null;
+          material.emissive.set(material.color.getHex());
+          material.emissiveIntensity = 0.1;
+        } else {
+          // For other materials, keep normal emissive settings
+          material.emissive.set(material.color.getHex());
+          material.emissiveIntensity = 0.1;
+        }
+        material.needsUpdate = true;
       }
-      
-      if ((material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT") && canvasTexture) {
-        material.color.set(frameColor);
-        material.map = canvasTexture;
-        material.polygonOffset = true;
-        material.polygonOffsetFactor = -2;
-        material.transparent = true;
-      }
-      material.needsUpdate = true;
-    }
-  });
+    });
+  }, [canvasTexture, frameColor, forkColor, meshes]);
 
   return (
     <Center>
@@ -225,8 +232,8 @@ export default function BikeViewer3D({
             antialias: true,
             alpha: true,
             powerPreference: "high-performance",
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.5
+            toneMapping: THREE.NoToneMapping,
+            toneMappingExposure: 1.0
           }}
         >
           <SceneSetup>

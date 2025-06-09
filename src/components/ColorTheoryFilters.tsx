@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FunnelIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HarmonyType } from '../utils/colorTheory';
 
 interface ColorTheoryFiltersProps {
@@ -46,16 +46,17 @@ export default function ColorTheoryFilters({
         onClick={onToggleFilters}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
           hasActiveFilters 
-            ? 'bg-blue-100 border-blue-300 text-blue-700' 
+            ? 'bg-red-100 border-red-300 text-red-700 hover:bg-red-200' 
             : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
         }`}
       >
-        <FunnelIcon className="w-5 h-5" />
-        <span>Color Theory Filters</span>
-        {hasActiveFilters && (
-          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-            Active
-          </span>
+        {hasActiveFilters ? (
+          <XMarkIcon className="w-5 h-5" />
+        ) : (
+          <>
+            <FunnelIcon className="w-5 h-5" />
+            <span>Color Theory Filters</span>
+          </>
         )}
       </button>
 

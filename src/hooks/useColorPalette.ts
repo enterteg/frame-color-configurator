@@ -20,7 +20,7 @@ export function useColorPalette() {
     // eslint-disable-next-line
   }, [selectedColors.length]);
 
-  const handleGroupSelect = (groupName: string) => {
+  const handleGroupSelect = (groupName: string | null) => {
     setSelectedGroup(groupName);
   };
 

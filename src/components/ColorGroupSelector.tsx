@@ -6,7 +6,7 @@ import { getGroupMainColor } from '../utils/colorUtils';
 
 interface ColorGroupSelectorProps {
   selectedGroup: string | null;
-  onGroupSelect: (groupName: string) => void;
+  onGroupSelect: (groupName: string | null) => void;
 }
 
 export default function ColorGroupSelector({ selectedGroup, onGroupSelect }: ColorGroupSelectorProps) {
@@ -23,7 +23,7 @@ export default function ColorGroupSelector({ selectedGroup, onGroupSelect }: Col
             }`}
           >
             <div
-              className={`w-16 h-16 rounded-full shadow-lg transition-all ${
+              className={`w-15 h-15 rounded-lg shadow-lg transition-all ${
                 selectedGroup === group.name ? 'ring-0 border-2 border-blue-200' : 'group-hover:ring-2 group-hover:ring-blue-200'
               }`}
               style={{ backgroundColor: getGroupMainColor(group.name) }}
