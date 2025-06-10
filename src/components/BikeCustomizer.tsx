@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import BikeViewer3D from './BikeViewer3D';
+import { BikeViewer3D } from './bike-viewer';
 import { useBikeStore } from '../store/useBikeStore';
 
 // Layout components
@@ -17,14 +17,16 @@ export default function BikeCustomizer() {
     forkColor,
     showBottomPanel,
     logoTypes,
+    activeTab,
     openColorSelection,
     setActiveTab
   } = useBikeStore();
 
   const textureUrl = "/textures/loca_half.png";
 
-  // Get current logo texture for the selected logo type (DOWN_TUBE for frame display)
-  const currentLogoTexture = logoTypes.DOWN_TUBE.texture;
+  // Only show logo texture when frame/fork tabs are NOT active
+  const shouldShowLogos = activeTab !== 'frame' && activeTab !== 'fork';
+  const currentLogoTexture = shouldShowLogos ? logoTypes.DOWN_TUBE.texture : null;
 
   // Handle tab clicks
   const handleTabClick = (tab: 'frame' | 'fork' | 'logos') => {
@@ -46,7 +48,6 @@ export default function BikeCustomizer() {
             <BikeViewer3D 
               selectedColors={[frameColor, forkColor]}
               combinedModelPath="/models/frame_tube.glb"
-              textureUrl={textureUrl}
               className="w-full h-full"
               canvasTexture={currentLogoTexture}
               offsetX={0}

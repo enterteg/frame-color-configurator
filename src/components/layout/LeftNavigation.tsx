@@ -117,7 +117,9 @@ export default function LeftNavigation() {
     <div className="w-[300px] h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-800">Frame Customizer</h1>
+        <h1 className="text-lg font-semibold text-gray-800">
+          Frame Customizer
+        </h1>
       </div>
 
       {/* Navigation Options */}
@@ -126,23 +128,23 @@ export default function LeftNavigation() {
         <button
           onClick={handleFrameClick}
           className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === 'frame' 
-              ? 'bg-blue-50 text-blue-700 border-l-4 border-l-blue-500' 
-              : 'hover:bg-gray-50'
+            activeTab === "frame"
+              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
+              : "hover:bg-gray-50"
           }`}
         >
           <div className="flex-1 text-left">
             <div className="font-medium text-gray-800">FRAME</div>
           </div>
-          <div 
+          <div
             className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 shadow-md"
             style={{ backgroundColor: frameColor.hex }}
           >
-            <span 
+            <span
               className="text-[10px] font-bold"
               style={{ color: getContrastTextColor(frameColor.hex) }}
             >
-              {frameColor.code.replace('RAL ', '')}
+              {frameColor.code.replace("RAL ", "")}
             </span>
           </div>
         </button>
@@ -151,23 +153,23 @@ export default function LeftNavigation() {
         <button
           onClick={handleForkClick}
           className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === 'fork' 
-              ? 'bg-blue-50 text-blue-700 border-l-4 border-l-blue-500' 
-              : 'hover:bg-gray-50'
+            activeTab === "fork"
+              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
+              : "hover:bg-gray-50"
           }`}
         >
           <div className="flex-1 text-left">
             <div className="font-medium text-gray-800">FORK</div>
           </div>
-          <div 
+          <div
             className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 shadow-md"
             style={{ backgroundColor: forkColor.hex }}
           >
-            <span 
+            <span
               className="text-[10px] font-bold"
               style={{ color: getContrastTextColor(forkColor.hex) }}
             >
-              {forkColor.code.replace('RAL ', '')}
+              {forkColor.code.replace("RAL ", "")}
             </span>
           </div>
         </button>
@@ -176,9 +178,9 @@ export default function LeftNavigation() {
         <button
           onClick={handleLogosClick}
           className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === 'logos' 
-              ? 'bg-blue-50 text-blue-700 border-l-4 border-l-blue-500' 
-              : 'hover:bg-gray-50'
+            activeTab === "logos"
+              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
+              : "hover:bg-gray-50"
           }`}
         >
           <div className="flex-1 text-left">
@@ -197,23 +199,31 @@ export default function LeftNavigation() {
         {logosExpanded && (
           <div className="bg-gray-50 border-b border-gray-100">
             {logoTypes_CONFIG.map((logoType) => (
-              <div key={logoType.id} className="border-b border-gray-200 last:border-b-0">
+              <div
+                key={logoType.id}
+                className="border-b border-gray-200 last:border-b-0"
+              >
                 {/* Logo Type Header */}
                 <button
                   onClick={() => handleLogoTypeSelect(logoType.id)}
                   className={`w-full flex items-center px-6 py-3 text-left hover:bg-gray-100 transition-all duration-200 ${
-                    selectedLogoType === logoType.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                    selectedLogoType === logoType.id
+                      ? "bg-blue-50 border-l-4 border-l-blue-500"
+                      : ""
                   }`}
                 >
                   <div className="w-8 h-8 rounded border border-gray-300 bg-white mr-3 flex items-center justify-center">
                     <span className="text-xs font-medium text-gray-600">
-                      {logoType.id === 'DOWN_TUBE' ? 'DT' : 'HT'}
+                      {logoType.id === "DOWN_TUBE" ? "DT" : "HT"}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">{logoType.name}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {logoType.name}
+                    </div>
                     <div className="text-xs text-gray-500">
-                      {logoTypes[logoType.id].images.length} image{logoTypes[logoType.id].images.length !== 1 ? 's' : ''}
+                      {logoTypes[logoType.id].images.length} image
+                      {logoTypes[logoType.id].images.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                 </button>
@@ -229,8 +239,8 @@ export default function LeftNavigation() {
                             key={image.id}
                             className={`flex items-center gap-3 p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
                               selectedLogoImageId === image.id
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                             }`}
                             onClick={() => handleImageSelect(image.id)}
                           >
@@ -248,15 +258,6 @@ export default function LeftNavigation() {
                               <div className="text-xs font-medium text-gray-800 truncate">
                                 {image.name}
                               </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div
-                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                  style={{ backgroundColor: image.color }}
-                                />
-                                <span className="text-xs text-gray-500">
-                                  {image.color}
-                                </span>
-                              </div>
                             </div>
 
                             {/* Action Buttons */}
@@ -266,20 +267,23 @@ export default function LeftNavigation() {
                                   e.stopPropagation();
                                   handleImageColorChange(image.id);
                                 }}
-                                className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                className="p-1 rounded cursor-pointer transition-colors"
                                 title="Change color"
                               >
-                                <SwatchIcon className="h-3 w-3 text-gray-500" />
+                                <div
+                                  className="w-8 h-8 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: image.color }}
+                                />
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleImageDelete(logoType.id, image.id);
                                 }}
-                                className="p-1 rounded hover:bg-red-100 transition-colors"
+                                className="p-1 h-8 w-8 cursor-pointer items-center justify-center flex rounded-full border border-gray-300 hover:bg-red-100 transition-colors"
                                 title="Delete image"
                               >
-                                <TrashIcon className="h-3 w-3 text-red-500" />
+                                <TrashIcon className="h-4 w-4 text-red-500" />
                               </button>
                             </div>
                           </div>

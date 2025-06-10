@@ -24,6 +24,7 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     logoTypes,
     selectedLogoImageId,
     setSelectedLogoImageId,
+    selectedLogoColor,
     updateLogoImage,
     setLogoTexture,
     setShowBottomPanel
@@ -41,13 +42,18 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     setIsClient(true);
   }, []);
 
-  // Get current images for the selected logo type
-  const currentImages = selectedLogoType ? logoTypes[selectedLogoType].images : [];
+  // Get current images for the selected logo type (default to DOWN_TUBE if none selected)
+  const effectiveLogoType: 'DOWN_TUBE' | 'HEAD_TUBE' = selectedLogoType || 'DOWN_TUBE';
+  const currentImages = logoTypes[effectiveLogoType].images;
+
+  // Create a dependency that changes when any image color changes
+  const imageColorsHash = currentImages.map(img => `${img.id}:${img.color}`).join('|');
 
   // Process images with color changes
   useEffect(() => {
     if (!isClient || currentImages.length === 0) return;
 
+    console.log('Processing images with colors:', imageColorsHash);
     const processImagesAsync = async () => {
       const newProcessedImages = new Map<string, HTMLImageElement>();
 
@@ -112,71 +118,103 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     };
 
     processImagesAsync();
-  }, [currentImages, isClient]);
+  }, [currentImages, isClient, imageColorsHash]);
 
   // Generate texture from Konva stage
   const generateTexture = useCallback(() => {
-    if (isClient && imageLayerRef.current && selectedLogoType) {
+    console.log("generateTexture called:", {
+      isClient,
+      hasLayer: !!imageLayerRef.current,
+      effectiveLogoType,
+      processedImagesSize: processedImages.size,
+    });
+    if (isClient && imageLayerRef.current && effectiveLogoType) {
       try {
         const layer = imageLayerRef.current;
-        
+
         // Create a temporary canvas for the full texture
-        const textureCanvas = document.createElement('canvas');
+        const textureCanvas = document.createElement("canvas");
         textureCanvas.width = TEXTURE_SIZE;
         textureCanvas.height = TEXTURE_SIZE;
-        const textureCtx = textureCanvas.getContext('2d');
-        
+        const textureCtx = textureCanvas.getContext("2d");
+
         if (textureCtx) {
           const createAndSetTexture = () => {
             // Get the layer canvas and draw it centered
             const layerCanvas = layer.toCanvas();
-            const offsetX = (TEXTURE_SIZE - CANVAS_WIDTH) / 2;
-            const offsetY = (TEXTURE_SIZE - CANVAS_HEIGHT) / 2;
-            
+            const offsetX = 0;
+            const offsetY = 0;
+
             textureCtx.drawImage(layerCanvas, offsetX, offsetY);
-            
+
             // Create Three.js texture
             const texture = new THREE.CanvasTexture(textureCanvas);
             texture.needsUpdate = true;
-            texture.flipY = true;
-            
-            setLogoTexture(selectedLogoType, texture);
-            console.log('Texture updated for', selectedLogoType); // Debug log
+            texture.flipY = false;
+
+            setLogoTexture(effectiveLogoType, texture);
+            console.log("Texture updated for", selectedLogoType); // Debug log
           };
 
           // For DOWN_TUBE, load and use the base texture, for others use white background
-          if (selectedLogoType === 'DOWN_TUBE') {
+          if (effectiveLogoType === "DOWN_TUBE") {
             // Load the base texture image
             const baseImage = new Image();
-            baseImage.crossOrigin = 'anonymous';
+            baseImage.crossOrigin = "anonymous";
             baseImage.onload = () => {
               // Draw the base texture
               textureCtx.drawImage(baseImage, 0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
               createAndSetTexture();
             };
             baseImage.onerror = () => {
-              console.warn('Failed to load base texture, using white background');
-              textureCtx.fillStyle = 'white';
+              console.warn(
+                "Failed to load base texture, using white background"
+              );
+              textureCtx.fillStyle = "white";
               textureCtx.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
               createAndSetTexture();
             };
             baseImage.src = baseTextureUrl;
           } else {
             // For HEAD_TUBE and others, use white background
-            textureCtx.fillStyle = 'white';
+            textureCtx.fillStyle = "white";
             textureCtx.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
             createAndSetTexture();
           }
         }
       } catch (error) {
-        console.warn('Error generating texture:', error);
+        console.warn("Error generating texture:", error);
       }
     }
-  }, [isClient, selectedLogoType, setLogoTexture, baseTextureUrl]);
+  }, [
+    isClient,
+    effectiveLogoType,
+    processedImages.size,
+    setLogoTexture,
+    selectedLogoType,
+    baseTextureUrl,
+    selectedLogoColor,
+  ]);
+
+  // Generate initial texture when component first loads with images
+  useEffect(() => {
+    if (isClient && currentImages.length > 0 && !logoTypes[effectiveLogoType].texture) {
+      console.log('Initial texture generation triggered for', effectiveLogoType, 'with', currentImages.length, 'images');
+      // Generate initial texture if no texture exists yet
+      const timeoutId = setTimeout(() => {
+        console.log('Calling generateTexture for initial load');
+        generateTexture();
+      }, 500); // Longer delay to ensure Konva is ready
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isClient, effectiveLogoType, currentImages.length, logoTypes, generateTexture]);
+
 
   // Update texture when processed images are ready
   useEffect(() => {
     if (processedImages.size > 0) {
+      console.log('processedImages ready, generating texture for', effectiveLogoType);
       // Add a small delay to ensure Konva has finished rendering
       const timeoutId = setTimeout(() => {
         generateTexture();
@@ -184,7 +222,7 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
       
       return () => clearTimeout(timeoutId);
     }
-  }, [processedImages.size, generateTexture]);
+  }, [processedImages.size, generateTexture, effectiveLogoType]);
 
   // Handle selection
   const handleImageClick = (id: string) => {
@@ -240,12 +278,19 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     setShowBottomPanel(false);
   };
 
-  if (!isOpen || !isClient) {
+  if (!isClient) {
     return null;
   }
 
+  // Always render if there are images, just control visibility
+  const shouldShow = isOpen && currentImages.length > 0;
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-[200px] bg-white border-t border-gray-200 shadow-lg z-40">
+    <div 
+      className={`fixed bottom-0 left-0 right-0 h-[200px] bg-white border-t border-gray-200 shadow-lg z-40 transition-transform duration-300 ${
+        shouldShow ? 'translate-y-0' : 'translate-y-full'
+      }`}
+    >
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium text-gray-800">
@@ -273,12 +318,6 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
             height={DISPLAY_HEIGHT}
             scaleX={DISPLAY_WIDTH / CANVAS_WIDTH}
             scaleY={DISPLAY_HEIGHT / CANVAS_HEIGHT}
-            onClick={(e) => {
-              // Deselect when clicking on empty area
-              if (e.target === e.target.getStage()) {
-                setSelectedLogoImageId(null);
-              }
-            }}
           >
             <Layer ref={imageLayerRef}>
               {currentImages.map((imageItem) => {

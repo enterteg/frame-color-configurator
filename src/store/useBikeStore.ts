@@ -4,15 +4,15 @@ import { RALColor } from '../data/ralColors';
 
 // Default colors
 const DEFAULT_FRAME_COLOR: RALColor = {
-  code: 'RAL 1015',
-  name: 'Light ivory',
-  hex: '#E6D690'
+  code: 'RAL 1013',
+  name: 'Oyster white',
+  hex: '#E3D9C6'
 };
 
 const DEFAULT_FORK_COLOR: RALColor = {
-  code: 'RAL 1015',
-  name: 'Light ivory',
-  hex: '#E6D690'
+  code: "RAL 3005",
+  name: "Wine red",
+  hex: "#5E2129",
 };
 
 // Logo image interface
@@ -100,8 +100,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       images: [
         {
           id: 'default_base_texture',
-          name: 'Base Texture',
-          url: '/textures/loca.png',
+          name: 'Default logo',
+          url: '/textures/loca_half.png',
           color: '#000000',
           x: 0,
           y: 0,
@@ -140,11 +140,17 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       newState.isColorSelectionOpen = false;
       newState.rightPanelOpen = false;
       newState.showBottomPanel = false;
+      // Clear selected logo state when switching to frame/fork
+      newState.selectedLogoImageId = null;
+      newState.selectedLogoType = null;
     } else {
       newState.rightPanelOpen = false;
       newState.showLogoEditor = false;
       newState.isColorSelectionOpen = false;
       newState.showBottomPanel = false;
+      // Clear selected logo state for null tab as well
+      newState.selectedLogoImageId = null;
+      newState.selectedLogoType = null;
     }
     
     return newState;
