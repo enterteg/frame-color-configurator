@@ -8,6 +8,9 @@ import { PNG } from 'pngjs';
 interface LogoCanvasProps {
   imageUrl: string;
   onTextureChange: (texture: THREE.Texture) => void;
+  onColorChangeRequest?: (imageId: string) => void; // Callback to request color selection
+  selectedColor?: string; // Color selected from RAL palette
+  externalSelectedImageId?: string; // ID of the image that should receive the color from parent
 }
 
 interface ImageItem {
@@ -25,7 +28,10 @@ interface ImageItem {
 
 const LogoCanvas: React.FC<LogoCanvasProps> = ({
   imageUrl,
-  onTextureChange
+  onTextureChange,
+  onColorChangeRequest,
+  selectedColor,
+  externalSelectedImageId
 }) => {
   const stageRef = useRef<Konva.Stage>(null);
   const imageLayerRef = useRef<Konva.Layer>(null);
@@ -348,32 +354,41 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
     setTimeout(generateTexture, 0);
   };
 
-  // Handle color change with debouncing
-  const handleColorChange = (id: string, color: string) => {
-    // Update UI immediately
-    setImages(prev => prev.map(item => 
-      item.id === id ? { ...item, color } : item
-    ));
-    
-    // Clear any existing timeout for this image
-    const existingTimeout = colorChangeTimeouts.current.get(id);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
+  // Handle external color changes from RAL palette
+  useEffect(() => {
+    const targetImageId = externalSelectedImageId || selectedImageId;
+    if (selectedColor && targetImageId) {
+      // Update the images state first
+      setImages(prev => {
+        const updated = prev.map(item => 
+          item.id === targetImageId ? { ...item, color: selectedColor } : item
+        );
+        
+        // Clear any existing timeout for this image
+        const existingTimeout = colorChangeTimeouts.current.get(targetImageId);
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+        }
+        
+        // Debounce the actual image reprocessing
+        const timeout = setTimeout(() => {
+          const imageItem = updated.find(item => item.id === targetImageId);
+          if (imageItem) {
+            console.log('🎨 Recoloring image:', targetImageId, 'with color:', selectedColor);
+            recolorImage(imageItem.image, selectedColor, imageItem.originalData).then(processedImg => {
+              console.log('✅ Image recolored, updating processed images');
+              setProcessedImages(prev => new Map(prev).set(targetImageId, processedImg));
+            });
+          }
+          colorChangeTimeouts.current.delete(targetImageId);
+        }, 60);
+        
+        colorChangeTimeouts.current.set(targetImageId, timeout);
+        
+        return updated;
+      });
     }
-    
-    // Debounce the actual image reprocessing
-    const timeout = setTimeout(() => {
-      const imageItem = images.find(item => item.id === id);
-      if (imageItem) {
-        recolorImage(imageItem.image, color, imageItem.originalData).then(processedImg => {
-          setProcessedImages(prev => new Map(prev).set(id, processedImg));
-        });
-      }
-      colorChangeTimeouts.current.delete(id);
-    }, 60); // 150ms debounce delay
-    
-    colorChangeTimeouts.current.set(id, timeout);
-  };
+  }, [selectedColor, externalSelectedImageId]); // Removed selectedImageId and images from dependencies
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -631,20 +646,27 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <input
-                  type="color"
-                  value={imageItem.color}
-                  onChange={(e) => handleColorChange(imageItem.id, e.target.value)}
+                <button
+                  onClick={() => {
+                    setSelectedImageId(imageItem.id);
+                    onColorChangeRequest?.(imageItem.id);
+                  }}
                   style={{
                     width: "32px",
                     height: "32px",
-                    border: "1px solid #ddd",
+                    border: "2px solid #ddd",
                     borderRadius: "4px",
                     cursor: "pointer",
-                    padding: "0"
+                    padding: "0",
+                    background: imageItem.color,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
                   }}
-                  title="Change color"
-                />
+                  title="Select RAL color"
+                >
+                  <span style={{ fontSize: "8px", color: "white", textShadow: "1px 1px 1px rgba(0,0,0,0.5)" }}>RAL</span>
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

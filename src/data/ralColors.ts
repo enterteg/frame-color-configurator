@@ -15,9 +15,9 @@ export const ralColorGroups: ColorGroup[] = [
     colors: [
       { code: "RAL 1000", name: "Green beige", hex: "#CDBA88" },
       { code: "RAL 1001", name: "Beige", hex: "#D0B084" },
-      { code: "RAL 1002", name: "Sand yellow", hex: "#D2AA6D", },
-      { code: "RAL 1003", name: "Signal yellow", hex: "#F9A800", },
-      { code: "RAL 1004", name: "Golden yellow", hex: "#E49E00", },
+      { code: "RAL 1002", name: "Sand yellow", hex: "#D2AA6D" },
+      { code: "RAL 1003", name: "Signal yellow", hex: "#F9A800" },
+      { code: "RAL 1004", name: "Golden yellow", hex: "#E49E00" },
       { code: "RAL 1005", name: "Honey yellow", hex: "#CB8E00" },
       { code: "RAL 1006", name: "Maize yellow", hex: "#E29000" },
       { code: "RAL 1007", name: "Daffodil yellow", hex: "#E88C00" },
@@ -25,33 +25,33 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 1012", name: "Lemon yellow", hex: "#DDAF27" },
       { code: "RAL 1013", name: "Oyster white", hex: "#E3D9C6" },
       { code: "RAL 1014", name: "Ivory", hex: "#DDC49A" },
-      { code: "RAL 1015", name: "Light ivory", hex: "#E6D690", },
-      { code: "RAL 1016", name: "Sulfur yellow", hex: "#EDFF21", },
+      { code: "RAL 1015", name: "Light ivory", hex: "#E6D690" },
+      { code: "RAL 1016", name: "Sulfur yellow", hex: "#EDFF21" },
       { code: "RAL 1017", name: "Saffron yellow", hex: "#F5D033" },
       { code: "RAL 1018", name: "Zinc yellow", hex: "#F8F32B" },
       { code: "RAL 1019", name: "Grey beige", hex: "#9E9764" },
       { code: "RAL 1020", name: "Olive yellow", hex: "#999950" },
-      { code: "RAL 1021", name: "Colza yellow", hex: "#F3DA0B", },
-      { code: "RAL 1023", name: "Traffic yellow", hex: "#FAD201", },
+      { code: "RAL 1021", name: "Colza yellow", hex: "#F3DA0B" },
+      { code: "RAL 1023", name: "Traffic yellow", hex: "#FAD201" },
       { code: "RAL 1024", name: "Ochre yellow", hex: "#AEA04B" },
       { code: "RAL 1026", name: "Luminous yellow", hex: "#FFFF00" },
       { code: "RAL 1027", name: "Curry", hex: "#9D9101" },
-      { code: "RAL 1028", name: "Melon yellow", hex: "#F4A900", },
-      { code: "RAL 1032", name: "Broom yellow", hex: "#D6AE01", },
+      { code: "RAL 1028", name: "Melon yellow", hex: "#F4A900" },
+      { code: "RAL 1032", name: "Broom yellow", hex: "#D6AE01" },
       { code: "RAL 1033", name: "Dahlia yellow", hex: "#F3A505" },
       { code: "RAL 1034", name: "Pastel yellow", hex: "#EFA94A" },
       { code: "RAL 1035", name: "Pearl beige", hex: "#6A5D4D" },
-      { code: "RAL 1036", name: "Pearl gold", hex: "#705335" },
-      { code: "RAL 1037", name: "Sun yellow", hex: "#F39F18" }
-    ]
+      { code: "RAL 1036", name: "Pearl gold", hex: "#80643F" },
+      { code: "RAL 1037", name: "Sun yellow", hex: "#F39F18" },
+    ],
   },
   {
     name: "Orange",
     colors: [
       { code: "RAL 2000", name: "Yellow orange", hex: "#ED760E" },
       { code: "RAL 2001", name: "Red orange", hex: "#C93C20" },
-      { code: "RAL 2002", name: "Blood orange", hex: "#CB2821", },
-      { code: "RAL 2003", name: "Pastel orange", hex: "#FF7514", },
+      { code: "RAL 2002", name: "Blood orange", hex: "#CB2821" },
+      { code: "RAL 2003", name: "Pastel orange", hex: "#FF7514" },
       { code: "RAL 2004", name: "Pure orange", hex: "#F44611" },
       { code: "RAL 2005", name: "Luminous orange", hex: "#FF2301" },
       { code: "RAL 2007", name: "Luminous bright orange", hex: "#FFA420" },
@@ -60,8 +60,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 2010", name: "Signal orange", hex: "#D84B20" },
       { code: "RAL 2011", name: "Deep orange", hex: "#EC7C26" },
       { code: "RAL 2012", name: "Salmon orange", hex: "#E55137" },
-      { code: "RAL 2013", name: "Pearl orange", hex: "#C35831" }
-    ]
+      { code: "RAL 2013", name: "Pearl orange", hex: "#C35831" },
+    ],
   },
   {
     name: "Red",
@@ -90,8 +90,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 3028", name: "Pure red", hex: "#CB3234" },
       { code: "RAL 3031", name: "Orient red", hex: "#B32428" },
       { code: "RAL 3032", name: "Pearl ruby red", hex: "#721422" },
-      { code: "RAL 3033", name: "Pearl pink", hex: "#B44C43" }
-    ]
+      { code: "RAL 3033", name: "Pearl pink", hex: "#B44C43" },
+    ],
   },
   {
     name: "Violet",
@@ -107,8 +107,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 4009", name: "Pastel violet", hex: "#A18594" },
       { code: "RAL 4010", name: "Telemagenta", hex: "#CF3476" },
       { code: "RAL 4011", name: "Pearl violet", hex: "#8673A1" },
-      { code: "RAL 4012", name: "Pearl blackberry", hex: "#6C6874" }
-    ]
+      { code: "RAL 4012", name: "Pearl blackberry", hex: "#6C6874" },
+    ],
   },
   {
     name: "Blue",
@@ -137,8 +137,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 5023", name: "Distant blue", hex: "#49678D" },
       { code: "RAL 5024", name: "Pastel blue", hex: "#5D9B9B" },
       { code: "RAL 5025", name: "Pearl gentian blue", hex: "#2A6478" },
-      { code: "RAL 5026", name: "Pearl night blue", hex: "#102C54" }
-    ]
+      { code: "RAL 5026", name: "Pearl night blue", hex: "#102C54" },
+    ],
   },
   {
     name: "Green",
@@ -178,8 +178,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 6035", name: "Pearl green", hex: "#1C542D" },
       { code: "RAL 6036", name: "Pearl opal green", hex: "#193737" },
       { code: "RAL 6037", name: "Pure green", hex: "#00BB2D" },
-      { code: "RAL 6038", name: "Luminous green", hex: "#00BB2D" }
-    ]
+      { code: "RAL 6038", name: "Luminous green", hex: "#00BB2D" },
+    ],
   },
   {
     name: "Grey",
@@ -221,8 +221,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 7045", name: "Telegrey 1", hex: "#909090" },
       { code: "RAL 7046", name: "Telegrey 2", hex: "#82898F" },
       { code: "RAL 7047", name: "Telegrey 4", hex: "#D0D0D0" },
-      { code: "RAL 7048", name: "Pearl mouse grey", hex: "#898176" }
-    ]
+      { code: "RAL 7048", name: "Pearl mouse grey", hex: "#898176" },
+    ],
   },
   {
     name: "Brown",
@@ -246,8 +246,8 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 8024", name: "Beige brown", hex: "#79553D" },
       { code: "RAL 8025", name: "Pale brown", hex: "#755C48" },
       { code: "RAL 8028", name: "Terra brown", hex: "#4E3B31" },
-      { code: "RAL 8029", name: "Pearl copper", hex: "#763C28" }
-    ]
+      { code: "RAL 8029", name: "Pearl copper", hex: "#763C28" },
+    ],
   },
   {
     name: "White and black",
@@ -265,7 +265,7 @@ export const ralColorGroups: ColorGroup[] = [
       { code: "RAL 9017", name: "Traffic black", hex: "#1E1E1E" },
       { code: "RAL 9018", name: "Papyrus white", hex: "#D7D7D7" },
       { code: "RAL 9022", name: "Pearl light grey", hex: "#9C9C9C" },
-      { code: "RAL 9023", name: "Pearl dark grey", hex: "#828282" }
-    ]
-  }
+      { code: "RAL 9023", name: "Pearl dark grey", hex: "#828282" },
+    ],
+  },
 ]; 
