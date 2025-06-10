@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import * as THREE from 'three';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import LogoCanvas from '../LogoCanvas';
 import { useBikeStore } from '../../store/useBikeStore';
@@ -12,10 +13,18 @@ export default function RightColorPanel() {
     showLogoEditor,
     selectedLogoImageId,
     selectedLogoColor,
+    selectedLogoType,
     setRightPanelOpen,
     setLogoTexture,
     handleColorChangeRequest
   } = useBikeStore();
+
+  // Wrapper function to match LogoCanvas signature with store signature
+  const handleTextureChange = (texture: THREE.Texture) => {
+    if (selectedLogoType) {
+      setLogoTexture(selectedLogoType, texture);
+    }
+  };
 
   if (!rightPanelOpen) {
     return <div className="w-0 transition-all duration-300" />;
@@ -42,7 +51,7 @@ export default function RightColorPanel() {
           {showLogoEditor && selectedLogoImageId ? (
             <LogoCanvas
               imageUrl="/textures/loca_half.png"
-              onTextureChange={setLogoTexture}
+              onTextureChange={handleTextureChange}
               onColorChangeRequest={handleColorChangeRequest}
               selectedColor={selectedLogoColor}
               externalSelectedImageId={selectedLogoImageId}

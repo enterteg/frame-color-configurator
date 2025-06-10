@@ -1,87 +1,60 @@
-import { useState } from 'react';
-import { ralColorGroups, RALColor } from '../data/ralColors';
-import { 
-  getHarmoniousColorsForPalette, 
-  filterByTemperature, 
-  filterByBrightness, 
-  filterBySaturation,
-  HarmonyType 
-} from '../utils/colorTheory';
+import { useState, useMemo } from 'react';
+import { RALColor, ralColorGroups, getColorById } from '../data/ralColors';
+import { getHarmoniousColors, HarmonyType } from '../utils/colorTheory';
 
-export function useColorFilters(selectedColors: RALColor[]) {
-  const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [harmonyFilter, setHarmonyFilter] = useState<HarmonyType | null>(null);
-  const [temperatureFilter, setTemperatureFilter] = useState<'warm' | 'cool' | 'neutral' | null>(null);
-  const [brightnessFilter, setBrightnessFilter] = useState<'light' | 'medium' | 'dark' | null>(null);
-  const [saturationFilter, setSaturationFilter] = useState<'high' | 'medium' | 'low' | null>(null);
-  const [harmonyTolerance, setHarmonyTolerance] = useState<number>(30);
+export interface ColorFilter {
+  temperature: 'all' | 'warm' | 'cool';
+  saturation: 'all' | 'high' | 'medium' | 'low';
+  brightness: 'all' | 'bright' | 'medium' | 'dark';
+  harmony: 'all' | HarmonyType;
+  selectedBaseColor: RALColor | null;
+}
 
-  // Get all colors for filtering
-  const allColors = ralColorGroups.flatMap(group => group.colors);
+export function useColorFilters() {
+  const [filters, setFilters] = useState<ColorFilter>({
+    temperature: 'all',
+    saturation: 'all', 
+    brightness: 'all',
+    harmony: 'all',
+    selectedBaseColor: null
+  });
 
-  // Get filtered colors based on selected filters
-  const getFilteredColors = (groupColors: RALColor[]): RALColor[] => {
-    let filtered = [...groupColors];
+  // Get all colors from the new structure
+  const allColors = ralColorGroups.flatMap(group => 
+    group.colorIds.map(id => getColorById(id)).filter(Boolean) as RALColor[]
+  );
 
-    // Apply harmony filter if selected colors exist and harmony filter is active
-    if (harmonyFilter && selectedColors.length > 0) {
-      const harmoniousColors = getHarmoniousColorsForPalette(
-        selectedColors, 
+  const filteredColors = useMemo(() => {
+    let filtered = [...allColors];
+
+    // Apply harmony filter
+    if (filters.harmony !== 'all' && filters.selectedBaseColor) {
+      const harmoniousColors = getHarmoniousColors(
+        filters.selectedBaseColor, 
         allColors, 
-        harmonyFilter, 
-        harmonyTolerance
+        filters.harmony, // Now properly typed
+        30 // Default tolerance
       );
       const harmoniousCodes = new Set(harmoniousColors.map(c => c.code));
       filtered = filtered.filter(color => harmoniousCodes.has(color.code));
     }
 
-    // Apply temperature filter
-    if (temperatureFilter) {
-      filtered = filterByTemperature(filtered, temperatureFilter);
-    }
-
-    // Apply brightness filter
-    if (brightnessFilter) {
-      filtered = filterByBrightness(filtered, brightnessFilter);
-    }
-
-    // Apply saturation filter
-    if (saturationFilter) {
-      filtered = filterBySaturation(filtered, saturationFilter);
-    }
+    // Add other filters here (temperature, saturation, brightness)
+    // These would need implementations based on color analysis
 
     return filtered;
-  };
+  }, [filters, allColors]);
 
-  // Clear all filters
-  const clearFilters = () => {
-    setHarmonyFilter(null);
-    setTemperatureFilter(null);
-    setBrightnessFilter(null);
-    setSaturationFilter(null);
-  };
-
-  // Check if any filters are active
-  const hasActiveFilters = Boolean(harmonyFilter || temperatureFilter || brightnessFilter || saturationFilter);
+  const hasActiveFilters = filters.temperature !== 'all' || 
+                          filters.saturation !== 'all' || 
+                          filters.brightness !== 'all' || 
+                          filters.harmony !== 'all';
 
   return {
-    // State
-    showFilters,
-    harmonyFilter,
-    temperatureFilter,
-    brightnessFilter,
-    saturationFilter,
-    harmonyTolerance,
+    filters,
+    setFilters,
+    filteredColors,
     hasActiveFilters,
-    
-    // Actions
-    setShowFilters,
-    setHarmonyFilter,
-    setTemperatureFilter,
-    setBrightnessFilter,
-    setSaturationFilter,
-    setHarmonyTolerance,
-    clearFilters,
-    getFilteredColors
+    allColors
   };
 } 

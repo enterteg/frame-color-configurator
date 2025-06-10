@@ -64,7 +64,7 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
           await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = reject;
-            img.src = imageItem.url;
+            img.src = imageItem.url || imageItem.blobUrl || '';
           });
 
           // Create canvas for color processing with original dimensions (preserve resolution)
@@ -77,15 +77,15 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
           ctx.drawImage(img, 0, 0);
 
           // Apply color change if needed
-          if (imageItem.color !== '#000000') {
+          if (imageItem.color.hex !== '#000000') {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
 
             // Parse target color
             const targetColor = {
-              r: parseInt(imageItem.color.slice(1, 3), 16),
-              g: parseInt(imageItem.color.slice(3, 5), 16),
-              b: parseInt(imageItem.color.slice(5, 7), 16)
+              r: parseInt(imageItem.color.hex.slice(1, 3), 16),
+              g: parseInt(imageItem.color.hex.slice(3, 5), 16),
+              b: parseInt(imageItem.color.hex.slice(5, 7), 16)
             };
 
             // Replace colors

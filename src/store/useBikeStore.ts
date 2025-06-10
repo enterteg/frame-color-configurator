@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
-import { RALColor } from '../data/ralColors';
+import { RALColor, getColorById } from '../data/ralColors';
+import { LogoImage } from '../types/bike';
 
 // Default colors
 const DEFAULT_FRAME_COLOR: RALColor = {
@@ -14,19 +15,6 @@ const DEFAULT_FORK_COLOR: RALColor = {
   name: "Wine red",
   hex: "#5E2129",
 };
-
-// Logo image interface
-export interface LogoImage {
-  id: string;
-  name: string;
-  url: string;
-  color: string;
-  x: number;
-  y: number;
-  scaleX: number;
-  scaleY: number;
-  rotation: number;
-}
 
 // Logo type data
 export interface LogoTypeData {
@@ -102,7 +90,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
           id: 'default_base_texture',
           name: 'Default logo',
           url: '/textures/loca_half.png',
-          color: '#000000',
+          color: getColorById('9005') || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
           x: 0,
           y: 0,
           scaleX: 1,

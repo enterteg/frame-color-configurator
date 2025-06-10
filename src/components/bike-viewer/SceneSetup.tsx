@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { OrbitControls, Environment } from '@react-three/drei';
+import { degToRad } from 'three/src/math/MathUtils.js';
 
 interface SceneSetupProps {
   children: React.ReactNode;
@@ -22,19 +23,32 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       />
 
       {/* Fill Light - Softer light from the side */}
-      <directionalLight position={[-3, 5, 2]} intensity={1.5} color="#ffffff" />
+      <directionalLight
+        position={[-3, 5, 2]}
+        intensity={1.5}
+        color="#ffffff"
+        castShadow
+      />
 
       {/* Ambient Light - Increased for brighter colors */}
-      <ambientLight intensity={2} color="#ffffff" />
+      <ambientLight intensity={2} color="#ffffff" castShadow />
 
       {/* Environment for realistic reflections */}
       <Environment preset="studio" background={false} />
 
       {/* Additional light for environment compensation */}
-      <hemisphereLight intensity={4} color="#ffffff" groundColor="#ffffff" />
+      <hemisphereLight
+        intensity={4}
+        color="#ffffff"
+        groundColor="#ffffff"
+        castShadow
+      />
 
       {children}
-
+      {/* <mesh receiveShadow rotation={[degToRad(-90), 0, 0]} position={[0, -10, -10]}>
+        <planeGeometry args={[100, 100]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh> */}
       {/* Camera controls */}
       <OrbitControls
         enablePan={true}

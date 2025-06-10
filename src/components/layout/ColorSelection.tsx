@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { ralColorGroups, RALColor } from '../../data/ralColors';
+import { ralColorGroups, RALColor, getColorById } from '../../data/ralColors';
 import { useBikeStore } from '../../store/useBikeStore';
-import { getContrastTextColor } from '../../utils/colorUtils';
+import { getContrastTextColor, getGroupMainColor } from '../../utils/colorUtils';
 
 export default function ColorSelection() {
   const {
@@ -36,7 +36,10 @@ export default function ColorSelection() {
       if (currentColor) {
         // Find which group contains the current color
         const group = ralColorGroups.find(group => 
-          group.colors.some(color => color.code === currentColor.code)
+          group.colorIds.some(colorId => {
+            const color = getColorById(colorId);
+            return color && color.code === currentColor!.code;
+          })
         );
         if (group) {
           setSelectedColorGroup(group.name);
@@ -61,7 +64,7 @@ export default function ColorSelection() {
     } else if (colorSelectionType === 'fork') {
       setForkColor(color);
     } else if (colorSelectionType === 'logo' && selectedLogoImageId && selectedLogoType) {
-      updateLogoImage(selectedLogoType, selectedLogoImageId, { color: color.hex });
+      updateLogoImage(selectedLogoType, selectedLogoImageId, { color });
       // Don't close for logo colors - keep open for multiple selections
     }
   };
@@ -103,7 +106,7 @@ export default function ColorSelection() {
                       ? "border-blue-400 shadow-md"
                       : "border-gray-300"
                   }`}
-                  style={{ backgroundColor: group.colors[0]?.hex || "#cccccc" }}
+                  style={{ backgroundColor: getGroupMainColor(group.name) }}
                 />
                 <div
                   className={`text-[12px] text-center leading-tight max-w-full ${
@@ -142,35 +145,40 @@ export default function ColorSelection() {
      
           <div className="p-4 overflow-y-auto">
             <div className="grid grid-cols-3">
-              {selectedGroup.colors.map((color) => (
-                <div key={color.code}>
-                  <button
-                    onClick={() => handleColorSelect(color)}
-                    className="w-full group hover:bg-gray-50 transition-colors p-3 flex items-center gap-1"
-                    title={`${color.code} - ${color.name}`}
-                  >
-                    <div
-                      className="w-18 h-18 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center flex-shrink-0 p-4"
-                      style={{ backgroundColor: color.hex }}
+              {selectedGroup.colorIds.map((colorId) => {
+                const color = getColorById(colorId);
+                if (!color) return null;
+                
+                return (
+                  <div key={color.code}>
+                    <button
+                      onClick={() => handleColorSelect(color)}
+                      className="w-full group hover:bg-gray-50 transition-colors p-3 flex items-center gap-1"
+                      title={`${color.code} - ${color.name}`}
                     >
-                      <div className="flex flex-col items-center justify-center opacity-50">
-                        <span
-                          className="text-[10px] font-bold"
-                          style={{ color: getContrastTextColor(color.hex) }}
-                        >
-                          {color.code.replace("RAL ", "")}
-                        </span>
-                        <span
-                          className="text-[8px] font-bold"
-                          style={{ color: getContrastTextColor(color.hex) }}
-                        >
-                          {color.name}
-                        </span>
+                      <div
+                        className="w-18 h-18 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center flex-shrink-0 p-4"
+                        style={{ backgroundColor: color.hex }}
+                      >
+                        <div className="flex flex-col items-center justify-center opacity-50">
+                          <span
+                            className="text-[10px] font-bold"
+                            style={{ color: getContrastTextColor(color.hex) }}
+                          >
+                            {color.code.replace("RAL ", "")}
+                          </span>
+                          <span
+                            className="text-[8px] font-bold"
+                            style={{ color: getContrastTextColor(color.hex) }}
+                          >
+                            {color.name}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                </div>
-              ))}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { ChevronDownIcon, ChevronUpIcon, TrashIcon, SwatchIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor } from '../../utils/colorUtils';
+import { getColorById } from '../../data/ralColors';
 
 export default function LeftNavigation() {
   const [logosExpanded, setLogosExpanded] = React.useState(false);
@@ -84,7 +85,7 @@ export default function LeftNavigation() {
             addLogoImage(logoType, {
               name: file.name,
               url,
-              color: '#000000',
+              color: getColorById('9005') || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
               x: 50,
               y: 25,
               scaleX: initialScale,
@@ -254,9 +255,12 @@ export default function LeftNavigation() {
                             </div>
 
                             {/* Image Info */}
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 flex flex-col min-w-0">
                               <div className="text-xs font-medium text-gray-800 truncate">
                                 {image.name}
+                              </div>
+                              <div className="text-xs font-medium text-gray-800 truncate">
+                                {image.color.code}
                               </div>
                             </div>
 

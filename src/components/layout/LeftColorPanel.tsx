@@ -31,6 +31,13 @@ export default function LeftColorPanel({
     return null;
   }
 
+  const getHeaderText = () => {
+    if (selectedGroup) {
+      return `${selectedGroup} Colors`;
+    }
+    return 'Select a color group';
+  };
+
   return (
     <div 
       className="fixed top-0 h-full bg-white shadow-lg border-r border-gray-200 transition-all duration-300 z-10 flex"
