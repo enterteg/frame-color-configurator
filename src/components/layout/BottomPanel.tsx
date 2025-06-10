@@ -24,7 +24,6 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     logoTypes,
     selectedLogoImageId,
     setSelectedLogoImageId,
-    selectedLogoColor,
     updateLogoImage,
     setLogoTexture,
     setShowBottomPanel
@@ -189,11 +188,10 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
   }, [
     isClient,
     effectiveLogoType,
-    processedImages.size,
+    processedImages,
     setLogoTexture,
     selectedLogoType,
     baseTextureUrl,
-    selectedLogoColor,
   ]);
 
   // Generate initial texture when component first loads with images
@@ -211,18 +209,18 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
   }, [isClient, effectiveLogoType, currentImages.length, logoTypes, generateTexture]);
 
 
-  // Update texture when processed images are ready
+  // Update texture when processed images are ready or change
   useEffect(() => {
     if (processedImages.size > 0) {
-      console.log('processedImages ready, generating texture for', effectiveLogoType);
+      console.log('processedImages ready/changed, generating texture for', effectiveLogoType);
       // Add a small delay to ensure Konva has finished rendering
       const timeoutId = setTimeout(() => {
         generateTexture();
-      }, 100);
+      }, 150); // Slightly longer delay for color changes
       
       return () => clearTimeout(timeoutId);
     }
-  }, [processedImages.size, generateTexture, effectiveLogoType]);
+  }, [processedImages, generateTexture, effectiveLogoType]);
 
   // Handle selection
   const handleImageClick = (id: string) => {
