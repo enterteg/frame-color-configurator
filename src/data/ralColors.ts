@@ -299,7 +299,7 @@ export const ralColorGroups: RALColorGroup[] = [
   }
 ];
 
-// Default colors
-export const DEFAULT_FRAME_COLOR_ID = '1015'; // Light ivory
-export const DEFAULT_FORK_COLOR_ID = '1015';  // Light ivory
-export const DEFAULT_LOGO_COLOR_ID = '9011';  // Graphite black 
+// Default colors - using same color for easy debugging
+export const DEFAULT_FRAME_COLOR_ID = '8014'; // Sepia brown
+export const DEFAULT_FORK_COLOR_ID = '8014';  // Sepia brown  
+export const DEFAULT_LOGO_COLOR_ID = '8014';  // Sepia brown 

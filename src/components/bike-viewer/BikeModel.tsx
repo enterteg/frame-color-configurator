@@ -37,8 +37,6 @@ export default function BikeModel({
   // Apply color/material logic whenever canvasTexture, baseTexture, or colors change
   useEffect(() => {
     meshes.forEach((mesh) => {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
       const material: THREE.Material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
       if (material instanceof THREE.MeshStandardMaterial) {
         material.metalness = 0.85;
@@ -56,16 +54,13 @@ export default function BikeModel({
         if (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT") {
           if (canvasTexture) {
             // Use the custom logo texture (from Konva)
-            console.log('Applying canvas texture to', material.name); // Debug log
-            material.color.set('#ffffff'); // Set to white to show texture clearly
+
             material.map = canvasTexture;
             material.polygonOffset = true;
-            material.polygonOffsetFactor = -3;
+            material.polygonOffsetFactor = -1;
             material.transparent = true;
             material.alphaTest = 0.2;
             // Remove emissive for texture materials to avoid washing out colors
-            material.emissive.set('#000000');
-            material.emissiveIntensity = 0;
           }
         } else {
           // For other materials, keep normal emissive settings
@@ -108,7 +103,6 @@ export default function BikeModel({
               material={mesh.material}
               position={mesh.position}
               scale={mesh.scale}
-              castShadow
               receiveShadow
               // onClick={(event) => handleMeshClick(mesh, event)}
               onPointerOver={() => {

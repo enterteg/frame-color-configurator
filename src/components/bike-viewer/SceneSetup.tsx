@@ -17,7 +17,6 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         position={[5, 10, 5]}
         intensity={3}
         color="#ffffff"
-        castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
@@ -27,11 +26,10 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         position={[-3, 5, 2]}
         intensity={1.5}
         color="#ffffff"
-        castShadow
       />
 
       {/* Ambient Light - Increased for brighter colors */}
-      <ambientLight intensity={2} color="#ffffff" castShadow />
+      <ambientLight intensity={2} color="#ffffff" />
 
       {/* Environment for realistic reflections */}
       <Environment preset="studio" background={false} />
@@ -41,7 +39,6 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         intensity={4}
         color="#ffffff"
         groundColor="#ffffff"
-        castShadow
       />
 
       {children}

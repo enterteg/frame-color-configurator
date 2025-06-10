@@ -374,9 +374,7 @@ const LogoCanvas: React.FC<LogoCanvasProps> = ({
         const timeout = setTimeout(() => {
           const imageItem = updated.find(item => item.id === targetImageId);
           if (imageItem) {
-            console.log('🎨 Recoloring image:', targetImageId, 'with color:', selectedColor);
             recolorImage(imageItem.image, selectedColor, imageItem.originalData).then(processedImg => {
-              console.log('✅ Image recolored, updating processed images');
               setProcessedImages(prev => new Map(prev).set(targetImageId, processedImg));
             });
           }

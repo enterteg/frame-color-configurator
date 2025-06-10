@@ -52,7 +52,6 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
   useEffect(() => {
     if (!isClient || currentImages.length === 0) return;
 
-    console.log('Processing images with colors:', imageColorsHash);
     const processImagesAsync = async () => {
       const newProcessedImages = new Map<string, HTMLImageElement>();
 
@@ -69,42 +68,73 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
 
           // Create canvas for color processing with original dimensions (preserve resolution)
           const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext('2d', { 
+            alpha: true, 
+            colorSpace: 'srgb',
+            willReadFrequently: true 
+          });
           if (!ctx) continue;
 
           canvas.width = img.width;
           canvas.height = img.height;
+          
+          // Ensure proper color space and alpha handling
+          ctx.imageSmoothingEnabled = false;
+          ctx.globalCompositeOperation = 'source-over';
+          
           ctx.drawImage(img, 0, 0);
 
-          // Apply color change if needed
-          if (imageItem.color.hex !== '#000000') {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
+          // Apply color change - simplified approach with debug
+          console.log('Processing image:', imageItem.name, 'with color:', imageItem.color.hex);
+          
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
 
-            // Parse target color
-            const targetColor = {
-              r: parseInt(imageItem.color.hex.slice(1, 3), 16),
-              g: parseInt(imageItem.color.hex.slice(3, 5), 16),
-              b: parseInt(imageItem.color.hex.slice(5, 7), 16)
-            };
+          // Parse target color with gamma correction
+          const rawColor = {
+            r: parseInt(imageItem.color.hex.slice(1, 3), 16),
+            g: parseInt(imageItem.color.hex.slice(3, 5), 16),
+            b: parseInt(imageItem.color.hex.slice(5, 7), 16)
+          };
+          
+          // Apply mild gamma correction to match CSS rendering
+          // Fine-tune between too dark (2.2) and too light (1/2.2)
+          const gammaCorrect = (value: number) => Math.round(Math.pow(value / 255, 1/1.5) * 255);
+          
+          const targetColor = {
+            r: gammaCorrect(rawColor.r),
+            g: gammaCorrect(rawColor.g),
+            b: gammaCorrect(rawColor.b)
+          };
 
-            // Replace colors
-            for (let i = 0; i < data.length; i += 4) {
-              if (data[i + 3] > 0) { // If not transparent
-                data[i] = targetColor.r;     // Red
-                data[i + 1] = targetColor.g; // Green
-                data[i + 2] = targetColor.b; // Blue
-              }
+          console.log('Target color RGB:', targetColor);
+
+          let pixelsChanged = 0;
+          
+          // Simple replacement - replace all non-transparent pixels
+          for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+            
+            if (alpha > 0) { // If not transparent
+              // Replace with target color
+              data[i] = targetColor.r;     // Red
+              data[i + 1] = targetColor.g; // Green
+              data[i + 2] = targetColor.b; // Blue
+              // Keep original alpha
+              pixelsChanged++;
             }
-
-            ctx.putImageData(imageData, 0, 0);
           }
 
-          // Create processed image
+          console.log('Pixels changed:', pixelsChanged);
+          ctx.putImageData(imageData, 0, 0);
+
+          // Create processed image with proper format and quality
           const processedImg = new Image();
+          processedImg.crossOrigin = 'anonymous';
           await new Promise((resolve) => {
             processedImg.onload = resolve;
-            processedImg.src = canvas.toDataURL();
+            // Use PNG format explicitly with no quality loss
+            processedImg.src = canvas.toDataURL('image/png');
           });
 
           newProcessedImages.set(imageItem.id, processedImg);
@@ -121,12 +151,6 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
 
   // Generate texture from Konva stage
   const generateTexture = useCallback(() => {
-    console.log("generateTexture called:", {
-      isClient,
-      hasLayer: !!imageLayerRef.current,
-      effectiveLogoType,
-      processedImagesSize: processedImages.size,
-    });
     if (isClient && imageLayerRef.current && effectiveLogoType) {
       try {
         const layer = imageLayerRef.current;
@@ -135,24 +159,53 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
         const textureCanvas = document.createElement("canvas");
         textureCanvas.width = TEXTURE_SIZE;
         textureCanvas.height = TEXTURE_SIZE;
-        const textureCtx = textureCanvas.getContext("2d");
+        const textureCtx = textureCanvas.getContext("2d", {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
 
         if (textureCtx) {
+          // Set proper canvas settings for color accuracy
+          textureCtx.imageSmoothingEnabled = true;
+          textureCtx.imageSmoothingQuality = 'high';
+          textureCtx.globalCompositeOperation = 'source-over';
+          
           const createAndSetTexture = () => {
             // Get the layer canvas and draw it centered
-            const layerCanvas = layer.toCanvas();
+            const layerCanvas = layer.toCanvas({
+              pixelRatio: 1,
+              imageSmoothingEnabled: false
+            });
+            
+            // Debug: Check what color is in the Konva layer canvas
+            const layerCtx = layerCanvas.getContext('2d');
+            if (layerCtx) {
+              const layerImageData = layerCtx.getImageData(100, 50, 1, 1);
+              const layerPixel = layerImageData.data;
+              console.log('Konva layer pixel RGB:', {r: layerPixel[0], g: layerPixel[1], b: layerPixel[2]});
+            }
+            
             const offsetX = 0;
             const offsetY = 0;
 
             textureCtx.drawImage(layerCanvas, offsetX, offsetY);
 
-            // Create Three.js texture
+            // Debug: Check what color we actually have in the final canvas
+            const debugImageData = textureCtx.getImageData(100, 50, 1, 1);
+            const debugPixel = debugImageData.data;
+            console.log('Final texture pixel RGB:', {r: debugPixel[0], g: debugPixel[1], b: debugPixel[2]});
+
+            // Create Three.js texture with proper settings
             const texture = new THREE.CanvasTexture(textureCanvas);
             texture.needsUpdate = true;
             texture.flipY = false;
+            texture.format = THREE.RGBAFormat;
+            texture.type = THREE.UnsignedByteType;
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
 
             setLogoTexture(effectiveLogoType, texture);
-            console.log("Texture updated for", selectedLogoType); // Debug log
           };
 
           // For DOWN_TUBE, load and use the base texture, for others use white background
@@ -197,10 +250,8 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
   // Generate initial texture when component first loads with images
   useEffect(() => {
     if (isClient && currentImages.length > 0 && !logoTypes[effectiveLogoType].texture) {
-      console.log('Initial texture generation triggered for', effectiveLogoType, 'with', currentImages.length, 'images');
       // Generate initial texture if no texture exists yet
       const timeoutId = setTimeout(() => {
-        console.log('Calling generateTexture for initial load');
         generateTexture();
       }, 500); // Longer delay to ensure Konva is ready
       
@@ -212,7 +263,6 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
   // Update texture when processed images are ready or change
   useEffect(() => {
     if (processedImages.size > 0) {
-      console.log('processedImages ready/changed, generating texture for', effectiveLogoType);
       // Add a small delay to ensure Konva has finished rendering
       const timeoutId = setTimeout(() => {
         generateTexture();

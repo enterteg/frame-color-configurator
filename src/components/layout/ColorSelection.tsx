@@ -143,42 +143,44 @@ export default function ColorSelection() {
             </button>
           </div>
      
-          <div className="p-4 overflow-y-auto">
-            <div className="grid grid-cols-3">
-              {selectedGroup.colorIds.map((colorId) => {
-                const color = getColorById(colorId);
-                if (!color) return null;
-                
-                return (
-                  <div key={color.code}>
-                    <button
-                      onClick={() => handleColorSelect(color)}
-                      className="w-full group hover:bg-gray-50 transition-colors p-3 flex items-center gap-1"
-                      title={`${color.code} - ${color.name}`}
-                    >
-                      <div
-                        className="w-18 h-18 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center flex-shrink-0 p-4"
-                        style={{ backgroundColor: color.hex }}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-2">
+              <div className="grid grid-cols-4 gap-1">
+                {selectedGroup.colorIds.map((colorId) => {
+                  const color = getColorById(colorId);
+                  if (!color) return null;
+                  
+                  return (
+                    <div key={color.code}>
+                      <button
+                        onClick={() => handleColorSelect(color)}
+                        className="w-full group hover:bg-gray-50 transition-colors p-1 rounded"
+                        title={`${color.code} - ${color.name}`}
                       >
-                        <div className="flex flex-col items-center justify-center opacity-50">
-                          <span
-                            className="text-[10px] font-bold"
-                            style={{ color: getContrastTextColor(color.hex) }}
-                          >
-                            {color.code.replace("RAL ", "")}
-                          </span>
-                          <span
-                            className="text-[8px] font-bold"
-                            style={{ color: getContrastTextColor(color.hex) }}
-                          >
-                            {color.name}
-                          </span>
+                        <div
+                          className="w-16 h-16 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center"
+                          style={{ backgroundColor: color.hex }}
+                        >
+                          <div className="flex flex-col items-center justify-center opacity-60">
+                            <span
+                              className="text-[9px] font-bold leading-tight"
+                              style={{ color: getContrastTextColor(color.hex) }}
+                            >
+                              {color.code.replace("RAL ", "")}
+                            </span>
+                            <span
+                              className="text-[7px] font-bold leading-tight text-center px-1"
+                              style={{ color: getContrastTextColor(color.hex) }}
+                            >
+                              {color.name}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  </div>
-                );
-              })}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

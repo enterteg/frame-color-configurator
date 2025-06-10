@@ -276,7 +276,7 @@ export default function LeftNavigation() {
                               >
                                 <div
                                   className="w-8 h-8 rounded-full border border-gray-300"
-                                  style={{ backgroundColor: image.color }}
+                                  style={{ backgroundColor: image.color.hex }}
                                 />
                               </button>
                               <button

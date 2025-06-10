@@ -101,7 +101,7 @@ export const useBikeStore = create<BikeStore>((set, get) => ({
 
   deleteLogoImage: (id) => {
     const logoImage = get().logoImages.find(img => img.id === id);
-    if (logoImage) {
+    if (logoImage && logoImage.blobUrl) {
       URL.revokeObjectURL(logoImage.blobUrl);
     }
     

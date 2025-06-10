@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
-import { RALColor, getColorById } from '../data/ralColors';
+import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID } from '../data/ralColors';
 import { LogoImage } from '../types/bike';
 
-// Default colors
-const DEFAULT_FRAME_COLOR: RALColor = {
-  code: 'RAL 1013',
-  name: 'Oyster white',
-  hex: '#E3D9C6'
+// Get default colors from main definitions
+const DEFAULT_FRAME_COLOR = getColorById(DEFAULT_FRAME_COLOR_ID) || {
+  code: 'RAL 8014',
+  name: 'Sepia brown', 
+  hex: '#49392D'
 };
 
-const DEFAULT_FORK_COLOR: RALColor = {
-  code: "RAL 3005",
-  name: "Wine red",
-  hex: "#5E2129",
+const DEFAULT_FORK_COLOR = getColorById(DEFAULT_FORK_COLOR_ID) || {
+  code: 'RAL 8014',
+  name: 'Sepia brown',
+  hex: '#49392D'
 };
 
 // Logo type data
