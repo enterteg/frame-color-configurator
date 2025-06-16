@@ -17,7 +17,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const transformerRef = useRef<Konva.Transformer>(null);
   const [isClient, setIsClient] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [maxPanelHeight, setMaxPanelHeight] = useState(600); // Fallback for SSR
+  const [maxPanelHeight, setMaxPanelHeight] = useState(300); // Fallback for SSR
   const [processedImages, setProcessedImages] = useState<Record<string, HTMLImageElement>>({});
   const textureUpdateTimeoutRef = useRef<NodeJS.Timeout>();
   const processingRef = useRef(false);
@@ -57,9 +57,9 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== 'undefined') {
-      setMaxPanelHeight(window.innerHeight * 0.8);
+      setMaxPanelHeight(window.innerHeight * 0.3);
       const handleResize = () => {
-        setMaxPanelHeight(window.innerHeight * 0.8);
+        setMaxPanelHeight(window.innerHeight * 0.3);
       };
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);

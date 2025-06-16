@@ -131,7 +131,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   // Initialize logo types with proper canvas sizes and initial images
   logoTypes: {
     HEAD_TUBE: {
-      images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/loca_half.png')],
+      images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/loca_front_simple.png')],
       texture: null,
       aspectRatio: 1.2,
     },
