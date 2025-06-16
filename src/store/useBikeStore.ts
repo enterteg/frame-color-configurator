@@ -79,6 +79,7 @@ interface BikeState {
   addLogoImageFromFile: (logoType: LogoType, file: File) => string;
   removeLogoImage: (logoType: LogoType, imageId: string) => void;
   updateLogoImage: (logoType: LogoType, imageId: string, updates: Partial<LogoImage>) => void;
+  updateLogoTypeImages: (logoType: LogoType, images: LogoImage[]) => void;
   setLogoTexture: (logoType: LogoType, texture: THREE.Texture | null) => void;
   setLogoColor: (logoType: LogoType, imageId: string, color: RALColor) => void;
   
@@ -96,15 +97,15 @@ interface BikeState {
 }
 
 // Create default logo image configuration
-const createDefaultLogoImage = (logoType: string, aspectRatio: number): LogoImage => {
+const createDefaultLogoImage = (logoType: string, aspectRatio: number, name: string, url: string): LogoImage => {
   // Calculate canvas size from aspect ratio (base width = TEXTURE_SIZE)
   const canvasWidth = TEXTURE_SIZE;
   const canvasHeight = TEXTURE_SIZE / aspectRatio;
   
   return {
     id: `default_${logoType.toLowerCase()}_logo`,
-    name: 'Default logo',
-    url: '/textures/loca_half.png',
+    name: name,
+    url: url,
     color: getColorById('9005') || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
     x: canvasWidth / 2, // Center horizontally
     y: canvasHeight / 2, // Center vertically
@@ -125,19 +126,19 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   // Initialize logo types with proper canvas sizes and initial images
   logoTypes: {
     HEAD_TUBE: {
-      images: [createDefaultLogoImage('HEAD_TUBE', 1)],
+      images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/loca_half.png')],
       texture: null,
-      aspectRatio: 1
+      aspectRatio: 1.2,
     },
     DOWN_TUBE_LEFT: {
-      images: [createDefaultLogoImage('DOWN_TUBE_LEFT', 10)],
+      images: [createDefaultLogoImage('DOWN_TUBE_LEFT', 10, 'Loca half', '/textures/loca_half.png')],
       texture: null,
-      aspectRatio: 10
+      aspectRatio: 8
     },
     DOWN_TUBE_RIGHT: {
-      images: [createDefaultLogoImage('DOWN_TUBE_RIGHT', 10)],
+      images: [createDefaultLogoImage('DOWN_TUBE_RIGHT', 10, 'Loca half', '/textures/loca_half.png')],
       texture: null,
-      aspectRatio: 10
+      aspectRatio: 8
     }
   },
   selectedLogoType: null,
@@ -261,6 +262,17 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       }
     };
   }),
+
+  // Update logo type images
+  updateLogoTypeImages: (logoType, images) => set((state) => ({
+    logoTypes: {
+      ...state.logoTypes,
+      [logoType]: {
+        ...state.logoTypes[logoType],
+        images
+      }
+    }
+  })),
 
   // File-based logo addition with proper cleanup (from old store)
   addLogoImageFromFile: (logoType, file) => {

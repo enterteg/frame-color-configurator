@@ -1,15 +1,17 @@
 'use client';
 
 import React from 'react';
-import { ChevronDownIcon, ChevronUpIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { 
+  TrashIcon, 
+  PlusIcon,
+  ArrowUpIcon,
+  ArrowDownIcon
+} from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor } from '../../utils/colorUtils';
 import { LogoType } from '../../types/bike';
 
-export default function LeftNavigation() {
-  const [logosExpanded, setLogosExpanded] = React.useState(false);
-  
-  // Zustand store state
+const LeftNavigation = () => {
   const {
     activeTab,
     frameColor,
@@ -22,13 +24,15 @@ export default function LeftNavigation() {
     openColorSelection,
     addLogoImageFromFile,
     removeLogoImage,
-    setSelectedLogoImageId
+    setSelectedLogoImageId,
+    setLogoTextureFromState,
+    updateLogoTypeImages
   } = useBikeStore();
 
   // Logo types configuration
   const logoTypes_CONFIG = [
-    { id: 'DOWN_TUBE_LEFT' as LogoType, name: 'Down Tube Left' },
     { id: 'DOWN_TUBE_RIGHT' as LogoType, name: 'Down Tube Right' },
+    { id: 'DOWN_TUBE_LEFT' as LogoType, name: 'Down Tube Left' },
     { id: 'HEAD_TUBE' as LogoType, name: 'Head Tube' }
   ] as const;
 
@@ -44,11 +48,11 @@ export default function LeftNavigation() {
 
   const handleLogosClick = () => {
     setActiveTab('logos');
-    setLogosExpanded(!logosExpanded);
   };
 
-  const handleLogoTypeSelect = (logoType: LogoType) => {
+  const handleImageSelect = (logoType: LogoType, imageId: string) => {
     setSelectedLogoType(logoType);
+    setSelectedLogoImageId(imageId);
   };
 
   const handleImageImport = (logoType: LogoType) => {
@@ -64,17 +68,33 @@ export default function LeftNavigation() {
     input.click();
   };
 
-  const handleImageSelect = (imageId: string) => {
-    setSelectedLogoImageId(imageId);
-  };
-
   const handleImageDelete = (logoType: LogoType, imageId: string) => {
     removeLogoImage(logoType, imageId);
+    // Clear selection if the deleted image was selected
+    if (selectedLogoType === logoType && selectedLogoImageId === imageId) {
+      setSelectedLogoType(null);
+      setSelectedLogoImageId(null);
+    }
+    // Trigger texture regeneration
+    setLogoTextureFromState(logoType);
   };
 
-  const handleImageColorChange = (imageId: string) => {
+  const handleImageColorChange = (logoType: LogoType, imageId: string) => {
+    setSelectedLogoType(logoType);
     setSelectedLogoImageId(imageId);
     openColorSelection('logo');
+  };
+
+  const handleLogoTypeClick = (logoType: LogoType) => {
+    setSelectedLogoType(logoType);
+    // Select first image if available
+    const images = logoTypes[logoType].images;
+    if (images.length > 0) {
+      setSelectedLogoImageId(images[0].id);
+    } else {
+      setSelectedLogoImageId(null);
+    }
+    setActiveTab('logos');
   };
 
   return (
@@ -150,129 +170,179 @@ export default function LeftNavigation() {
           <div className="flex-1 text-left">
             <div className="font-medium text-gray-800">LOGOS</div>
           </div>
-          <div className="flex items-center gap-2">
-            {logosExpanded ? (
-              <ChevronUpIcon className="h-4 w-4 text-gray-500" />
-            ) : (
-              <ChevronDownIcon className="h-4 w-4 text-gray-500" />
-            )}
-          </div>
         </button>
 
-        {/* Expandable Logo Types Section */}
-        {logosExpanded && (
-          <div className="bg-gray-50 border-b border-gray-100">
-            {logoTypes_CONFIG.map((logoType) => (
+        {/* Always Expanded Logo Types Section */}
+        <div className="bg-gray-50 border-b border-gray-100">
+          {logoTypes_CONFIG.map((logoType) => (
+            <div
+              key={logoType.id}
+              className="border-b border-gray-200 last:border-b-0"
+            >
+              {/* Logo Type Header */}
               <div
-                key={logoType.id}
-                className="border-b border-gray-200 last:border-b-0"
+                className="px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => handleLogoTypeClick(logoType.id)}
               >
-                {/* Logo Type Header */}
-                <button
-                  onClick={() => handleLogoTypeSelect(logoType.id)}
-                  className={`w-full flex items-center px-6 py-3 text-left hover:bg-gray-100 transition-all duration-200 ${
-                    selectedLogoType === logoType.id
-                      ? "bg-blue-50 border-l-4 border-l-blue-500"
-                      : ""
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded border border-gray-300 bg-white mr-3 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      {logoType.id === "DOWN_TUBE_LEFT" ? "DT Left" : logoType.id === "DOWN_TUBE_RIGHT" ? "DT Right" : "HT"}
-                    </span>
+                <div className="flex-1 flex flex-row min-w-0 justify-between items-center">
+                  <div className="text-sm font-medium text-gray-900">
+                    {logoType.name}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">
-                      {logoType.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {logoTypes[logoType.id].images.length} image
-                      {logoTypes[logoType.id].images.length !== 1 ? "s" : ""}
-                    </div>
-                  </div>
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageImport(logoType.id);
+                    }}
+                    className="flex cursor-pointer items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
 
-                {/* Images List for Selected Logo Type */}
-                {selectedLogoType === logoType.id && (
-                  <div className="bg-white px-4 py-2">
-                    {/* Images */}
-                    {logoTypes[logoType.id].images.length > 0 && (
-                      <div className="space-y-2 mb-3">
-                        {logoTypes[logoType.id].images.map((image) => (
-                          <div
-                            key={image.id}
-                            className={`flex items-center gap-3 p-2 rounded-lg border transition-all duration-200 cursor-pointer ${
-                              selectedLogoImageId === image.id
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                            }`}
-                            onClick={() => handleImageSelect(image.id)}
-                          >
-                            {/* Image Thumbnail */}
-                            <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
-                              <img
-                                src={image.url}
-                                alt={image.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
+              {/* Images List */}
+              <div className="bg-white px-4 py-2">
+                {/* Images */}
+                {logoTypes[logoType.id].images.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {logoTypes[logoType.id].images.map((image) => (
+                      <div
+                        key={image.id}
+                        className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                          selectedLogoType === logoType.id &&
+                          selectedLogoImageId === image.id
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        }`}
+                        onClick={() => handleImageSelect(logoType.id, image.id)}
+                      >
+                        {/* Image Thumbnail */}
+                        <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
+                          <img
+                            src={image.url || image.blobUrl}
+                            alt={image.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
 
-                            {/* Image Info */}
-                            <div className="flex-1 flex flex-col min-w-0">
-                              <div className="text-xs font-medium text-gray-800 truncate">
-                                {image.name}
-                              </div>
-                              <div className="text-xs font-medium text-gray-800 truncate">
-                                {image.color.code}
-                              </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleImageColorChange(image.id);
-                                }}
-                                className="p-1 rounded cursor-pointer transition-colors"
-                                title="Change color"
-                              >
-                                <div
-                                  className="w-8 h-8 rounded-full border border-gray-300"
-                                  style={{ backgroundColor: image.color.hex }}
-                                />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleImageDelete(logoType.id, image.id);
-                                }}
-                                className="p-1 h-8 w-8 cursor-pointer items-center justify-center flex rounded-full border border-gray-300 hover:bg-red-100 transition-colors"
-                                title="Delete image"
-                              >
-                                <TrashIcon className="h-4 w-4 text-red-500" />
-                              </button>
-                            </div>
+                        {/* Image Info */}
+                        <div className="flex-1 flex flex-col min-w-0">
+                          <div className="text-xs font-medium text-gray-800 truncate">
+                            {image.name}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          <div className="text-xs font-medium text-gray-800 truncate">
+                            {image.color.code}
+                          </div>
+                        </div>
 
-                    {/* Import Button */}
-                    <button
-                      onClick={() => handleImageImport(logoType.id)}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                      Import Image
-                    </button>
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageColorChange(logoType.id, image.id);
+                            }}
+                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                          >
+                            <div
+                              className="w-6 h-6 rounded-full border border-gray-300"
+                              style={{ backgroundColor: image.color.hex }}
+                            />
+                          </button>
+                          {logoTypes[logoType.id].images.length > 1 && (
+                            <>
+                              {logoTypes[logoType.id].images.findIndex(
+                                (img) => img.id === image.id
+                              ) <
+                                logoTypes[logoType.id].images.length - 1 && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Move image up in layer order
+                                    const currentIndex = logoTypes[
+                                      logoType.id
+                                    ].images.findIndex(
+                                      (img) => img.id === image.id
+                                    );
+                                    const newImages = [
+                                      ...logoTypes[logoType.id].images,
+                                    ];
+                                    [
+                                      newImages[currentIndex],
+                                      newImages[currentIndex + 1],
+                                    ] = [
+                                      newImages[currentIndex + 1],
+                                      newImages[currentIndex],
+                                    ];
+                                    updateLogoTypeImages(
+                                      logoType.id,
+                                      newImages
+                                    );
+                                    setLogoTextureFromState(logoType.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                                  title="Move up"
+                                >
+                                  <ArrowDownIcon className="h-4 w-4 text-gray-500" />
+                                </button>
+                              )}
+                              {logoTypes[logoType.id].images.findIndex(
+                                (img) => img.id === image.id
+                              ) > 0 && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Move image down in layer order
+                                    const currentIndex = logoTypes[
+                                      logoType.id
+                                    ].images.findIndex(
+                                      (img) => img.id === image.id
+                                    );
+                                    const newImages = [
+                                      ...logoTypes[logoType.id].images,
+                                    ];
+                                    [
+                                      newImages[currentIndex],
+                                      newImages[currentIndex - 1],
+                                    ] = [
+                                      newImages[currentIndex - 1],
+                                      newImages[currentIndex],
+                                    ];
+                                    updateLogoTypeImages(
+                                      logoType.id,
+                                      newImages
+                                    );
+                                    setLogoTextureFromState(logoType.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                                  title="Move down"
+                                >
+                                  <ArrowUpIcon className="h-4 w-4 text-gray-500" />
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageDelete(logoType.id, image.id);
+                            }}
+                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                          >
+                            <TrashIcon className="h-4 w-4 text-gray-500" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
-} 
+};
+
+export default LeftNavigation; 

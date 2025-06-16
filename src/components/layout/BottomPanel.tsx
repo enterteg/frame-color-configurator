@@ -44,17 +44,12 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const availableHeight = bottomPanelHeight - 80;
   const availableWidth = Math.min(1000, typeof window !== 'undefined' ? window.innerWidth - 80 : 1200);
   const displayAspectRatio = aspectRatio;
-  let visualScale;
-  if (displayAspectRatio > 1) {
-    const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
-    const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
-    visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
-  } else {
-    const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
-    const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
-    visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
-  }
-  visualScale = Math.max(visualScale, 0.3);
+  
+  // Calculate scale while maintaining aspect ratio
+  const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
+  const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
+  const visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
+  
   const VISUAL_DISPLAY_WIDTH = LOGICAL_CANVAS_WIDTH * visualScale;
   const VISUAL_DISPLAY_HEIGHT = LOGICAL_CANVAS_HEIGHT * visualScale;
   const MIN_PANEL_HEIGHT = 200;
@@ -175,7 +170,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
           console.error('Error generating texture:', error);
         }
       }
-    }, 100); // 100ms debounce
+    }, 50); // 100ms debounce
   }, [selectedLogoType, logoTypes, processedImages, setLogoTexture]);
 
   // Update texture when processed images change
@@ -294,7 +289,8 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
               width: `${VISUAL_DISPLAY_WIDTH}px`,
               height: `${VISUAL_DISPLAY_HEIGHT}px`,
               maxWidth: '100%',
-              maxHeight: '100%'
+              maxHeight: '100%',
+              aspectRatio: `${LOGICAL_CANVAS_WIDTH} / ${LOGICAL_CANVAS_HEIGHT}`
             }}
           >
             <div

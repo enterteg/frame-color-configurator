@@ -83,7 +83,7 @@ export default function BikeModel({
           if (headTubeTexture) {
             material.map = headTubeTexture;
             material.polygonOffset = true;
-            material.polygonOffsetFactor = -1;
+            material.polygonOffsetFactor = -15;
             material.transparent = true;
             material.alphaTest = 0.2;
           } else {

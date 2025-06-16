@@ -27,6 +27,8 @@ export interface LogoImage {
   color: RALColor;
   // Processed image for texture generation
   processedImage?: HTMLImageElement;
+  // Layer ordering
+  zIndex: number;
 }
 
 export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_LEFT' | 'DOWN_TUBE_RIGHT';

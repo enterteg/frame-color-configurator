@@ -9,6 +9,7 @@ import MainLayout from './layout/MainLayout';
 import LeftNavigation from './layout/LeftNavigation';
 import ColorSelection from './layout/ColorSelection';
 import BottomPanel from './layout/BottomPanel';
+import ControlInfoPanel from './layout/ControlInfoPanel';
 
 export default function BikeCustomizer() {
   // Get all state from Zustand store
@@ -38,6 +39,7 @@ export default function BikeCustomizer() {
 
   return (
     <>
+      <ControlInfoPanel />
       <MainLayout
         leftNavigation={<LeftNavigation />}
         mainContent={
