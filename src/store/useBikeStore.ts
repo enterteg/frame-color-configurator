@@ -73,6 +73,7 @@ interface BikeState {
   closeColorSelection: () => void;
   setSelectedColorGroup: (group: string | null) => void;
   handleColorChangeRequest: (imageId: string) => void;
+  clearLogoSelection: () => void;
   
   // Logo management actions
   addLogoImage: (logoType: LogoType, image: Omit<LogoImage, 'id'>) => void;
@@ -94,6 +95,10 @@ interface BikeState {
   // New actions
   setLogoTextureFromState: (logoType: LogoType) => Promise<void>;
   initializeAllLogoTextures: () => Promise<void>;
+
+  // Configuration actions
+  saveConfiguration: () => string;
+  loadConfiguration: (config: string) => void;
 }
 
 // Create default logo image configuration
@@ -244,6 +249,12 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       rightPanelOpen: false
     });
   },
+
+  clearLogoSelection: () => set({
+    selectedLogoType: null,
+    selectedLogoImageId: null,
+    showBottomPanel: false
+  }),
 
   // Logo management actions
   addLogoImage: (logoType, image) => set((state) => {
@@ -474,4 +485,71 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       await state.setLogoTextureFromState(logoType);
     }
   },
+
+  saveConfiguration: () => {
+    const state = get();
+    const config = {
+      frameColor: state.frameColor,
+      forkColor: state.forkColor,
+      logoTypes: {
+        HEAD_TUBE: {
+          images: state.logoTypes.HEAD_TUBE.images.map(img => ({
+            ...img,
+            // Don't save blob URLs as they can't be serialized
+            blobUrl: undefined,
+            // Don't save processed images as they can be regenerated
+            processedImage: undefined
+          }))
+        },
+        DOWN_TUBE_LEFT: {
+          images: state.logoTypes.DOWN_TUBE_LEFT.images.map(img => ({
+            ...img,
+            blobUrl: undefined,
+            processedImage: undefined
+          }))
+        },
+        DOWN_TUBE_RIGHT: {
+          images: state.logoTypes.DOWN_TUBE_RIGHT.images.map(img => ({
+            ...img,
+            blobUrl: undefined,
+            processedImage: undefined
+          }))
+        }
+      }
+    };
+    return JSON.stringify(config);
+  },
+
+  loadConfiguration: (configString: string) => {
+    try {
+      const config = JSON.parse(configString);
+      
+      // Update the state with the loaded configuration
+      set((state) => ({
+        frameColor: config.frameColor,
+        forkColor: config.forkColor,
+        logoTypes: {
+          ...state.logoTypes,
+          HEAD_TUBE: {
+            ...state.logoTypes.HEAD_TUBE,
+            images: config.logoTypes.HEAD_TUBE.images
+          },
+          DOWN_TUBE_LEFT: {
+            ...state.logoTypes.DOWN_TUBE_LEFT,
+            images: config.logoTypes.DOWN_TUBE_LEFT.images
+          },
+          DOWN_TUBE_RIGHT: {
+            ...state.logoTypes.DOWN_TUBE_RIGHT,
+            images: config.logoTypes.DOWN_TUBE_RIGHT.images
+          }
+        }
+      }));
+
+      // Reinitialize textures after loading configuration
+      get().initializeAllLogoTextures();
+    } catch (error) {
+      console.error('Failed to load configuration:', error);
+      throw new Error('Invalid configuration format');
+    }
+  }
 })); 

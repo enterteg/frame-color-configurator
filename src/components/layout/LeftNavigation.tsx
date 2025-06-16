@@ -5,7 +5,9 @@ import {
   TrashIcon, 
   PlusIcon,
   ArrowUpIcon,
-  ArrowDownIcon
+  ArrowDownIcon,
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor } from '../../utils/colorUtils';
@@ -19,6 +21,7 @@ const LeftNavigation = () => {
     selectedLogoType,
     logoTypes,
     selectedLogoImageId,
+    navigationCollapsed,
     setActiveTab,
     setSelectedLogoType,
     openColorSelection,
@@ -26,7 +29,9 @@ const LeftNavigation = () => {
     removeLogoImage,
     setSelectedLogoImageId,
     setLogoTextureFromState,
-    updateLogoTypeImages
+    updateLogoTypeImages,
+    saveConfiguration,
+    loadConfiguration
   } = useBikeStore();
 
   // Logo types configuration
@@ -97,13 +102,67 @@ const LeftNavigation = () => {
     setActiveTab('logos');
   };
 
+  const handleSave = () => {
+    const config = saveConfiguration();
+    const blob = new Blob([config], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bike-configuration.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLoad = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const config = event.target?.result as string;
+            loadConfiguration(config);
+          } catch (error) {
+            console.error('Failed to load configuration:', error);
+            alert('Failed to load configuration. Please make sure the file is valid.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
   return (
     <div className="w-[300px] h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-800">
-          Frame Customizer
-        </h1>
+        <div className="flex flex-1 items-center justify-between">
+          <h2 className={`text-xl text-black font-semibold ${navigationCollapsed ? 'hidden' : ''}`}>
+            Frame Configurator
+          </h2>
+          <div className="flex gap-1">
+            <button
+              onClick={handleSave}
+              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              title="Save Configuration"
+            >
+              <ArrowDownTrayIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleLoad}
+              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              title="Load Configuration"
+            >
+              <ArrowUpTrayIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Navigation Options */}
@@ -181,8 +240,10 @@ const LeftNavigation = () => {
             >
               {/* Logo Type Header */}
               <div
-                className="px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
                 onClick={() => handleLogoTypeClick(logoType.id)}
+                className={`px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors ${
+                  selectedLogoType === logoType.id ? 'bg-gray-100' : 'hover:bg-gray-50'
+                }`}
               >
                 <div className="flex-1 flex flex-row min-w-0 justify-between items-center">
                   <div className="text-sm font-medium text-gray-900">
@@ -208,13 +269,13 @@ const LeftNavigation = () => {
                     {logoTypes[logoType.id].images.map((image) => (
                       <div
                         key={image.id}
-                        className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                        onClick={() => handleImageSelect(logoType.id, image.id)}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedLogoType === logoType.id &&
                           selectedLogoImageId === image.id
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                            ? "bg-gray-100"
+                            : "hover:bg-gray-50"
                         }`}
-                        onClick={() => handleImageSelect(logoType.id, image.id)}
                       >
                         {/* Image Thumbnail */}
                         <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
@@ -245,7 +306,7 @@ const LeftNavigation = () => {
                             className="p-1 rounded hover:bg-gray-100 transition-colors"
                           >
                             <div
-                              className="w-6 h-6 rounded-full border border-gray-300"
+                              className="w-6 h-6 rounded-full cursor-pointer border border-gray-300"
                               style={{ backgroundColor: image.color.hex }}
                             />
                           </button>
@@ -280,7 +341,7 @@ const LeftNavigation = () => {
                                     );
                                     setLogoTextureFromState(logoType.id);
                                   }}
-                                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                                  className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
                                   title="Move up"
                                 >
                                   <ArrowDownIcon className="h-4 w-4 text-gray-500" />
@@ -314,7 +375,7 @@ const LeftNavigation = () => {
                                     );
                                     setLogoTextureFromState(logoType.id);
                                   }}
-                                  className="p-1 rounded hover:bg-gray-100 transition-colors"
+                                  className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
                                   title="Move down"
                                 >
                                   <ArrowUpIcon className="h-4 w-4 text-gray-500" />
@@ -327,7 +388,7 @@ const LeftNavigation = () => {
                               e.stopPropagation();
                               handleImageDelete(logoType.id, image.id);
                             }}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                            className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
                           >
                             <TrashIcon className="h-4 w-4 text-gray-500" />
                           </button>

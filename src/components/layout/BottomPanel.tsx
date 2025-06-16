@@ -33,7 +33,8 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     bottomPanelHeight,
     setBottomPanelHeight,
     setLogoTexture,
-    setLogoTextureFromState,  
+    setLogoTextureFromState,
+    clearLogoSelection
   } = useBikeStore();
 
   // Constants
@@ -43,7 +44,6 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
   const availableHeight = bottomPanelHeight - 80;
   const availableWidth = Math.min(1000, typeof window !== 'undefined' ? window.innerWidth - 80 : 1200);
-  const displayAspectRatio = aspectRatio;
   
   // Calculate scale while maintaining aspect ratio
   const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
@@ -240,8 +240,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   };
 
   const handleClose = () => {
-    setSelectedLogoImageId(null);
-    setShowBottomPanel(false);
+    clearLogoSelection();
   };
 
   if (!isClient) {
@@ -263,10 +262,10 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
           onMouseDown={handleMouseDown}
         />
         
-        <div className="flex items-center justify-between px-4 py- border-b border-gray-200 mt-1">
+        <div className="flex items-center justify-between px-4 py-3 mt-1">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-medium text-gray-800">
-              Logo Editor - {selectedLogoType?.replace('_', ' ')}
+              Logo Editor - {selectedLogoType?.replaceAll('_', ' ')}
             </h3>
             {selectedLogoImageId && (
               <div className="text-xs text-gray-500">
@@ -276,7 +275,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
           </div>
           <button
             onClick={handleClose}
-            className="p-1 rounded hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
           >
             <XMarkIcon className="h-4 w-4 text-gray-600" />
           </button>

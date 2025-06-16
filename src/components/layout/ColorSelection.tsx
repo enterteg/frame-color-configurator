@@ -15,6 +15,7 @@ export default function ColorSelection() {
     forkColor,
     selectedLogoImageId,
     selectedLogoType,
+    logoTypes,
     closeColorSelection,
     setSelectedColorGroup,
     setFrameColor,
@@ -137,7 +138,7 @@ export default function ColorSelection() {
             </div>
             <button
               onClick={closeColorSelection}
-              className="p-1 rounded hover:bg-gray-100 transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <XMarkIcon className="h-4 w-4 text-gray-600" />
             </button>
@@ -145,7 +146,7 @@ export default function ColorSelection() {
      
           <div className="flex-1 overflow-y-auto">
             <div className="p-2">
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-4 gap-0.5">
                 {selectedGroup.colorIds.map((colorId) => {
                   const color = getColorById(colorId);
                   if (!color) return null;
@@ -154,11 +155,25 @@ export default function ColorSelection() {
                     <div key={color.code}>
                       <button
                         onClick={() => handleColorSelect(color)}
-                        className="w-full group hover:bg-gray-50 transition-colors p-1 rounded"
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          (colorSelectionType === 'frame' && color.code === frameColor.code) ||
+                          (colorSelectionType === 'fork' && color.code === forkColor.code) ||
+                          (colorSelectionType === 'logo' && selectedLogoImageId && selectedLogoType && 
+                           logoTypes[selectedLogoType].images.find((img: { id: string; color: RALColor }) => img.id === selectedLogoImageId)?.color.code === color.code)
+                            ? 'bg-blue-100 ring-2 ring-blue-500'
+                            : 'hover:bg-gray-100'
+                        }`}
                         title={`${color.code} - ${color.name}`}
                       >
                         <div
-                          className="w-16 h-16 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center"
+                          className={`w-14 h-14 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center ${
+                            (colorSelectionType === 'frame' && color.code === frameColor.code) ||
+                            (colorSelectionType === 'fork' && color.code === forkColor.code) ||
+                            (colorSelectionType === 'logo' && selectedLogoImageId && selectedLogoType && 
+                             logoTypes[selectedLogoType].images.find((img: { id: string; color: RALColor }) => img.id === selectedLogoImageId)?.color.code === color.code)
+                              ? 'ring-2 ring-blue-500'
+                              : ''
+                          }`}
                           style={{ backgroundColor: color.hex }}
                         >
                           <div className="flex flex-col items-center justify-center opacity-60">
