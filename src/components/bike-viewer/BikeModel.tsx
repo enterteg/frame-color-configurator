@@ -24,6 +24,7 @@ export default function BikeModel({
   const headTubeTexture = useBikeStore((s) => s.logoTypes.HEAD_TUBE.texture);
   const downTubeLeftTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_LEFT.texture);
   const downTubeRightTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_RIGHT.texture);
+  const tireWallColor = useBikeStore((s) => s.tireWallColor);
 
   // Collect all meshes from the scene
   const meshes: THREE.Mesh[] = [];
@@ -55,7 +56,20 @@ export default function BikeModel({
 
           // Set specific colors for rubber parts
           if (materialName === "tan_wall") {
-            material.color.set(0x8b4513); // Saddle brown
+            switch (tireWallColor) {
+              case 'black':
+                material.color.set(0x000000);
+                break;
+              case 'brown':
+                material.color.set(0x8b4513);
+                break;
+              case 'white':
+                material.color.set(0xcccccc);
+                break;
+              case 'light_brown':
+                material.color.set(0xf2dc8c); // Tan color
+                break;
+            }
           } else if (materialName === "tire") {
             material.color.set(0x1a1a1a); // Very dark gray
           }
@@ -127,7 +141,7 @@ export default function BikeModel({
         material.needsUpdate = true;
       }
     });
-  }, [headTubeTexture, downTubeLeftTexture, downTubeRightTexture, frameColor, forkColor, meshes]);
+  }, [headTubeTexture, downTubeLeftTexture, downTubeRightTexture, frameColor, forkColor, tireWallColor, meshes]);
 
   // // Handle mesh clicks
   const handleMeshClick = (mesh: THREE.Mesh, event: ThreeEvent<MouseEvent>) => {

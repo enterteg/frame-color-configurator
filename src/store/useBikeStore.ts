@@ -29,13 +29,14 @@ const TEXTURE_SIZE = 1024; // Always 1024×1024 regardless of logo type
 
 interface BikeState {
   // Navigation state
-  activeTab: 'frame' | 'fork' | 'logos' | null;
+  activeTab: 'frame' | 'fork' | 'logos' | 'tires' | null;
   navigationCollapsed: boolean;
   
   // Color state
   frameColor: RALColor;
   forkColor: RALColor;
   selectedLogoColor: string;
+  tireWallColor: 'black' | 'brown' | 'white' | 'light_brown';
   
   // Logo state - now supports multiple logo types with aspect ratios
   logoTypes: {
@@ -58,11 +59,12 @@ interface BikeState {
   colorSelectionType: 'frame' | 'fork' | 'logo' | null;
   
   // Actions
-  setActiveTab: (tab: 'frame' | 'fork' | 'logos' | null) => void;
+  setActiveTab: (tab: 'frame' | 'fork' | 'logos' | 'tires' | null) => void;
   toggleNavigationCollapsed: () => void;
   setFrameColor: (color: RALColor) => void;
   setForkColor: (color: RALColor) => void;
   setSelectedLogoColor: (color: string) => void;
+  setTireWallColor: (color: 'black' | 'brown' | 'white' | 'light_brown') => void;
   setSelectedLogoImageId: (imageId: string | null) => void;
   setSelectedLogoType: (logoType: LogoType | null) => void;
   setRightPanelOpen: (open: boolean) => void;
@@ -116,7 +118,8 @@ const createDefaultLogoImage = (logoType: string, aspectRatio: number, name: str
     y: canvasHeight / 2, // Center vertically
     scaleX: 1,
     scaleY: 1,
-    rotation: 0
+    rotation: 0,
+    zIndex: 0
   };
 };
 
@@ -127,6 +130,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   frameColor: DEFAULT_FRAME_COLOR,
   forkColor: DEFAULT_FORK_COLOR,
   selectedLogoColor: '#000000',
+  tireWallColor: 'brown',
   
   // Initialize logo types with proper canvas sizes and initial images
   logoTypes: {
@@ -195,6 +199,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   setForkColor: (color) => set({ forkColor: color }),
   
   setSelectedLogoColor: (color) => set({ selectedLogoColor: color }),
+  
+  setTireWallColor: (color) => set({ tireWallColor: color }),
   
   setSelectedLogoImageId: (imageId) => set({ 
     selectedLogoImageId: imageId,

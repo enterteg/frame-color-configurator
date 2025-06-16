@@ -18,6 +18,7 @@ const LeftNavigation = () => {
     activeTab,
     frameColor,
     forkColor,
+    tireWallColor,
     selectedLogoType,
     logoTypes,
     selectedLogoImageId,
@@ -31,7 +32,8 @@ const LeftNavigation = () => {
     setLogoTextureFromState,
     updateLogoTypeImages,
     saveConfiguration,
-    loadConfiguration
+    loadConfiguration,
+    setTireWallColor
   } = useBikeStore();
 
   // Logo types configuration
@@ -143,7 +145,11 @@ const LeftNavigation = () => {
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex flex-1 items-center justify-between">
-          <h2 className={`text-xl text-black font-semibold ${navigationCollapsed ? 'hidden' : ''}`}>
+          <h2
+            className={`text-xl text-black font-semibold ${
+              navigationCollapsed ? "hidden" : ""
+            }`}
+          >
             Frame Configurator
           </h2>
           <div className="flex gap-1">
@@ -217,6 +223,51 @@ const LeftNavigation = () => {
           </div>
         </button>
 
+        {/* Tires */}
+        <div className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 hover:bg-gray-50">
+          <div className="flex-1 text-left">
+            <div className="font-medium text-gray-800">TIRES</div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTireWallColor("black")}
+              className={`w-8 h-8 rounded-full border-2 ${
+                tireWallColor === "black"
+                  ? "border-blue-500"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: "#000000" }}
+            />
+            <button
+              onClick={() => setTireWallColor("brown")}
+              className={`w-8 h-8 rounded-full border-2 ${
+                tireWallColor === "brown"
+                  ? "border-blue-500"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: "#8b4513" }}
+            />
+            <button
+              onClick={() => setTireWallColor("light_brown")}
+              className={`w-8 h-8 rounded-full border-2 ${
+                tireWallColor === "light_brown"
+                  ? "border-blue-500"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: "#f2dc8c" }}
+            />
+            <button
+              onClick={() => setTireWallColor("white")}
+              className={`w-8 h-8 rounded-full border-2 ${
+                tireWallColor === "white"
+                  ? "border-blue-500"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: "#ffffff" }}
+            />
+          </div>
+        </div>
+
         {/* Logos */}
         <button
           onClick={handleLogosClick}
@@ -242,7 +293,9 @@ const LeftNavigation = () => {
               <div
                 onClick={() => handleLogoTypeClick(logoType.id)}
                 className={`px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors ${
-                  selectedLogoType === logoType.id ? 'bg-gray-100' : 'hover:bg-gray-50'
+                  selectedLogoType === logoType.id
+                    ? "bg-gray-100"
+                    : "hover:bg-gray-50"
                 }`}
               >
                 <div className="flex-1 flex flex-row min-w-0 justify-between items-center">
