@@ -13,35 +13,43 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       {/* Store Display Lighting Setup */}
       {/* Key Light - Main directional light from top-front */}
       <directionalLight
-        position={[5, 10, 5]}
-        intensity={1.5}
+        position={[4, 8, 4]}
+        intensity={0.4}
         color="#ffffff"
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        castShadow
       />
 
       {/* Fill Light - Softer light from the side */}
       <directionalLight
-        position={[-3, 5, 2]}
-        intensity={0.8}
+        position={[-3, 4, 2]}
+        intensity={0.3}
         color="#ffffff"
         visible
       />
 
-      {/* Ambient Light - Reduced for more natural colors */}
-      <ambientLight intensity={0.8} color="#ffffff" />
-
-      {/* Environment for realistic reflections */}
-      <Environment preset="city" background={false} />
-
-      {/* Additional light for environment compensation */}
-      <hemisphereLight
-        intensity={1}
-        color="white"
-        groundColor="#f0f0f0"
+      {/* Rim Light - For edge definition */}
+      <directionalLight
+        position={[0, 2, -4]}
+        intensity={0.2}
+        color="#ffffff"
         visible
       />
 
+      {/* Ambient Light - Reduced for better color saturation */}
+      <ambientLight intensity={0.3} color="#ffffff" />
+
+      {/* Environment for realistic reflections */}
+      <Environment background={false} files="/scenes/studio.exr" backgroundIntensity={0.5} />
+
+      {/* Hemisphere Light - For natural sky/ground color influence */}
+      <hemisphereLight
+        intensity={0.4}
+        color="#ffffff"
+        groundColor="#f5f5f5"
+        visible
+      />
 
       {children}
 

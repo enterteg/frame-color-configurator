@@ -15,8 +15,6 @@ export default function BikeCustomizer() {
   // Get all state from Zustand store
   const {
     showBottomPanel,
-    openColorSelection,
-    setActiveTab,
     initializeAllLogoTextures
   } = useBikeStore();
 
@@ -24,18 +22,6 @@ export default function BikeCustomizer() {
     initializeAllLogoTextures();
   }, [initializeAllLogoTextures]);
 
-  const textureUrl = "/textures/loca_half.png";
-
-  // Handle tab clicks
-  const handleTabClick = (tab: 'frame' | 'fork' | 'logos') => {
-    if (tab === 'frame' || tab === 'fork') {
-      // Open color selection for frame/fork
-      openColorSelection(tab);
-    } else {
-      // Just set active tab for logos
-      setActiveTab(tab);
-    }
-  };
 
   return (
     <>
@@ -47,7 +33,6 @@ export default function BikeCustomizer() {
             <BikeViewer3D 
               combinedModelPath="/models/bikeframe_full.glb"
               className="w-full h-full"
-              onPartClick={handleTabClick}
             />
           </div>
         }

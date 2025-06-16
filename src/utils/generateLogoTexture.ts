@@ -83,6 +83,7 @@ export async function generateLogoTexture({
   const texture = new THREE.CanvasTexture(canvas);
   texture.flipY = false;
   texture.needsUpdate = true;
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   return texture;
 } 

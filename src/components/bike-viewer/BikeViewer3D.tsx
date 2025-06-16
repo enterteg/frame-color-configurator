@@ -16,7 +16,6 @@ interface BikeViewer3DProps {
 export default function BikeViewer3D({ 
   combinedModelPath = '/models/bike.glb',
   className = '',
-  onPartClick
 }: BikeViewer3DProps) {
 
   return (
@@ -33,15 +32,14 @@ export default function BikeViewer3D({
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
-          toneMapping: THREE.NoToneMapping,
-          toneMappingExposure: 1.0
+          // toneMapping: THREE.NoToneMapping,
+          // toneMappingExposure: 1.0
         }}
       >
         <SceneSetup>
           <Suspense fallback={<LoadingFallback />}>
             <BikeModel
               modelPath={combinedModelPath}
-              onPartClick={onPartClick}
             />
           </Suspense>
         </SceneSetup>
