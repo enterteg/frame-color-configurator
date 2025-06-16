@@ -3,28 +3,27 @@
 import React, { useRef, useEffect } from 'react';
 import { useGLTF, Center } from '@react-three/drei';
 import * as THREE from 'three';
+import { ThreeEvent } from '@react-three/fiber';
+import { useBikeStore } from '../../store/useBikeStore';
 
 export interface BikeModelProps {
-  frameColor?: string;
-  forkColor?: string;
   modelPath: string;
-  canvasTexture: THREE.Texture | null;
-  offsetX?: number;
-  offsetY?: number;
-  repeatX: number;
-  repeatY: number;
   onPartClick?: (part: 'frame' | 'fork' | 'logos') => void;
-  activeTab?: 'frame' | 'fork' | 'logos';
 }
 
 export default function BikeModel({ 
-  frameColor = '#888888', 
-  forkColor = '#666666', 
   modelPath,
-  canvasTexture
-}: BikeModelProps & { canvasTexture: THREE.Texture | null, offsetX?: number, offsetY?: number }) {
+  onPartClick,
+}: BikeModelProps) {
   const { scene } = useGLTF(modelPath);
   const modelRef = useRef<THREE.Group>(null);
+  
+  // Only subscribe to textures and colors, not the full logoTypes object
+  const frameColor = useBikeStore((s) => s.frameColor);
+  const forkColor = useBikeStore((s) => s.forkColor);
+  const headTubeTexture = useBikeStore((s) => s.logoTypes.HEAD_TUBE.texture);
+  const downTubeLeftTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_LEFT.texture);
+  const downTubeRightTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_RIGHT.texture);
 
   // Collect all meshes from the scene
   const meshes: THREE.Mesh[] = [];
@@ -34,58 +33,116 @@ export default function BikeModel({
     }
   });
 
-  // Apply color/material logic whenever canvasTexture, baseTexture, or colors change
+  // Apply color/material logic whenever textures or colors change
   useEffect(() => {
     meshes.forEach((mesh) => {
       const material: THREE.Material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
       if (material instanceof THREE.MeshStandardMaterial) {
-        material.metalness = 0.85;
+        material.metalness = 0.45;
         material.roughness = 0.1;
         material.envMapIntensity = 1.0;
 
         const objectName = mesh.name.toLowerCase();
+        const materialName = material.name.toLowerCase();
 
-        if (objectName.includes("frame")) {
-          material.color.set(frameColor);
-        } else if (objectName.includes("fork")) {
-          material.color.set(forkColor);
+        if (materialName === "tire" || materialName === "tan_wall") {
+          // Rubber material properties
+          material.metalness = 0;
+          material.roughness = 0.9;
+          material.envMapIntensity = 0.1;
+          material.emissiveIntensity = 0;
+          material.emissive.set(0x000000);
+
+          // Set specific colors for rubber parts
+          if (materialName === "tan_wall") {
+            material.color.set(0x8b4513); // Saddle brown
+          } else if (materialName === "tire") {
+            material.color.set(0x1a1a1a); // Very dark gray
+          }
+
+          material.needsUpdate = true;
+        } else if (materialName.includes("rim")) {
+          // Metal rim material properties
+          material.metalness = 0.8;
+          material.roughness = 0.2;
+          material.envMapIntensity = 0.5;
+          material.emissiveIntensity = 0;
+          material.emissive.set(0x000000);
+          material.color.set(0x333333); // Dark gray for rim
+          material.needsUpdate = true;
         }
         
-        if (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT") {
-          if (canvasTexture) {
-            // Use the custom logo texture (from Konva)
-
-            material.map = canvasTexture;
+        if (objectName.includes("frame")) {
+          material.color.set(frameColor.hex);
+        } else if (objectName.includes("fork")) {
+          material.color.set(forkColor.hex);
+        }
+        
+        // Handle specific logo material textures
+        if (material.name === "TOP_TUBE") {
+          if (headTubeTexture) {
+            material.map = headTubeTexture;
             material.polygonOffset = true;
             material.polygonOffsetFactor = -1;
             material.transparent = true;
             material.alphaTest = 0.2;
-            // Remove emissive for texture materials to avoid washing out colors
+          } else {
+            material.map = null;
+            material.color.set(frameColor.hex);
+            material.emissive.set(frameColor.hex);
+            material.emissiveIntensity = 0.1;
+          }
+        } 
+
+        if (material.name === "DOWN_TUBE_LEFT") {
+          if (downTubeLeftTexture) {
+            material.map = downTubeLeftTexture;
+            material.polygonOffset = true;
+            material.polygonOffsetFactor = -1;
+            material.transparent = true;
+            material.alphaTest = 0.2;
+          } else {
+            material.map = null;
+            material.color.set(frameColor.hex);
+            material.emissive.set(frameColor.hex);
+            material.emissiveIntensity = 0.1;
+          }
+        } else if (material.name === "DOWN_TUBE_RIGHT") {
+          if (downTubeRightTexture) {
+            material.map = downTubeRightTexture;
+            material.polygonOffset = true;
+            material.polygonOffsetFactor = -1;
+            material.transparent = true;
+            material.alphaTest = 0.2;
+          } else {
+            material.map = null;
+            material.color.set(frameColor.hex);
+            material.emissive.set(frameColor.hex);
+            material.emissiveIntensity = 0.1;
           }
         } else {
-          // For other materials, keep normal emissive settings
           material.emissive.set(material.color.getHex());
           material.emissiveIntensity = 0.1;
         }
         material.needsUpdate = true;
       }
     });
-  }, [canvasTexture, frameColor, forkColor, meshes]);
+  }, [headTubeTexture, downTubeLeftTexture, downTubeRightTexture, frameColor, forkColor, meshes]);
 
   // // Handle mesh clicks
-  // const handleMeshClick = (mesh: THREE.Mesh, event: ThreeEvent<MouseEvent>) => {
-  //   if (!onPartClick) return;
+  const handleMeshClick = (mesh: THREE.Mesh, event: ThreeEvent<MouseEvent>) => {
+    if (!onPartClick) return;
     
-  //   event.stopPropagation();
-  //   const objectName = mesh.name.toLowerCase();
-  //   const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    event.stopPropagation();
+    const objectName = mesh.name.toLowerCase();
+    const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
     
-  //   if (objectName.includes("frame") || (material && 'name' in material && (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT"))) {
-  //     onPartClick('frame');
-  //   } else if (objectName.includes("fork")) {
-  //     onPartClick('fork');
-  //   }
-  // };
+    if (objectName.includes("frame") || (material && 'name' in material && (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT"))) {
+      onPartClick('frame');
+    } else if (objectName.includes("fork")) {
+      onPartClick('fork');
+    }
+  };
 
   return (
     <Center>
@@ -95,7 +152,6 @@ export default function BikeModel({
           const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
           const isFrame = objectName.includes("frame") || (material && 'name' in material && (material.name === "DOWN_TUBE_LEFT" || material.name === "DOWN_TUBE_RIGHT"));
           const isFork = objectName.includes("fork");
-          
           return (
             <mesh
               key={mesh.uuid}
@@ -104,7 +160,7 @@ export default function BikeModel({
               position={mesh.position}
               scale={mesh.scale}
               receiveShadow
-              // onClick={(event) => handleMeshClick(mesh, event)}
+              onClick={(event) => handleMeshClick(mesh, event)}
               onPointerOver={() => {
                 if (isFrame || isFork) {
                   document.body.style.cursor = 'pointer';

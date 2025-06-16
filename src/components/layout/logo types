@@ -1,0 +1,35 @@
+
+type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_RIGHT' | 'DOWN_TUBE_LEFT'
+logos: [
+  {
+    type: HEAD_TUBE,
+    images: [],
+    canvasSize: {
+      width: 400,
+      height: 400,
+    },
+  },
+  {
+    type: DOWN_TUBE_RIGHT,
+    images: [],
+    canvasSize: {
+      width: 1000,
+      height: 100,
+    },
+  },
+  { 
+    type: DOWN_TUBE_LEFT,
+    images: [],
+    canvasSize: {
+      width: 1000,
+      height: 100,
+    },
+  }
+]
+
+we want to support different canvas sizes for different logo types
+konva canvas should handle resolution of 2048/2048 but should be scaled down to canvasSize
+so if imported image is in reality 2048/2048 it should not loose quality - only preview should be scaled down
+resulting texture is always 2048/2048
+
+so we need to  keep track of currently selecet logo type to update canvas size

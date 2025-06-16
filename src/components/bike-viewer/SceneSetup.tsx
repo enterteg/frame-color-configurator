@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { OrbitControls, Environment } from '@react-three/drei';
-import { degToRad } from 'three/src/math/MathUtils.js';
+import { Environment, OrbitControls } from '@react-three/drei';
 
 interface SceneSetupProps {
   children: React.ReactNode;
@@ -15,7 +14,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       {/* Key Light - Main directional light from top-front */}
       <directionalLight
         position={[5, 10, 5]}
-        intensity={3}
+        intensity={1.5}
         color="#ffffff"
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -24,35 +23,34 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       {/* Fill Light - Softer light from the side */}
       <directionalLight
         position={[-3, 5, 2]}
-        intensity={1.5}
+        intensity={0.8}
         color="#ffffff"
+        visible
       />
 
-      {/* Ambient Light - Increased for brighter colors */}
-      <ambientLight intensity={2} color="#ffffff" />
+      {/* Ambient Light - Reduced for more natural colors */}
+      <ambientLight intensity={0.8} color="#ffffff" />
 
       {/* Environment for realistic reflections */}
-      <Environment preset="studio" background={false} />
+      <Environment preset="city" background={false} />
 
       {/* Additional light for environment compensation */}
       <hemisphereLight
-        intensity={4}
-        color="#ffffff"
-        groundColor="#ffffff"
+        intensity={1}
+        color="white"
+        groundColor="#f0f0f0"
+        visible
       />
 
+
       {children}
-      {/* <mesh receiveShadow rotation={[degToRad(-90), 0, 0]} position={[0, -10, -10]}>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh> */}
-      {/* Camera controls */}
+
       <OrbitControls
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
-        minDistance={10}
-        maxDistance={100}
+        minDistance={1}
+        maxDistance={3}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={-Infinity}

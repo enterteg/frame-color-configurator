@@ -4,7 +4,7 @@ import React from 'react';
 import { ChevronDownIcon, ChevronUpIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor } from '../../utils/colorUtils';
-import { getColorById } from '../../data/ralColors';
+import { LogoType } from '../../types/bike';
 
 export default function LeftNavigation() {
   const [logosExpanded, setLogosExpanded] = React.useState(false);
@@ -20,15 +20,16 @@ export default function LeftNavigation() {
     setActiveTab,
     setSelectedLogoType,
     openColorSelection,
-    addLogoImage,
+    addLogoImageFromFile,
     removeLogoImage,
     setSelectedLogoImageId
   } = useBikeStore();
 
-  // Logo types
+  // Logo types configuration
   const logoTypes_CONFIG = [
-    { id: 'DOWN_TUBE', name: 'Down Tube' },
-    { id: 'HEAD_TUBE', name: 'Head Tube' }
+    { id: 'DOWN_TUBE_LEFT' as LogoType, name: 'Down Tube Left' },
+    { id: 'DOWN_TUBE_RIGHT' as LogoType, name: 'Down Tube Right' },
+    { id: 'HEAD_TUBE' as LogoType, name: 'Head Tube' }
   ] as const;
 
   const handleFrameClick = () => {
@@ -46,56 +47,18 @@ export default function LeftNavigation() {
     setLogosExpanded(!logosExpanded);
   };
 
-  const handleLogoTypeSelect = (logoType: 'DOWN_TUBE' | 'HEAD_TUBE') => {
+  const handleLogoTypeSelect = (logoType: LogoType) => {
     setSelectedLogoType(logoType);
   };
 
-  const handleImageImport = (logoType: 'DOWN_TUBE' | 'HEAD_TUBE') => {
+  const handleImageImport = (logoType: LogoType) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/png,image/jpg,image/jpeg';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const url = event.target?.result as string;
-          
-          // Load image to get dimensions for initial scaling
-          const img = new Image();
-          img.onload = () => {
-            // Calculate initial scale to fit within constraints (600px width or 50px height)
-            const maxWidth = 600;
-            const maxHeight = 50;
-            
-            let scaleX = 1;
-            let scaleY = 1;
-            
-            if (img.width > maxWidth) {
-              scaleX = maxWidth / img.width;
-            }
-            
-            if (img.height > maxHeight) {
-              scaleY = maxHeight / img.height;
-            }
-            
-            // Use the smaller scale factor to ensure both constraints are met
-            const initialScale = Math.min(scaleX, scaleY);
-            
-            addLogoImage(logoType, {
-              name: file.name,
-              url,
-              color: getColorById('9005') || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
-              x: 50,
-              y: 25,
-              scaleX: initialScale,
-              scaleY: initialScale,
-              rotation: 0
-            });
-          };
-          img.src = url;
-        };
-        reader.readAsDataURL(file);
+        addLogoImageFromFile(logoType, file);
       }
     };
     input.click();
@@ -105,7 +68,7 @@ export default function LeftNavigation() {
     setSelectedLogoImageId(imageId);
   };
 
-  const handleImageDelete = (logoType: 'DOWN_TUBE' | 'HEAD_TUBE', imageId: string) => {
+  const handleImageDelete = (logoType: LogoType, imageId: string) => {
     removeLogoImage(logoType, imageId);
   };
 
@@ -215,7 +178,7 @@ export default function LeftNavigation() {
                 >
                   <div className="w-8 h-8 rounded border border-gray-300 bg-white mr-3 flex items-center justify-center">
                     <span className="text-xs font-medium text-gray-600">
-                      {logoType.id === "DOWN_TUBE" ? "DT" : "HT"}
+                      {logoType.id === "DOWN_TUBE_LEFT" ? "DT Left" : logoType.id === "DOWN_TUBE_RIGHT" ? "DT Right" : "HT"}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">

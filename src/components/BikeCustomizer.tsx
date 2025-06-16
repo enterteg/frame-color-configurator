@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BikeViewer3D } from './bike-viewer';
 import { useBikeStore } from '../store/useBikeStore';
 
@@ -13,20 +13,17 @@ import BottomPanel from './layout/BottomPanel';
 export default function BikeCustomizer() {
   // Get all state from Zustand store
   const {
-    frameColor,
-    forkColor,
     showBottomPanel,
-    logoTypes,
-    activeTab,
     openColorSelection,
-    setActiveTab
+    setActiveTab,
+    initializeAllLogoTextures
   } = useBikeStore();
 
-  const textureUrl = "/textures/loca_half.png";
+  useEffect(() => {
+    initializeAllLogoTextures();
+  }, [initializeAllLogoTextures]);
 
-  // Only show logo texture when frame/fork tabs are NOT active
-  const shouldShowLogos = activeTab !== 'frame' && activeTab !== 'fork';
-  const currentLogoTexture = shouldShowLogos ? logoTypes.DOWN_TUBE.texture : null;
+  const textureUrl = "/textures/loca_half.png";
 
   // Handle tab clicks
   const handleTabClick = (tab: 'frame' | 'fork' | 'logos') => {
@@ -46,12 +43,8 @@ export default function BikeCustomizer() {
         mainContent={
           <div className={`w-full relative transition-all duration-300 h-screen`}>
             <BikeViewer3D 
-              selectedColors={[frameColor, forkColor]}
-              combinedModelPath="/models/frame_tube.glb"
+              combinedModelPath="/models/bikeframe_full.glb"
               className="w-full h-full"
-              canvasTexture={currentLogoTexture}
-              offsetX={0}
-              offsetY={0}
               onPartClick={handleTabClick}
             />
           </div>
@@ -60,7 +53,7 @@ export default function BikeCustomizer() {
         bottomPanelHeight={showBottomPanel ? 200 : 0}
       />
       <ColorSelection />
-      <BottomPanel isOpen={showBottomPanel} baseTextureUrl={textureUrl} />
+      <BottomPanel isOpen={showBottomPanel} />
     </>
   );
 } 

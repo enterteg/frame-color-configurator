@@ -25,9 +25,11 @@ export interface LogoImage {
   rotation: number;
   // Color (unified as RALColor)
   color: RALColor;
+  // Processed image for texture generation
+  processedImage?: HTMLImageElement;
 }
 
-export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE';
+export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_LEFT' | 'DOWN_TUBE_RIGHT';
 
 export interface BikeConfiguration {
   colors: BikeColors;

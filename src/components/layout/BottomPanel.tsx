@@ -3,21 +3,25 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
 import Konva from 'konva';
-import * as THREE from 'three';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
+import { processImageWithTransformations } from '../../utils/generateLogoTexture';
+import { generateLogoTexture } from '../../utils/generateLogoTexture';
 
 interface BottomPanelProps {
   isOpen: boolean;
-  baseTextureUrl: string;
 }
 
-export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps) {
+export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const stageRef = useRef<Konva.Stage>(null);
-  const imageLayerRef = useRef<Konva.Layer>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const [isClient, setIsClient] = useState(false);
-  const [processedImages, setProcessedImages] = useState<Map<string, HTMLImageElement>>(new Map());
+  const [isResizing, setIsResizing] = useState(false);
+  const [maxPanelHeight, setMaxPanelHeight] = useState(600); // Fallback for SSR
+  const [processedImages, setProcessedImages] = useState<Record<string, HTMLImageElement>>({});
+  const textureUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const processingRef = useRef(false);
+  const lastProcessedRef = useRef<Record<string, string>>({});
 
   const {
     selectedLogoType,
@@ -25,290 +29,206 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     selectedLogoImageId,
     setSelectedLogoImageId,
     updateLogoImage,
+    setShowBottomPanel,
+    bottomPanelHeight,
+    setBottomPanelHeight,
     setLogoTexture,
-    setShowBottomPanel
+    setLogoTextureFromState,  
   } = useBikeStore();
 
-  // Canvas dimensions - actual canvas is 1024x100 (for texture)
-  const CANVAS_WIDTH = 1024;
-  const CANVAS_HEIGHT = 100;
-  const DISPLAY_WIDTH = 1000;  // 50% scale for display
-  const DISPLAY_HEIGHT = 100;
-  const TEXTURE_SIZE = 1024;
+  // Constants
+  const TEXTURE_SIZE = 1024; // Always 1024×1024 regardless of logo type
+  const aspectRatio = selectedLogoType ? logoTypes[selectedLogoType].aspectRatio : 1;
+  const LOGICAL_CANVAS_WIDTH = TEXTURE_SIZE;
+  const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
+  const availableHeight = bottomPanelHeight - 80;
+  const availableWidth = Math.min(1000, typeof window !== 'undefined' ? window.innerWidth - 80 : 1200);
+  const displayAspectRatio = aspectRatio;
+  let visualScale;
+  if (displayAspectRatio > 1) {
+    const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
+    const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
+    visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
+  } else {
+    const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
+    const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
+    visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
+  }
+  visualScale = Math.max(visualScale, 0.3);
+  const VISUAL_DISPLAY_WIDTH = LOGICAL_CANVAS_WIDTH * visualScale;
+  const VISUAL_DISPLAY_HEIGHT = LOGICAL_CANVAS_HEIGHT * visualScale;
+  const MIN_PANEL_HEIGHT = 200;
 
-  // Ensure we're on the client side
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== 'undefined') {
+      setMaxPanelHeight(window.innerHeight * 0.8);
+      const handleResize = () => {
+        setMaxPanelHeight(window.innerHeight * 0.8);
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
   }, []);
 
-  // Get current images for the selected logo type (default to DOWN_TUBE if none selected)
-  const effectiveLogoType: 'DOWN_TUBE' | 'HEAD_TUBE' = selectedLogoType || 'DOWN_TUBE';
-  const currentImages = logoTypes[effectiveLogoType].images;
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true);
+    e.preventDefault();
+  }, []);
 
-  // Create a dependency that changes when any image color changes
-  const imageColorsHash = currentImages.map(img => `${img.id}:${img.color}`).join('|');
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing || typeof window === 'undefined') return;
+    const newHeight = window.innerHeight - e.clientY;
+    const constrainedHeight = Math.max(MIN_PANEL_HEIGHT, Math.min(maxPanelHeight, newHeight));
+    setBottomPanelHeight(constrainedHeight);
+  }, [isResizing, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
-  // Process images with color changes
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
   useEffect(() => {
-    if (!isClient || currentImages.length === 0) return;
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp]);
 
-    const processImagesAsync = async () => {
-      const newProcessedImages = new Map<string, HTMLImageElement>();
-
-      for (const imageItem of currentImages) {
-        try {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-            img.src = imageItem.url || imageItem.blobUrl || '';
-          });
-
-          // Create canvas for color processing with original dimensions (preserve resolution)
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d', { 
-            alpha: true, 
-            colorSpace: 'srgb',
-            willReadFrequently: true 
-          });
-          if (!ctx) continue;
-
-          canvas.width = img.width;
-          canvas.height = img.height;
-          
-          // Ensure proper color space and alpha handling
-          ctx.imageSmoothingEnabled = false;
-          ctx.globalCompositeOperation = 'source-over';
-          
-          ctx.drawImage(img, 0, 0);
-
-          // Apply color change - simplified approach with debug
-          console.log('Processing image:', imageItem.name, 'with color:', imageItem.color.hex);
-          
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-
-          // Parse target color with gamma correction
-          const rawColor = {
-            r: parseInt(imageItem.color.hex.slice(1, 3), 16),
-            g: parseInt(imageItem.color.hex.slice(3, 5), 16),
-            b: parseInt(imageItem.color.hex.slice(5, 7), 16)
-          };
-          
-          // Apply mild gamma correction to match CSS rendering
-          // Fine-tune between too dark (2.2) and too light (1/2.2)
-          const gammaCorrect = (value: number) => Math.round(Math.pow(value / 255, 1/1.5) * 255);
-          
-          const targetColor = {
-            r: gammaCorrect(rawColor.r),
-            g: gammaCorrect(rawColor.g),
-            b: gammaCorrect(rawColor.b)
-          };
-
-          console.log('Target color RGB:', targetColor);
-
-          let pixelsChanged = 0;
-          
-          // Simple replacement - replace all non-transparent pixels
-          for (let i = 0; i < data.length; i += 4) {
-            const alpha = data[i + 3];
-            
-            if (alpha > 0) { // If not transparent
-              // Replace with target color
-              data[i] = targetColor.r;     // Red
-              data[i + 1] = targetColor.g; // Green
-              data[i + 2] = targetColor.b; // Blue
-              // Keep original alpha
-              pixelsChanged++;
-            }
-          }
-
-          console.log('Pixels changed:', pixelsChanged);
-          ctx.putImageData(imageData, 0, 0);
-
-          // Create processed image with proper format and quality
-          const processedImg = new Image();
-          processedImg.crossOrigin = 'anonymous';
-          await new Promise((resolve) => {
-            processedImg.onload = resolve;
-            // Use PNG format explicitly with no quality loss
-            processedImg.src = canvas.toDataURL('image/png');
-          });
-
-          newProcessedImages.set(imageItem.id, processedImg);
-        } catch (error) {
-          console.warn('Error processing image:', imageItem.name, error);
-        }
+  useEffect(() => {
+    if (selectedLogoType && isClient) {
+      const suggestedHeight = Math.min(VISUAL_DISPLAY_HEIGHT + 120, maxPanelHeight);
+      const newHeight = Math.max(MIN_PANEL_HEIGHT, suggestedHeight);
+      if (bottomPanelHeight === 520 || Math.abs(bottomPanelHeight - newHeight) > 200) {
+        setBottomPanelHeight(newHeight);
       }
+    }
+  }, [selectedLogoType, isClient, VISUAL_DISPLAY_HEIGHT, bottomPanelHeight, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
-      setProcessedImages(newProcessedImages);
-    };
+  const currentImages = selectedLogoType ? logoTypes[selectedLogoType].images : [];
 
-    processImagesAsync();
-  }, [currentImages, isClient, imageColorsHash]);
+  // Auto-select first image when autoSelectFirstImage is true and no image is selected
+  useEffect(() => {
+    if (currentImages.length > 0 && !selectedLogoImageId) {
+      setSelectedLogoImageId(currentImages[0].id);
+    }
+  }, [currentImages, selectedLogoImageId, setSelectedLogoImageId]);
 
-  // Generate texture from Konva stage
-  const generateTexture = useCallback(() => {
-    if (isClient && imageLayerRef.current && effectiveLogoType) {
+  // Process images when they change
+  useEffect(() => {
+    if (!selectedLogoType || processingRef.current) return;
+
+    const processImages = async () => {
       try {
-        const layer = imageLayerRef.current;
-
-        // Create a temporary canvas for the full texture
-        const textureCanvas = document.createElement("canvas");
-        textureCanvas.width = TEXTURE_SIZE;
-        textureCanvas.height = TEXTURE_SIZE;
-        const textureCtx = textureCanvas.getContext("2d", {
-          alpha: true,
-          colorSpace: 'srgb'
-        });
-
-        if (textureCtx) {
-          // Set proper canvas settings for color accuracy
-          textureCtx.imageSmoothingEnabled = true;
-          textureCtx.imageSmoothingQuality = 'high';
-          textureCtx.globalCompositeOperation = 'source-over';
-          
-          const createAndSetTexture = () => {
-            // Get the layer canvas and draw it centered
-            const layerCanvas = layer.toCanvas({
-              pixelRatio: 1,
-              imageSmoothingEnabled: false
-            });
-            
-            // Debug: Check what color is in the Konva layer canvas
-            const layerCtx = layerCanvas.getContext('2d');
-            if (layerCtx) {
-              const layerImageData = layerCtx.getImageData(100, 50, 1, 1);
-              const layerPixel = layerImageData.data;
-              console.log('Konva layer pixel RGB:', {r: layerPixel[0], g: layerPixel[1], b: layerPixel[2]});
-            }
-            
-            const offsetX = 0;
-            const offsetY = 0;
-
-            textureCtx.drawImage(layerCanvas, offsetX, offsetY);
-
-            // Debug: Check what color we actually have in the final canvas
-            const debugImageData = textureCtx.getImageData(100, 50, 1, 1);
-            const debugPixel = debugImageData.data;
-            console.log('Final texture pixel RGB:', {r: debugPixel[0], g: debugPixel[1], b: debugPixel[2]});
-
-            // Create Three.js texture with proper settings
-            const texture = new THREE.CanvasTexture(textureCanvas);
-            texture.needsUpdate = true;
-            texture.flipY = false;
-            texture.format = THREE.RGBAFormat;
-            texture.type = THREE.UnsignedByteType;
-            texture.generateMipmaps = false;
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
-
-            setLogoTexture(effectiveLogoType, texture);
-          };
-
-          // For DOWN_TUBE, load and use the base texture, for others use white background
-          if (effectiveLogoType === "DOWN_TUBE") {
-            // Load the base texture image
-            const baseImage = new Image();
-            baseImage.crossOrigin = "anonymous";
-            baseImage.onload = () => {
-              // Draw the base texture
-              textureCtx.drawImage(baseImage, 0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-              createAndSetTexture();
-            };
-            baseImage.onerror = () => {
-              console.warn(
-                "Failed to load base texture, using white background"
-              );
-              textureCtx.fillStyle = "white";
-              textureCtx.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-              createAndSetTexture();
-            };
-            baseImage.src = baseTextureUrl;
-          } else {
-            // For HEAD_TUBE and others, use white background
-            textureCtx.fillStyle = "white";
-            textureCtx.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-            createAndSetTexture();
+        processingRef.current = true;
+        const newProcessedImages: Record<string, HTMLImageElement> = {};
+        for (const image of logoTypes[selectedLogoType].images) {
+          // Only process if the image hasn't been processed or if its color has changed
+          const imageKey = `${image.id}_${image.color.hex}`;
+          if (!lastProcessedRef.current[image.id] || lastProcessedRef.current[image.id] !== imageKey) {
+            const processedImage = await processImageWithTransformations(image);
+            newProcessedImages[image.id] = processedImage;
+            lastProcessedRef.current[image.id] = imageKey;
           }
+        }
+        if (Object.keys(newProcessedImages).length > 0) {
+          setProcessedImages(prev => ({ ...prev, ...newProcessedImages }));
         }
       } catch (error) {
-        console.warn("Error generating texture:", error);
+        console.error('Error processing images:', error);
+      } finally {
+        processingRef.current = false;
       }
-    }
-  }, [
-    isClient,
-    effectiveLogoType,
-    processedImages,
-    setLogoTexture,
-    selectedLogoType,
-    baseTextureUrl,
-  ]);
+    };
 
-  // Generate initial texture when component first loads with images
+    processImages();
+  }, [selectedLogoType, logoTypes]);
+
+  // Debounced texture update
+  const debouncedTextureUpdate = useCallback(() => {
+    if (textureUpdateTimeoutRef.current) {
+      clearTimeout(textureUpdateTimeoutRef.current);
+    }
+
+    textureUpdateTimeoutRef.current = setTimeout(async () => {
+      if (selectedLogoType) {
+        try {
+          const texture = await generateLogoTexture({
+            width: TEXTURE_SIZE,
+            height: TEXTURE_SIZE,
+            images: logoTypes[selectedLogoType].images.map(img => ({
+              ...img,
+              processedImage: processedImages[img.id]
+            }))
+          });
+          if (texture) {
+            setLogoTexture(selectedLogoType, texture);
+          }
+        } catch (error) {
+          console.error('Error generating texture:', error);
+        }
+      }
+    }, 100); // 100ms debounce
+  }, [selectedLogoType, logoTypes, processedImages, setLogoTexture]);
+
+  // Update texture when processed images change
   useEffect(() => {
-    if (isClient && currentImages.length > 0 && !logoTypes[effectiveLogoType].texture) {
-      // Generate initial texture if no texture exists yet
-      const timeoutId = setTimeout(() => {
-        generateTexture();
-      }, 500); // Longer delay to ensure Konva is ready
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isClient, effectiveLogoType, currentImages.length, logoTypes, generateTexture]);
-
-
-  // Update texture when processed images are ready or change
-  useEffect(() => {
-    if (processedImages.size > 0) {
-      // Add a small delay to ensure Konva has finished rendering
-      const timeoutId = setTimeout(() => {
-        generateTexture();
-      }, 150); // Slightly longer delay for color changes
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [processedImages, generateTexture, effectiveLogoType]);
-
-  // Handle selection
-  const handleImageClick = (id: string) => {
-    setSelectedLogoImageId(id);
-  };
+    debouncedTextureUpdate();
+    return () => {
+      if (textureUpdateTimeoutRef.current) {
+        clearTimeout(textureUpdateTimeoutRef.current);
+      }
+    };
+  }, [debouncedTextureUpdate]);
 
   // Update transformer when selection changes
   useEffect(() => {
-    if (transformerRef.current && selectedLogoImageId && stageRef.current) {
-      const selectedNode = stageRef.current.findOne(`#${selectedLogoImageId}`);
-      if (selectedNode) {
-        transformerRef.current.nodes([selectedNode]);
+    if (transformerRef.current && stageRef.current) {
+      if (selectedLogoImageId) {
+        const selectedNode = stageRef.current.findOne(`#${selectedLogoImageId}`);
+        if (selectedNode) {
+          transformerRef.current.nodes([selectedNode]);
+          transformerRef.current.getLayer()?.batchDraw();
+        } else {
+          transformerRef.current.nodes([]);
+          transformerRef.current.getLayer()?.batchDraw();
+        }
+      } else {
+        transformerRef.current.nodes([]);
         transformerRef.current.getLayer()?.batchDraw();
       }
-    } else if (transformerRef.current) {
-      transformerRef.current.nodes([]);
-      transformerRef.current.getLayer()?.batchDraw();
     }
   }, [selectedLogoImageId]);
 
-  const handleTransform = (id: string, newAttrs: Partial<{ x: number; y: number; scaleX: number; scaleY: number; rotation: number }>) => {
-    if (selectedLogoType) {
-      updateLogoImage(selectedLogoType, id, newAttrs);
-    }
-  };
+  // Handle logo transform
+  const handleTransform = useCallback((id: string, newAttrs: Partial<{ x: number; y: number; scaleX: number; scaleY: number; rotation: number }>) => {
+    if (!selectedLogoType) return;
+    
+    // Update the image in the store
+    updateLogoImage(selectedLogoType, id, newAttrs);
+    
+    // Trigger debounced texture update
+    debouncedTextureUpdate();
+  }, [selectedLogoType, updateLogoImage, debouncedTextureUpdate]);
 
-  // Real-time update during drag
-  const handleDrag = (id: string, e: Konva.KonvaEventObject<DragEvent>) => {
+  // Handle logo drag
+  const handleDrag = useCallback((id: string, e: Konva.KonvaEventObject<DragEvent>) => {
     const newAttrs = {
       x: e.target.x(),
       y: e.target.y()
     };
     handleTransform(id, newAttrs);
-    setTimeout(generateTexture, 0);
-  };
+  }, [handleTransform]);
 
-  // Real-time update during transform
-  const handleTransformChange = (id: string, e: Konva.KonvaEventObject<Event>) => {
+  // Handle logo transform change
+  const handleTransformChange = useCallback((id: string, e: Konva.KonvaEventObject<Event>) => {
     const node = e.target;
     const newAttrs = {
       x: node.x(),
@@ -318,7 +238,10 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
       rotation: node.rotation()
     };
     handleTransform(id, newAttrs);
-    setTimeout(generateTexture, 0);
+  }, [handleTransform]);
+
+  const handleImageClick = (id: string) => {
+    setSelectedLogoImageId(id);
   };
 
   const handleClose = () => {
@@ -330,99 +253,133 @@ export default function BottomPanel({ isOpen, baseTextureUrl }: BottomPanelProps
     return null;
   }
 
-  // Always render if there are images, just control visibility
-  const shouldShow = isOpen && currentImages.length > 0;
+  const shouldShow = isOpen
 
   return (
     <div 
-      className={`fixed bottom-0 left-0 right-0 h-[200px] bg-white border-t border-gray-200 shadow-lg z-40 transition-transform duration-300 ${
+      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 transition-transform duration-300 ${
         shouldShow ? 'translate-y-0' : 'translate-y-full'
       }`}
+      style={{ height: `${bottomPanelHeight}px` }}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <h3 className="text-sm font-medium text-gray-800">
-            Logo Editor - {selectedLogoType?.replace('_', ' ')}
-          </h3>
-          {selectedLogoImageId && (
-            <div className="text-xs text-gray-500">
-              Selected: {currentImages.find(img => img.id === selectedLogoImageId)?.name}
-            </div>
-          )}
-        </div>
-        <button
-          onClick={handleClose}
-          className="p-1 rounded hover:bg-gray-100 transition-colors"
-        >
-          <XMarkIcon className="h-4 w-4 text-gray-600" />
-        </button>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Stage
-            ref={stageRef}
-            width={DISPLAY_WIDTH}
-            height={DISPLAY_HEIGHT}
-            scaleX={DISPLAY_WIDTH / CANVAS_WIDTH}
-            scaleY={DISPLAY_HEIGHT / CANVAS_HEIGHT}
+        {/* Resize handle */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1 bg-gray-300 cursor-row-resize hover:bg-gray-400 transition-colors"
+          onMouseDown={handleMouseDown}
+        />
+        
+        <div className="flex items-center justify-between px-4 py- border-b border-gray-200 mt-1">
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-medium text-gray-800">
+              Logo Editor - {selectedLogoType?.replace('_', ' ')}
+            </h3>
+            {selectedLogoImageId && (
+              <div className="text-xs text-gray-500">
+                Selected: {currentImages.find(img => img.id === selectedLogoImageId)?.name}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded hover:bg-gray-100 transition-colors"
           >
-            <Layer ref={imageLayerRef}>
-              {currentImages.map((imageItem) => {
-                const processedImage = processedImages.get(imageItem.id);
-                if (!processedImage) return null;
-                
-                return (
-                  <KonvaImage
-                    key={imageItem.id}
-                    id={imageItem.id}
-                    image={processedImage}
-                    x={imageItem.x}
-                    y={imageItem.y}
-                    scaleX={imageItem.scaleX}
-                    scaleY={imageItem.scaleY}
-                    rotation={imageItem.rotation}
-                    draggable
-                    onClick={() => handleImageClick(imageItem.id)}
-                    onTap={() => handleImageClick(imageItem.id)}
-                    onDragMove={(e) => handleDrag(imageItem.id, e)}
-                    onDragEnd={(e) => {
-                      handleTransform(imageItem.id, {
-                        x: e.target.x(),
-                        y: e.target.y(),
-                      });
-                    }}
-                    onTransform={(e) => handleTransformChange(imageItem.id, e)}
-                    onTransformEnd={(e) => {
-                      const node = e.target;
-                      handleTransform(imageItem.id, {
-                        x: node.x(),
-                        y: node.y(),
-                        scaleX: node.scaleX(),
-                        scaleY: node.scaleY(),
-                        rotation: node.rotation(),
-                      });
-                    }}
-                  />
-                );
-              })}
-            </Layer>
+            <XMarkIcon className="h-4 w-4 text-gray-600" />
+          </button>
+        </div>
 
-            {/* Transformer Layer - separate from image layer */}
-            <Layer>
-              <Transformer
-                ref={transformerRef}
-                borderEnabled={false}
-                anchorStroke="#0066CC"
-                anchorFill="#0066CC"
-                anchorSize={6}
-                borderStroke="#0066CC"
-                borderStrokeWidth={1}
-              />
-            </Layer>
-          </Stage>
+        <div className="flex-1 flex items-center justify-center p-4" style={{ height: `${bottomPanelHeight - 60}px` }}>
+          <div 
+            className="border border-gray-300 rounded-lg overflow-hidden shadow-sm"
+            style={{ 
+              width: `${VISUAL_DISPLAY_WIDTH}px`,
+              height: `${VISUAL_DISPLAY_HEIGHT}px`,
+              maxWidth: '100%',
+              maxHeight: '100%'
+            }}
+          >
+            <div
+              style={{
+                transform: `scale(${visualScale})`,
+                transformOrigin: 'top left',
+                width: `${LOGICAL_CANVAS_WIDTH}px`,
+                height: `${LOGICAL_CANVAS_HEIGHT}px`
+              }}
+            >
+              <Stage
+                ref={stageRef}
+                width={LOGICAL_CANVAS_WIDTH}
+                height={LOGICAL_CANVAS_HEIGHT}
+              >
+                <Layer>
+                  {currentImages.map((imageItem) => {
+                    const processedImage = processedImages[imageItem.id];
+                    return (
+                      <KonvaImage
+                        key={imageItem.id}
+                        id={imageItem.id}
+                        image={processedImage}
+                        x={imageItem.x}
+                        y={imageItem.y}
+                        scaleX={imageItem.scaleX ?? 1}
+                        scaleY={imageItem.scaleY ?? 1}
+                        rotation={imageItem.rotation}
+                        offsetX={processedImage ? processedImage.width / 2 : 0}
+                        offsetY={processedImage ? processedImage.height / 2 : 0}
+                        draggable
+                        onClick={() => handleImageClick(imageItem.id)}
+                        onTap={() => handleImageClick(imageItem.id)}
+                        onDragMove={(e) => handleDrag(imageItem.id, e)}
+                        onDragEnd={(e) => {
+                          handleTransform(imageItem.id, {
+                            x: e.target.x(),
+                            y: e.target.y(),
+                          });
+                        }}
+                        onTransform={(e) => handleTransformChange(imageItem.id, e)}
+                        onTransformEnd={(e) => {
+                          const node = e.target;
+                          handleTransform(imageItem.id, {
+                            x: node.x(),
+                            y: node.y(),
+                            scaleX: node.scaleX(),
+                            scaleY: node.scaleY(),
+                            rotation: node.rotation(),
+                          });
+                        }}
+                      />
+                    );
+                  })}
+                </Layer>
+                <Layer>
+                  <Transformer
+                    ref={transformerRef}
+                    borderEnabled={true}
+                    anchorStroke="#0066CC"
+                    anchorFill="#FFFFFF"
+                    anchorStrokeWidth={2}
+                    anchorSize={8}
+                    borderStroke="#0066CC"
+                    borderStrokeWidth={2}
+                    borderDash={[4, 4]}
+                    keepRatio={false}
+                    enabledAnchors={[
+                      'top-left',
+                      'top-center', 
+                      'top-right',
+                      'middle-right',
+                      'bottom-right',
+                      'bottom-center',
+                      'bottom-left',
+                      'middle-left'
+                    ]}
+                    rotateEnabled={true}
+                    rotationSnaps={[0, 90, 180, 270]}
+                  />
+                </Layer>
+              </Stage>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-} 
+    );
+  } 

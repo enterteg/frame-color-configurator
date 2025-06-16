@@ -300,6 +300,6 @@ export const ralColorGroups: RALColorGroup[] = [
 ];
 
 // Default colors - using same color for easy debugging
-export const DEFAULT_FRAME_COLOR_ID = '8014'; // Sepia brown
-export const DEFAULT_FORK_COLOR_ID = '8014';  // Sepia brown  
-export const DEFAULT_LOGO_COLOR_ID = '8014';  // Sepia brown 
+export const DEFAULT_FRAME_COLOR_ID = '1013'; // Sepia brown
+export const DEFAULT_FORK_COLOR_ID = '1013';  // Sepia brown  
+export const DEFAULT_LOGO_COLOR_ID = '1013';  // Sepia brown 
