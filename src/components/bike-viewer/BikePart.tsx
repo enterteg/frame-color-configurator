@@ -63,7 +63,7 @@ export function BikePart({ mesh }: BikePartProps) {
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.55,
+      metalness: 0.65,
       roughness: 0.1,
       clearcoat: 1,
       clearcoatRoughness: 0,
@@ -92,7 +92,7 @@ export function BikePart({ mesh }: BikePartProps) {
 
     const newMaterial = new THREE.MeshPhysicalMaterial({
       map: texture,
-      metalness: 0.6,
+      metalness: 0.55,
       roughness: 0,
       clearcoat: 1,
       clearcoatRoughness: 0,
@@ -100,6 +100,7 @@ export function BikePart({ mesh }: BikePartProps) {
       polygonOffsetFactor: -10,
       transparent: true,
       alphaTest: 0.5,
+      envMapIntensity: 2,
     });
 
     material = newMaterial;

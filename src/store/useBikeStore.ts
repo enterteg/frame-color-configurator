@@ -31,6 +31,7 @@ interface BikeState {
   // Navigation state
   activeTab: 'frame' | 'fork' | 'logos' | 'tires' | null;
   navigationCollapsed: boolean;
+  logosCollapsed: boolean;
   
   // Color state
   frameColor: RALColor;
@@ -61,6 +62,7 @@ interface BikeState {
   // Actions
   setActiveTab: (tab: 'frame' | 'fork' | 'logos' | 'tires' | null) => void;
   toggleNavigationCollapsed: () => void;
+  setLogosCollapsed: (collapsed: boolean) => void;
   setFrameColor: (color: RALColor) => void;
   setForkColor: (color: RALColor) => void;
   setSelectedLogoColor: (color: string) => void;
@@ -127,6 +129,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   // Initial state
   activeTab: null,
   navigationCollapsed: false,
+  logosCollapsed: true,
   frameColor: DEFAULT_FRAME_COLOR,
   forkColor: DEFAULT_FORK_COLOR,
   selectedLogoColor: '#000000',
@@ -193,6 +196,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   toggleNavigationCollapsed: () => set((state) => ({ 
     navigationCollapsed: !state.navigationCollapsed 
   })),
+
+  setLogosCollapsed: (collapsed) => set({ logosCollapsed: collapsed }),
 
   setFrameColor: (color) => set({ frameColor: color }),
   
@@ -317,6 +322,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       scaleY: 1,
       rotation: 0,
       color: defaultColor,
+      zIndex: 0,
     };
 
     set((state) => ({
