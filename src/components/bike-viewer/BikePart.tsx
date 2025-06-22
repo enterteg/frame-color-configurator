@@ -5,17 +5,27 @@ import { useBikeStore } from '../../store/useBikeStore';
 interface BikePartProps {
   mesh: THREE.Mesh;
 }
+const normalMap = new THREE.TextureLoader().load(
+  "/textures/rubber-normal.png"
+);
+const roughnessMap = new THREE.TextureLoader().load(
+  "/textures/rubber-roughness.png"
+);
+normalMap.wrapS = roughnessMap.wrapS = THREE.RepeatWrapping;
+normalMap.wrapT = roughnessMap.wrapT = THREE.RepeatWrapping;
+normalMap.repeat.set(20, 20);
+roughnessMap.repeat.set(20, 20);
 
 const getTireWallColor = (tireWallColor: string) => {
   switch (tireWallColor) {
     case "black":
       return 0x0a0a0a;
     case "brown":
-      return 0x6b3410;
+      return 0x522906;
     case "white":
-      return 0xe6e6e6;
+      return 0x777777;
     case "light_brown":
-      return 0xb5884a; // or 0xc49e60 for a muted light brown
+      return 0x9c621c; // or 0xc49e60 for a muted light brown
     default:
       return 0x0a0a0a;
   }
@@ -34,15 +44,15 @@ export function BikePart({ mesh }: BikePartProps) {
 
   let material: THREE.Material;
 
-  if (materialName === "tire" || materialName === "tan_wall") {
-    material = new THREE.MeshStandardMaterial({
+  if (materialName.includes("tire") || materialName === "tan_wall") {
+  const isTanWall = materialName === "tan_wall";
+    material = new THREE.MeshPhysicalMaterial({
       metalness: 0.0,
-      roughness: 0.9,
-      envMapIntensity: 0.05,
-      color:
-        materialName === "tan_wall"
-          ? getTireWallColor(tireWallColor)
-          : 0x0a0a0a,
+      roughness: 1.3,
+      envMapIntensity: 0,
+      normalMap: normalMap,
+      roughnessMap: roughnessMap,
+      color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
     });
   } else if (materialName.includes("rim")) {
     material = new THREE.MeshStandardMaterial({
@@ -53,7 +63,7 @@ export function BikePart({ mesh }: BikePartProps) {
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.6,
+      metalness: 0.55,
       roughness: 0.1,
       clearcoat: 1,
       clearcoatRoughness: 0,
