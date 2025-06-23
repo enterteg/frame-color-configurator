@@ -348,12 +348,15 @@ const LeftNavigation = () => {
                               : "hover:bg-gray-50"
                           }`}
                         >
-                          {image.url || image.blobUrl && (
+                          {(image.url || image.blobUrl) && (
                           <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
                             <Image
                               src={image.url || image.blobUrl || ''}
-                              alt={image.name || ''}
+                              alt={image.name || 'Logo image'}
+                              width={40}
+                              height={40}
                               className="w-full h-full object-contain"
+                              unoptimized={!!image.blobUrl}
                             />
                           </div>
                           )}
