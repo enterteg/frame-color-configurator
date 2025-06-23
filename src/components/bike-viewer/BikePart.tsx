@@ -75,7 +75,7 @@ export function BikePart({ mesh }: BikePartProps) {
       envMapIntensity: 1.5,
       clearcoat: 0,
       clearcoatRoughness: 0.1,
-      color: 0x000000, // Darker gray but not black
+      color: 0x222222, // Darker gray but not black
       normalMap: carbonNormalMap,
       normalScale: new THREE.Vector2(0.5, 0.5),
     });
