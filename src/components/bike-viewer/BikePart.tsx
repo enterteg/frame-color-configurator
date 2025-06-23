@@ -15,7 +15,7 @@ const getTireWallColor = (tireWallColor: string) => {
     case "white":
       return 0x777777;
     case "light_brown":
-      return 0x9c621c; // or 0xc49e60 for a muted light brown
+      return 0x755d36; 
     default:
       return 0x0a0a0a;
   }
@@ -65,6 +65,7 @@ export function BikePart({ mesh }: BikePartProps) {
       envMapIntensity: 0,
       normalMap: rubberNormalMap,
       roughnessMap: rubberRoughnessMap,
+      normalScale: new THREE.Vector2(0.3, 0.3),
       color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
     });
   } else if (materialName.includes("rim")) {
@@ -74,14 +75,14 @@ export function BikePart({ mesh }: BikePartProps) {
       envMapIntensity: 1,
       color: 0x111111,
       normalMap: carbonNormalMap,
+      normalScale: new THREE.Vector2(0.3, 0.3),
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.65,
-      roughness: 0.1,
+      metalness: 0.5,
+      roughness: 0,
       clearcoat: 1,
       clearcoatRoughness: 0,
-      envMapIntensity: 2,
       color: objectName.includes("frame") ? frameColor.hex : forkColor.hex
     });
   } else {

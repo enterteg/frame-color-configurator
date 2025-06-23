@@ -14,6 +14,7 @@ import {
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor } from '../../utils/colorUtils';
 import { LogoType } from '../../types/bike';
+import Image from 'next/image';
 
 const LeftNavigation = () => {
   const {
@@ -337,7 +338,9 @@ const LeftNavigation = () => {
                       {logoTypes[logoType.id].images.map((image) => (
                         <div
                           key={image.id}
-                          onClick={() => handleImageSelect(logoType.id, image.id)}
+                          onClick={() =>
+                            handleImageSelect(logoType.id, image.id)
+                          }
                           className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                             selectedLogoType === logoType.id &&
                             selectedLogoImageId === image.id
@@ -345,14 +348,15 @@ const LeftNavigation = () => {
                               : "hover:bg-gray-50"
                           }`}
                         >
-                          {/* Image Thumbnail */}
+                          {image.url || image.blobUrl && (
                           <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
-                            <img
-                              src={image.url || image.blobUrl}
-                              alt={image.name}
+                            <Image
+                              src={image.url || image.blobUrl || ''}
+                              alt={image.name || ''}
                               className="w-full h-full object-contain"
                             />
                           </div>
+                          )}
 
                           {/* Image Info */}
                           <div className="flex-1 flex flex-col min-w-0">

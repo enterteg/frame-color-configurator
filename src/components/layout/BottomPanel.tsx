@@ -7,6 +7,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useBikeStore } from '../../store/useBikeStore';
 import { processImageWithTransformations } from '../../utils/generateLogoTexture';
 import { generateLogoTexture } from '../../utils/generateLogoTexture';
+import { LogoImage } from '@/types/bike';
 
 interface BottomPanelProps {
   isOpen: boolean;
@@ -267,7 +268,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
             </h3>
             {selectedLogoImageId && (
               <div className="text-xs text-gray-500">
-                Selected: {currentImages.find((img: { id: string; name: string; }) => img.id === selectedLogoImageId)?.name}
+                Selected: {currentImages.find((img: LogoImage) => img.id === selectedLogoImageId)?.name}
               </div>
             )}
           </div>
@@ -304,7 +305,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
                 height={LOGICAL_CANVAS_HEIGHT}
               >
                 <Layer>
-                  {currentImages.map((imageItem: { id: string; x: number; y: number; scaleX: number; scaleY: number; rotation: number; }) => {
+                  {currentImages.map((imageItem: LogoImage) => {
                     const processedImage = processedImages[imageItem.id];
                     return (
                       <KonvaImage
