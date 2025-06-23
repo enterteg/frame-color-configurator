@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
 import Konva from 'konva';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -19,7 +19,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const [isResizing, setIsResizing] = useState(false);
   const [maxPanelHeight, setMaxPanelHeight] = useState(300); // Fallback for SSR
   const [processedImages, setProcessedImages] = useState<Record<string, HTMLImageElement>>({});
-  const textureUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+  const textureUpdateTimeoutRef = useRef<NodeJS.Timeout|null>(null);
   const processingRef = useRef(false);
   const lastProcessedRef = useRef<Record<string, string>>({});
 
@@ -29,11 +29,9 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     selectedLogoImageId,
     setSelectedLogoImageId,
     updateLogoImage,
-    setShowBottomPanel,
     bottomPanelHeight,
     setBottomPanelHeight,
     setLogoTexture,
-    setLogoTextureFromState,
     clearLogoSelection
   } = useBikeStore();
 
@@ -107,7 +105,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     }
   }, [selectedLogoType, isClient, VISUAL_DISPLAY_HEIGHT, bottomPanelHeight, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
-  const currentImages = selectedLogoType ? logoTypes[selectedLogoType].images : [];
+  const currentImages = useMemo(() => selectedLogoType ? logoTypes[selectedLogoType].images : [], [selectedLogoType, logoTypes]);
 
   // Auto-select first image when autoSelectFirstImage is true and no image is selected
   useEffect(() => {
@@ -269,7 +267,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
             </h3>
             {selectedLogoImageId && (
               <div className="text-xs text-gray-500">
-                Selected: {currentImages.find(img => img.id === selectedLogoImageId)?.name}
+                Selected: {currentImages.find((img: { id: string; name: string; }) => img.id === selectedLogoImageId)?.name}
               </div>
             )}
           </div>
@@ -306,7 +304,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
                 height={LOGICAL_CANVAS_HEIGHT}
               >
                 <Layer>
-                  {currentImages.map((imageItem) => {
+                  {currentImages.map((imageItem: { id: string; x: number; y: number; scaleX: number; scaleY: number; rotation: number; }) => {
                     const processedImage = processedImages[imageItem.id];
                     return (
                       <KonvaImage
