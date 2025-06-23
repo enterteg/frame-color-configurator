@@ -69,18 +69,20 @@ export function BikePart({ mesh }: BikePartProps) {
       color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
     });
   } else if (materialName.includes("rim")) {
-    material = new THREE.MeshStandardMaterial({
-      metalness: 0,
+    material = new THREE.MeshPhysicalMaterial({
+      metalness: 0.3,
       roughness: 0.5,
-      envMapIntensity: 1,
-      color: 0x111111,
+      envMapIntensity: 1.5,
+      clearcoat: 0,
+      clearcoatRoughness: 0.1,
+      color: 0x000000, // Darker gray but not black
       normalMap: carbonNormalMap,
-      normalScale: new THREE.Vector2(0.3, 0.3),
+      normalScale: new THREE.Vector2(0.5, 0.5),
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.5,
-      roughness: 0,
+      metalness: 0.6,
+      roughness: 0.1,
       clearcoat: 1,
       clearcoatRoughness: 0,
       color: objectName.includes("frame") ? frameColor.hex : forkColor.hex

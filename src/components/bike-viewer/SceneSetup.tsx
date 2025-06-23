@@ -10,45 +10,64 @@ interface SceneSetupProps {
 export default function SceneSetup({ children }: SceneSetupProps) {
   return (
     <>
-      {/* Store Display Lighting Setup */}
-      {/* Key Light - Main directional light from top-front */}
+      {/* Professional Product Photography Lighting Setup */}
+      {/* Key Light - Main directional light from top-front-right */}
       <directionalLight
-        position={[4, 8, 4]}
-        intensity={0.4}
+        position={[4, 6, 3]}
+        intensity={2.5}
         color="#ffffff"
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         castShadow
       />
 
-      {/* Fill Light - Softer light from the side */}
+      {/* Fill Light - Softer light from the left to reduce harsh shadows */}
       <directionalLight
-        position={[-3, 4, 2]}
-        intensity={0.3}
+        position={[-4, 3, 2]}
+        intensity={1.2}
         color="#ffffff"
-        visible
       />
 
-      {/* Rim Light - For edge definition */}
+      {/* Rim Light - Strong back light for rim definition and separation */}
       <directionalLight
-        position={[0, 2, -4]}
-        intensity={0.2}
+        position={[0, 1, -6]}
+        intensity={3}
         color="#ffffff"
-        visible
       />
 
-      {/* Ambient Light - Reduced for better color saturation */}
-      <ambientLight intensity={0.3} color="#ffffff" />
+      {/* Bottom Fill Light - To illuminate under-surfaces and rim interiors */}
+      <directionalLight
+        position={[0, -2, 3]}
+        intensity={1.5}
+        color="#ffffff"
+      />
+
+      {/* Balanced Atmospheric Lighting */}
+      {/* Ambient Light - Moderate base illumination */}
+      <ambientLight intensity={0.5} color="#ffffff" />
 
       {/* Environment for realistic reflections */}
-      <Environment background={false} files="/scenes/studio.exr" backgroundIntensity={0.5} />
+      <Environment
+        background={false}
+        preset="warehouse"
+        backgroundIntensity={0.4}
+        environmentIntensity={0.8}
+      />
 
-      {/* Hemisphere Light - For natural sky/ground color influence */}
+      {/* Hemisphere Light - Natural sky/ground influence */}
       <hemisphereLight
-        intensity={0.4}
+        intensity={0.7}
         color="#ffffff"
-        groundColor="#f5f5f5"
-        visible
+        groundColor="#f0f0f0"
+      />
+
+      {/* Subtle atmospheric point light from behind for depth */}
+      <pointLight
+        position={[0, 3, -6]}
+        intensity={1}
+        color="#ffffff"
+        distance={20}
+        decay={1.2}
       />
 
       {children}

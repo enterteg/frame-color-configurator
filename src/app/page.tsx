@@ -10,6 +10,7 @@ import LeftNavigation from "../components/layout/LeftNavigation";
 import ColorSelection from "../components/layout/ColorSelection";
 import BottomPanel from "../components/layout/BottomPanel";
 import ControlInfoPanel from "../components/layout/ControlInfoPanel";
+import MobileWarning from "../components/MobileWarning";
 
 export default function BikeCustomizer() {
   const { showBottomPanel, bottomPanelHeight, initializeAllLogoTextures } = useBikeStore();
@@ -20,6 +21,7 @@ export default function BikeCustomizer() {
 
   return (
     <>
+      <MobileWarning />
       <ControlInfoPanel />
       <MainLayout
         leftNavigation={<LeftNavigation />}
