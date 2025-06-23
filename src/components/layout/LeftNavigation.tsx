@@ -146,7 +146,7 @@ const LeftNavigation = () => {
   };
 
   return (
-    <div className="w-[300px] h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
+    <div className="w-[300px] h-full bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex flex-1 items-center justify-between">

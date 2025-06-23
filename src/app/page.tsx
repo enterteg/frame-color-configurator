@@ -12,7 +12,7 @@ import BottomPanel from "../components/layout/BottomPanel";
 import ControlInfoPanel from "../components/layout/ControlInfoPanel";
 
 export default function BikeCustomizer() {
-  const { showBottomPanel, initializeAllLogoTextures } = useBikeStore();
+  const { showBottomPanel, bottomPanelHeight, initializeAllLogoTextures } = useBikeStore();
 
   useEffect(() => {
     initializeAllLogoTextures();
@@ -34,7 +34,7 @@ export default function BikeCustomizer() {
           </div>
         }
         rightPanel={null}
-        bottomPanelHeight={showBottomPanel ? 200 : 0}
+        bottomPanelHeight={showBottomPanel ? bottomPanelHeight : 0}
       />
       <ColorSelection />
       <BottomPanel isOpen={showBottomPanel} />

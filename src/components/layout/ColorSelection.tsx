@@ -16,6 +16,8 @@ export default function ColorSelection() {
     selectedLogoImageId,
     selectedLogoType,
     logoTypes,
+    showBottomPanel,
+    bottomPanelHeight,
     closeColorSelection,
     setSelectedColorGroup,
     setFrameColor,
@@ -82,7 +84,13 @@ export default function ColorSelection() {
   const selectedGroup = ralColorGroups.find(group => group.name === selectedColorGroup);
 
   return (
-    <div className="fixed left-[300px] top-0 bottom-0 h-screen bg-white shadow-lg border-l border-gray-200 z-30 flex">
+    <div 
+      className="fixed left-[300px] top-0 bg-white shadow-lg border-l border-gray-200 z-30 flex"
+      style={{
+        bottom: showBottomPanel ? `${bottomPanelHeight}px` : '0px',
+        height: showBottomPanel ? `calc(100vh - ${bottomPanelHeight}px)` : '100vh'
+      }}
+    >
       {/* Color Groups */}
       <div className="bg-gray-50 border-r border-gray-200 overflow-y-auto">
         <div className="p-2">

@@ -56,12 +56,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== 'undefined') {
-      setMaxPanelHeight(window.innerHeight * 0.3);
-      const handleResize = () => {
-        setMaxPanelHeight(window.innerHeight * 0.3);
-      };
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      setMaxPanelHeight(window.innerHeight * 0.5);
     }
   }, []);
 
