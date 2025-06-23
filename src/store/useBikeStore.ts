@@ -159,7 +159,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   rightPanelOpen: false,
   showLogoEditor: false,
   showBottomPanel: false,
-  bottomPanelHeight: 520, // 400 (HEAD_TUBE height) + 120 (header + padding)
+  bottomPanelHeight: 400, // 400 (HEAD_TUBE height) + 120 (header + padding)
   isColorSelectionOpen: false,
   selectedColorGroup: null,
   colorSelectionType: null,

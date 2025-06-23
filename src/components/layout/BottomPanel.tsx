@@ -69,6 +69,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     if (!isResizing || typeof window === 'undefined') return;
     const newHeight = window.innerHeight - e.clientY;
     const constrainedHeight = Math.max(MIN_PANEL_HEIGHT, Math.min(maxPanelHeight, newHeight));
+    console.log('constrainedHeight', constrainedHeight);
     setBottomPanelHeight(constrainedHeight);
   }, [isResizing, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
@@ -91,15 +92,6 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     }
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  useEffect(() => {
-    if (selectedLogoType && isClient) {
-      const suggestedHeight = Math.min(VISUAL_DISPLAY_HEIGHT + 120, maxPanelHeight);
-      const newHeight = Math.max(MIN_PANEL_HEIGHT, suggestedHeight);
-      if (bottomPanelHeight === 520 || Math.abs(bottomPanelHeight - newHeight) > 200) {
-        setBottomPanelHeight(newHeight);
-      }
-    }
-  }, [selectedLogoType, isClient, VISUAL_DISPLAY_HEIGHT, bottomPanelHeight, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
   const currentImages = useMemo(() => selectedLogoType ? logoTypes[selectedLogoType].images : [], [selectedLogoType, logoTypes]);
 
