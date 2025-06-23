@@ -81,10 +81,10 @@ export function BikePart({ mesh }: BikePartProps) {
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.6,
+      metalness: 0.8,
       roughness: 0.1,
       clearcoat: 1,
-      clearcoatRoughness: 0,
+      clearcoatRoughness: 0.1,
       color: objectName.includes("frame") ? frameColor.hex : forkColor.hex
     });
   } else {
