@@ -31,7 +31,7 @@ export default function BikeCustomizer() {
         mainContent={
           <div className={`w-full relative transition-all duration-300 h-screen`}>
             <BikeViewer3D 
-              combinedModelPath="/models/bikeframe_normal2.glb"
+              combinedModelPath="/models/bikeframe.glb"
               className="w-full h-full"
             />
           </div>

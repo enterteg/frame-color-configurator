@@ -1,20 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { useBikeStore } from '../../store/useBikeStore';
 
 interface BikePartProps {
   mesh: THREE.Mesh;
 }
-const normalMap = new THREE.TextureLoader().load(
-  "/textures/rubber-normal.png"
-);
-const roughnessMap = new THREE.TextureLoader().load(
-  "/textures/rubber-roughness.png"
-);
-normalMap.wrapS = roughnessMap.wrapS = THREE.RepeatWrapping;
-normalMap.wrapT = roughnessMap.wrapT = THREE.RepeatWrapping;
-normalMap.repeat.set(20, 20);
-roughnessMap.repeat.set(20, 20);
 
 const getTireWallColor = (tireWallColor: string) => {
   switch (tireWallColor) {
@@ -39,6 +29,29 @@ export function BikePart({ mesh }: BikePartProps) {
   const downTubeLeftTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_LEFT.texture);
   const downTubeRightTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_RIGHT.texture);
 
+  const [rubberNormalMap, setRubberNormalMap] = useState<THREE.Texture | null>(null);
+  const [carbonNormalMap, setCarbonNormalMap] = useState<THREE.Texture | null>(null);
+  const [rubberRoughnessMap, setRubberRoughnessMap] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    // Only load textures on the client side
+    if (typeof window !== 'undefined') {
+      const loader = new THREE.TextureLoader();
+      const rubberNormalMap = loader.load("/textures/rubber-normal.png");
+      const rubberRoughnessMap = loader.load("/textures/rubber-roughness.png");
+      const carbonNormalMap = loader.load("/textures/carbon-normal.png");
+      rubberNormalMap.wrapS = rubberRoughnessMap.wrapS = carbonNormalMap.wrapS = THREE.RepeatWrapping;
+      rubberNormalMap.wrapT = rubberRoughnessMap.wrapT = carbonNormalMap.wrapT = THREE.RepeatWrapping;
+      rubberNormalMap.repeat.set(10, 10);
+      rubberRoughnessMap.repeat.set(10, 10);
+      carbonNormalMap.repeat.set(2, 2);
+      
+      setRubberNormalMap(rubberNormalMap);
+      setRubberRoughnessMap(rubberRoughnessMap);
+      setCarbonNormalMap(carbonNormalMap);
+    }
+  }, []);
+
   const objectName = mesh.name.toLowerCase();
   const materialName = mesh.material instanceof THREE.Material ? mesh.material.name.toLowerCase() : '';
 
@@ -50,16 +63,17 @@ export function BikePart({ mesh }: BikePartProps) {
       metalness: 0.0,
       roughness: 1.3,
       envMapIntensity: 0,
-      normalMap: normalMap,
-      roughnessMap: roughnessMap,
+      normalMap: rubberNormalMap,
+      roughnessMap: rubberRoughnessMap,
       color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
     });
   } else if (materialName.includes("rim")) {
     material = new THREE.MeshStandardMaterial({
-      metalness: 0.5,
+      metalness: 0,
       roughness: 0.5,
       envMapIntensity: 1,
-      color: 0x333333
+      color: 0x111111,
+      normalMap: carbonNormalMap,
     });
   } else if (objectName.includes("frame") || objectName.includes("fork")) {
     material = new THREE.MeshPhysicalMaterial({
