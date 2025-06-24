@@ -38,6 +38,7 @@ interface BikeState {
   forkColor: RALColor;
   selectedLogoColor: string;
   tireWallColor: 'black' | 'brown' | 'white' | 'light_brown';
+  rimType: '35' | '50';
   
   // Logo state - now supports multiple logo types with aspect ratios
   logoTypes: {
@@ -67,6 +68,7 @@ interface BikeState {
   setForkColor: (color: RALColor) => void;
   setSelectedLogoColor: (color: string) => void;
   setTireWallColor: (color: 'black' | 'brown' | 'white' | 'light_brown') => void;
+  setRimType: (type: '35' | '50') => void;
   setSelectedLogoImageId: (imageId: string | null) => void;
   setSelectedLogoType: (logoType: LogoType | null) => void;
   setRightPanelOpen: (open: boolean) => void;
@@ -134,6 +136,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   forkColor: DEFAULT_FORK_COLOR,
   selectedLogoColor: '#000000',
   tireWallColor: 'brown',
+  rimType: '50',
   
   // Initialize logo types with proper canvas sizes and initial images
   logoTypes: {
@@ -206,6 +209,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   setSelectedLogoColor: (color) => set({ selectedLogoColor: color }),
   
   setTireWallColor: (color) => set({ tireWallColor: color }),
+  
+  setRimType: (type) => set({ rimType: type }),
   
   setSelectedLogoImageId: (imageId) => set({ 
     selectedLogoImageId: imageId,

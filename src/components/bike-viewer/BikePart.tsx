@@ -1,128 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import * as THREE from 'three';
-import { useBikeStore } from '../../store/useBikeStore';
+import { FrameFork } from './FrameFork';
+import { Tire } from './Tire';
+import { Rim } from './Rim';
+import { LogoTube } from './LogoTube';
 
 interface BikePartProps {
   mesh: THREE.Mesh;
 }
 
-const getTireWallColor = (tireWallColor: string) => {
-  switch (tireWallColor) {
-    case "black":
-      return 0x0a0a0a;
-    case "brown":
-      return 0x522906;
-    case "white":
-      return 0x777777;
-    case "light_brown":
-      return 0x755d36; 
-    default:
-      return 0x0a0a0a;
-  }
-};
+
 
 export function BikePart({ mesh }: BikePartProps) {
-  const frameColor = useBikeStore((s) => s.frameColor);
-  const forkColor = useBikeStore((s) => s.forkColor);
-  const tireWallColor = useBikeStore((s) => s.tireWallColor);
-  const headTubeTexture = useBikeStore((s) => s.logoTypes.HEAD_TUBE.texture);
-  const downTubeLeftTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_LEFT.texture);
-  const downTubeRightTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_RIGHT.texture);
-
-  const [rubberNormalMap, setRubberNormalMap] = useState<THREE.Texture | null>(null);
-  const [carbonNormalMap, setCarbonNormalMap] = useState<THREE.Texture | null>(null);
-  const [rubberRoughnessMap, setRubberRoughnessMap] = useState<THREE.Texture | null>(null);
-
-  useEffect(() => {
-    // Only load textures on the client side
-    if (typeof window !== 'undefined') {
-      const loader = new THREE.TextureLoader();
-      const rubberNormalMap = loader.load("/textures/rubber-normal.png");
-      const rubberRoughnessMap = loader.load("/textures/rubber-roughness.png");
-      const carbonNormalMap = loader.load("/textures/carbon-normal.png");
-      rubberNormalMap.wrapS = rubberRoughnessMap.wrapS = carbonNormalMap.wrapS = THREE.RepeatWrapping;
-      rubberNormalMap.wrapT = rubberRoughnessMap.wrapT = carbonNormalMap.wrapT = THREE.RepeatWrapping;
-      rubberNormalMap.repeat.set(10, 10);
-      rubberRoughnessMap.repeat.set(10, 10);
-      carbonNormalMap.repeat.set(2, 2);
-      
-      setRubberNormalMap(rubberNormalMap);
-      setRubberRoughnessMap(rubberRoughnessMap);
-      setCarbonNormalMap(carbonNormalMap);
-    }
-  }, []);
-
   const objectName = mesh.name.toLowerCase();
   const materialName = mesh.material instanceof THREE.Material ? mesh.material.name.toLowerCase() : '';
 
-  let material: THREE.Material;
-
-  if (materialName.includes("tire") || materialName === "tan_wall") {
-  const isTanWall = materialName === "tan_wall";
-    material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.0,
-      roughness: 1.3,
-      envMapIntensity: 0,
-      normalMap: rubberNormalMap,
-      roughnessMap: rubberRoughnessMap,
-      normalScale: new THREE.Vector2(0.3, 0.3),
-      color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
-    });
-  } else if (materialName.includes("rim")) {
-    material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.3,
-      roughness: 0.5,
-      envMapIntensity: 1.5,
-      clearcoat: 0,
-      clearcoatRoughness: 0.1,
-      color: 0x222222, // Darker gray but not black
-      normalMap: carbonNormalMap,
-      normalScale: new THREE.Vector2(0.5, 0.5),
-    });
-  } else if (objectName.includes("frame") || objectName.includes("fork")) {
-    material = new THREE.MeshPhysicalMaterial({
-      metalness: 0.8,
-      roughness: 0.1,
-      clearcoat: 1,
-      clearcoatRoughness: 0.1,
-      color: objectName.includes("frame") ? frameColor.hex : forkColor.hex
-    });
-  } else {
-    material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-  }
-
-  // Handle logo textures
+  // Check for logo textures first
   if (
-    material.name === "TOP_TUBE" && headTubeTexture ||
-    material.name === "DOWN_TUBE_LEFT" && downTubeLeftTexture ||
-    material.name === "DOWN_TUBE_RIGHT" && downTubeRightTexture
+    materialName === "top_tube" || 
+    materialName === "down_tube_left" || 
+    materialName === "down_tube_right"
   ) {
-    // Use MeshPhysicalMaterial for clearcoat
-    const texture =
-      material.name === "TOP_TUBE" ? headTubeTexture :
-      material.name === "DOWN_TUBE_LEFT" ? downTubeLeftTexture :
-      downTubeRightTexture;
-
-    if (texture) {
-      texture.colorSpace = THREE.SRGBColorSpace;
-    }
-
-    const newMaterial = new THREE.MeshPhysicalMaterial({
-      map: texture,
-      metalness: 0.55,
-      roughness: 0,
-      clearcoat: 1,
-      clearcoatRoughness: 0,
-      polygonOffset: true,
-      polygonOffsetFactor: -10,
-      transparent: true,
-      alphaTest: 0.5,
-      envMapIntensity: 2,
-    });
-
-    material = newMaterial;
+    return <LogoTube mesh={mesh} />;
   }
 
+  // Check for tire parts
+  if (materialName.includes("tire") || materialName === "tan_wall") {
+    return <Tire mesh={mesh} />;
+  }
+
+  // Check for rim parts
+  if (materialName.includes("rim")) {
+    return <Rim mesh={mesh} />;
+  }
+
+  // Check for frame or fork parts
+  if (objectName.includes("frame") || objectName.includes("fork")) {
+    return <FrameFork mesh={mesh} />;
+  }
+
+  // Default fallback for other parts
+  const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
   return (
     <mesh
       geometry={mesh.geometry}

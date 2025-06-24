@@ -1,5 +1,12 @@
 export { default as BikeViewer3D } from './BikeViewer3D';
 export { default as BikeModel } from './BikeModel';
-export { default as SceneSetup } from './SceneSetup';
+export { BikePart } from './BikePart';
+export { FrameFork } from './FrameFork';
+export { Tire } from './Tire';
+export { Rim } from './Rim';
+export { Rim35 } from './Rim35';
+export { RimStandard } from './RimStandard';
+export { LogoTube } from './LogoTube';
 export { default as LoadingFallback } from './LoadingFallback';
+export { default as SceneSetup } from './SceneSetup';
 export type { BikeModelProps } from './BikeModel'; 

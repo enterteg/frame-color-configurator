@@ -1,0 +1,68 @@
+import React, { useEffect, useState } from 'react';
+import * as THREE from 'three';
+import { useBikeStore } from '../../store/useBikeStore';
+
+interface TireProps {
+  mesh: THREE.Mesh;
+}
+
+const getTireWallColor = (tireWallColor: string) => {
+  switch (tireWallColor) {
+    case "black":
+      return 0x0a0a0a;
+    case "brown":
+      return 0x522906;
+    case "white":
+      return 0x777777;
+    case "light_brown":
+      return 0x755d36; 
+    default:
+      return 0x0a0a0a;
+  }
+};
+
+export function Tire({ mesh }: TireProps) {
+  const tireWallColor = useBikeStore((s) => s.tireWallColor);
+  const [rubberNormalMap, setRubberNormalMap] = useState<THREE.Texture | null>(null);
+  const [rubberRoughnessMap, setRubberRoughnessMap] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    // Only load textures on the client side
+    if (typeof window !== 'undefined') {
+      const loader = new THREE.TextureLoader();
+      const rubberNormalMap = loader.load("/textures/rubber-normal.png");
+      const rubberRoughnessMap = loader.load("/textures/rubber-roughness.png");
+      
+      rubberNormalMap.wrapS = rubberRoughnessMap.wrapS = THREE.RepeatWrapping;
+      rubberNormalMap.wrapT = rubberRoughnessMap.wrapT = THREE.RepeatWrapping;
+      rubberNormalMap.repeat.set(10, 10);
+      rubberRoughnessMap.repeat.set(10, 10);
+      
+      setRubberNormalMap(rubberNormalMap);
+      setRubberRoughnessMap(rubberRoughnessMap);
+    }
+  }, []);
+
+  const materialName = mesh.material instanceof THREE.Material ? mesh.material.name.toLowerCase() : '';
+  const isTanWall = materialName === "tan_wall";
+  
+  const material = new THREE.MeshPhysicalMaterial({
+    metalness: 0.0,
+    roughness: 1.3,
+    envMapIntensity: 0,
+    normalMap: rubberNormalMap,
+    roughnessMap: rubberRoughnessMap,
+    normalScale: new THREE.Vector2(0.3, 0.3),
+    color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
+  });
+
+  return (
+    <mesh
+      geometry={mesh.geometry}
+      material={material}
+      position={mesh.position}
+      scale={mesh.scale}
+      receiveShadow
+    />
+  );
+} 

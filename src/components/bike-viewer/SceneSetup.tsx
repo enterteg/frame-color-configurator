@@ -31,14 +31,14 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       {/* Rim Light - Strong back light for rim definition and separation */}
       <directionalLight
         position={[0, 1, -6]}
-        intensity={3}
+        intensity={2}
         color="#ffffff"
       />
 
       {/* Bottom Fill Light - To illuminate under-surfaces and rim interiors */}
       <directionalLight
         position={[0, -2, 3]}
-        intensity={1.5}
+        intensity={1}
         color="#ffffff"
       />
 
@@ -49,14 +49,14 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       {/* Environment for realistic reflections */}
       <Environment
         background={false}
-        preset="warehouse"
-        backgroundIntensity={0.4}
-        environmentIntensity={0.8}
+        preset="park"
+        backgroundIntensity={0.5}
+        environmentIntensity={0.5}
       />
 
       {/* Hemisphere Light - Natural sky/ground influence */}
       <hemisphereLight
-        intensity={0.7}
+        intensity={1}
         color="#ffffff"
         groundColor="#f0f0f0"
       />
@@ -67,7 +67,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         intensity={1}
         color="#ffffff"
         distance={20}
-        decay={1.2}
+        decay={1}
       />
 
       {children}

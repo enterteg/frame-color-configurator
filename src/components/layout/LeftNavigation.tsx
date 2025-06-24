@@ -22,6 +22,7 @@ const LeftNavigation = () => {
     frameColor,
     forkColor,
     tireWallColor,
+    rimType,
     selectedLogoType,
     logoTypes,
     selectedLogoImageId,
@@ -38,6 +39,7 @@ const LeftNavigation = () => {
     saveConfiguration,
     loadConfiguration,
     setTireWallColor,
+    setRimType,
     setLogosCollapsed
   } = useBikeStore();
 
@@ -229,47 +231,79 @@ const LeftNavigation = () => {
         </button>
 
         {/* Tires */}
-        <div className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 hover:bg-gray-50">
-          <div className="flex-1 text-left">
-            <div className="font-medium text-gray-800">TIRES</div>
+        <div className="border-b border-gray-100">
+          {/* Tire Wall Colors */}
+          <div className="w-full flex items-center justify-between px-4 py-4 transition-all duration-200 hover:bg-gray-50">
+            <div className="flex-1 text-left">
+              <div className="font-medium text-gray-800">TIRE WALL</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTireWallColor("black")}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  tireWallColor === "black"
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
+                style={{ backgroundColor: "#000000" }}
+              />
+              <button
+                onClick={() => setTireWallColor("brown")}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  tireWallColor === "brown"
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
+                style={{ backgroundColor: "#8b4513" }}
+              />
+              <button
+                onClick={() => setTireWallColor("light_brown")}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  tireWallColor === "light_brown"
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
+                style={{ backgroundColor: "#f2dc8c" }}
+              />
+              <button
+                onClick={() => setTireWallColor("white")}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  tireWallColor === "white"
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
+                style={{ backgroundColor: "#ffffff" }}
+              />
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTireWallColor("black")}
-              className={`w-8 h-8 rounded-full border-2 ${
-                tireWallColor === "black"
-                  ? "border-blue-500"
-                  : "border-gray-300"
-              }`}
-              style={{ backgroundColor: "#000000" }}
-            />
-            <button
-              onClick={() => setTireWallColor("brown")}
-              className={`w-8 h-8 rounded-full border-2 ${
-                tireWallColor === "brown"
-                  ? "border-blue-500"
-                  : "border-gray-300"
-              }`}
-              style={{ backgroundColor: "#8b4513" }}
-            />
-            <button
-              onClick={() => setTireWallColor("light_brown")}
-              className={`w-8 h-8 rounded-full border-2 ${
-                tireWallColor === "light_brown"
-                  ? "border-blue-500"
-                  : "border-gray-300"
-              }`}
-              style={{ backgroundColor: "#f2dc8c" }}
-            />
-            <button
-              onClick={() => setTireWallColor("white")}
-              className={`w-8 h-8 rounded-full border-2 ${
-                tireWallColor === "white"
-                  ? "border-blue-500"
-                  : "border-gray-300"
-              }`}
-              style={{ backgroundColor: "#ffffff" }}
-            />
+          
+          {/* Rim Type Selection */}
+          <div className="w-full flex items-center justify-between px-4 py-4 transition-all duration-200 hover:bg-gray-50">
+            <div className="flex-1 text-left">
+              <div className="font-medium text-gray-800">RIM TYPE</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setRimType("35")}
+                className={`px-3 py-1 text-xs font-medium rounded border-2 transition-colors ${
+                  rimType === "35"
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                35mm
+              </button>
+              <button
+                onClick={() => setRimType("50")}
+                className={`px-3 py-1 text-xs font-medium rounded border-2 transition-colors ${
+                  rimType === "50"
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                50mm
+              </button>
+            </div>
           </div>
         </div>
 

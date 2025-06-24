@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGLTF, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { BikePart } from './BikePart';
