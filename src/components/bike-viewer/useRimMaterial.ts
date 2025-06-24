@@ -18,7 +18,7 @@ export function useRimMaterial() {
   }, []);
 
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 0.5,
+    metalness: 0.2,
     roughness: 1,
     color: 0x333333, // Darker gray but not black
     normalMap: carbonNormalMap,

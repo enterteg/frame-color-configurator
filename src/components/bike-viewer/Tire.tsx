@@ -11,7 +11,7 @@ const getTireWallColor = (tireWallColor: string) => {
     case "black":
       return 0x1a1a1a;
     case "brown":
-      return 0x5c422a;
+      return 0x754936;
     case "white":
       return 0x888888;
     case "light_brown":

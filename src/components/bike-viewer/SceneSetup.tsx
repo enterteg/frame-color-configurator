@@ -20,7 +20,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
 
       {/* Back directional light - from top back */}
       <directionalLight
-        position={[-1, 2, -2]}
+        position={[-1, 5, -2]}
         intensity={4}
         color="white"
       />
