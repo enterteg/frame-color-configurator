@@ -33,7 +33,8 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     bottomPanelHeight,
     setBottomPanelHeight,
     setLogoTexture,
-    clearLogoSelection
+    clearLogoSelection,
+    setShowBottomPanel
   } = useBikeStore();
 
   // Constants
@@ -226,6 +227,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   };
 
   const handleClose = () => {
+    setShowBottomPanel(false);
     clearLogoSelection();
   };
 

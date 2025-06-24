@@ -41,15 +41,14 @@ export function LogoTube({ mesh }: LogoTubeProps) {
 
   const material = new THREE.MeshPhysicalMaterial({
     map: texture,
-    metalness: 0.55,
-    roughness: 0,
+    metalness: 1,
+    roughness: 1,
     clearcoat: 1,
     clearcoatRoughness: 0,
     polygonOffset: true,
     polygonOffsetFactor: -10,
     transparent: true,
     alphaTest: 0.5,
-    envMapIntensity: 2,
   });
 
   return (

@@ -57,6 +57,7 @@ export default function ColorSelection() {
     }
   }, [isColorSelectionOpen, colorSelectionType, frameColor, forkColor, selectedColorGroup, setSelectedColorGroup]);
 
+  console.log('isColorSelectionOpen', isColorSelectionOpen);
   if (!isColorSelectionOpen) {
     return null;
   }
@@ -134,8 +135,8 @@ export default function ColorSelection() {
 
       {/* Individual Colors */}
       {selectedGroup && (
-        <div className="flex-1 bg-white">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="flex-1 bg-white flex flex-col">
+          <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
             <div>
               <h3 className="text-sm font-medium text-gray-800">
                 {getHeaderText()}
@@ -152,7 +153,7 @@ export default function ColorSelection() {
             </button>
           </div>
      
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <div className="p-2">
               <div className="grid grid-cols-4 gap-0.5">
                 {selectedGroup.colorIds.map((colorId) => {
