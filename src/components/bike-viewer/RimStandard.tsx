@@ -1,14 +1,12 @@
 import React from 'react';
 import * as THREE from 'three';
-import { useRimMaterial } from './useRimMaterial';
 
 interface RimStandardProps {
   mesh: THREE.Mesh;
+  material: THREE.MeshPhysicalMaterial;
 }
 
-export function RimStandard({ mesh }: RimStandardProps) {
-  const material = useRimMaterial();
-
+export function RimStandard({ mesh, material }: RimStandardProps) {
   return (
     <mesh
       geometry={mesh.geometry}

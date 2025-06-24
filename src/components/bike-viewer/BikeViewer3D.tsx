@@ -2,6 +2,7 @@
 
 import React, { Suspense} from 'react';
 import { Canvas } from '@react-three/fiber';
+import * as THREE from 'three';
 import LoadingFallback from './LoadingFallback';
 import SceneSetup from './SceneSetup';
 import BikeModel from './BikeModel';
@@ -33,6 +34,9 @@ export default function BikeViewer3D({
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.0,
+          outputColorSpace: THREE.SRGBColorSpace,
         }}
       >
         <SceneSetup>

@@ -9,15 +9,15 @@ interface TireProps {
 const getTireWallColor = (tireWallColor: string) => {
   switch (tireWallColor) {
     case "black":
-      return 0x0a0a0a;
+      return 0x1a1a1a;
     case "brown":
-      return 0x522906;
+      return 0x5c422a;
     case "white":
-      return 0x777777;
+      return 0x888888;
     case "light_brown":
-      return 0x755d36; 
+      return 0x9e8d59; 
     default:
-      return 0x0a0a0a;
+      return 0x1a1a1a;
   }
 };
 
@@ -44,16 +44,15 @@ export function Tire({ mesh }: TireProps) {
   }, []);
 
   const materialName = mesh.material instanceof THREE.Material ? mesh.material.name.toLowerCase() : '';
-  const isTanWall = materialName === "tan_wall";
+  const isTanWall = materialName.includes("tan_wall");
   
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 0.0,
-    roughness: 1.3,
-    envMapIntensity: 0,
-    normalMap: rubberNormalMap,
+    metalness: 0,
     roughnessMap: rubberRoughnessMap,
-    normalScale: new THREE.Vector2(0.3, 0.3),
-    color: isTanWall ? getTireWallColor(tireWallColor) : 0x0a0a0a,
+    roughness: 1,
+    normalMap: rubberNormalMap,
+    normalScale: new THREE.Vector2(1, 0.3),
+    color: isTanWall ? getTireWallColor(tireWallColor) : 0x1a1a1a,
   });
 
   return (

@@ -1,3 +1,5 @@
 you are the expert - always try to ensure that the propsed code is working and follows proper react/threeJS project patterns
 always try to create new file per component
 do not hesitate to question my propsed changes - make sure they make sense before implementing
+
+try to avoid duplication - where alwasy try to move logic to separate hook and reuse

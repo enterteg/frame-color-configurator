@@ -18,14 +18,11 @@ export function useRimMaterial() {
   }, []);
 
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 0.3,
-    roughness: 0.5,
-    envMapIntensity: 1.5,
-    clearcoat: 0,
-    clearcoatRoughness: 0.1,
-    color: 0x222222, // Darker gray but not black
+    metalness: 0.5,
+    roughness: 1,
+    color: 0x333333, // Darker gray but not black
     normalMap: carbonNormalMap,
-    normalScale: new THREE.Vector2(0.5, 0.5),
+    normalScale: new THREE.Vector2(1, 1),
   });
 
   return material;

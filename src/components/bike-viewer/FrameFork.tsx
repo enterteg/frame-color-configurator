@@ -13,8 +13,8 @@ export function FrameFork({ mesh }: FrameForkProps) {
   const objectName = mesh.name.toLowerCase();
   
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 0.7,
-    roughness: 0,
+    metalness: 1,
+    roughness: 1,
     clearcoat: 1,
     clearcoatRoughness: 0.1,
     color: objectName.includes("frame") ? frameColor.hex : forkColor.hex
