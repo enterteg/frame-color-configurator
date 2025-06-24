@@ -15,7 +15,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         background={false}
         preset="warehouse"
         backgroundIntensity={1}
-        environmentIntensity={1}
+        environmentIntensity={0.6}
       />
 
       {/* Back directional light - from top back */}
@@ -26,7 +26,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       />
 
       <hemisphereLight
-        intensity={1}
+        intensity={3}
         color="white"
       />
 

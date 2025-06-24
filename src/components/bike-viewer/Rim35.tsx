@@ -2,6 +2,9 @@ import React, { Suspense } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Preload the rim_35 model
+useGLTF.preload('/models/rim_35.glb');
+
 interface Rim35Props {
   mesh: THREE.Mesh;
   material: THREE.MeshPhysicalMaterial;
