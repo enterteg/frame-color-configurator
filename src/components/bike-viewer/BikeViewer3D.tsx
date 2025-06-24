@@ -1,10 +1,12 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense} from 'react';
 import { Canvas } from '@react-three/fiber';
 import LoadingFallback from './LoadingFallback';
 import SceneSetup from './SceneSetup';
 import BikeModel from './BikeModel';
+
+
 
 interface BikeViewer3DProps {
   combinedModelPath?: string;
