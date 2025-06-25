@@ -9,8 +9,8 @@ function applyGammaToHex(hex: string): string {
   const b = parseInt(hex.slice(5, 7), 16) / 255;
   const avg = (r + g + b) / 3;
   let gamma = 1;
-  if (avg > 0.7) gamma = 1.15; // darken
-  else if (avg < 0.3) gamma = 0.8 // lighten
+  if (avg > 0.7) gamma = 1.1; // darken
+  else if (avg < 0.3) gamma = 0.85 // lighten
   // Apply gamma correction
   const r2 = Math.pow(r, gamma);
   const g2 = Math.pow(g, gamma);

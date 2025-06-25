@@ -30,7 +30,8 @@ export default function BottomPanel() {
     setBottomPanelHeight,
     setLogoTexture,
     clearLogoSelection,
-    setShowBottomPanel
+    setShowBottomPanel,
+    selectionPanelType
   } = useBikeStore();
   const activeLogoType = useActiveLogoType();
 
@@ -94,10 +95,14 @@ export default function BottomPanel() {
 
   // Auto-select first image when autoSelectFirstImage is true and no image is selected
   useEffect(() => {
-    if (currentImages.length > 0 && !selectedLogoImageId) {
+    if (
+      currentImages.length > 0 &&
+      !selectedLogoImageId &&
+      selectionPanelType !== 'image'
+    ) {
       setSelectedLogoImageId(currentImages[0].id);
     }
-  }, [currentImages, selectedLogoImageId, setSelectedLogoImageId]);
+  }, [currentImages, selectedLogoImageId, setSelectedLogoImageId, selectionPanelType]);
 
   // Process images when they change
   useEffect(() => {
@@ -251,13 +256,7 @@ export default function BottomPanel() {
         />
         
         <div className="flex items-center justify-between px-4 py-3 mt-1">
-          <div className="flex items-center gap-3">
-            {selectedLogoImageId && (
-              <div className="text-xs text-gray-500">
-                Selected: {currentImages.find((img: LogoImage) => img.id === selectedLogoImageId)?.name}
-              </div>
-            )}
-          </div>
+          <div className="text-sm font-bold text-gray-500">Manipulate Logo Texture</div>
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"

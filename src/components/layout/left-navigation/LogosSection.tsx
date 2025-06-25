@@ -1,26 +1,24 @@
 import React from 'react';
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, ChevronUpIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { LogoTypeData, useBikeStore } from '../../../store/useBikeStore';
-import { LogoImage } from '@/types/bike';
+import { useBikeStore } from '../../../store/useBikeStore';
+import { TabType, LogoType, LogoImage } from '../../../types/bike';
 
 interface LogosSectionProps {
-  activeTab: string;
+  activeTab: TabType;
   logosCollapsed: boolean;
   setLogosCollapsed: (collapsed: boolean) => void;
-  selectedLogoType: string | null;
+  selectedLogoType: LogoType | null;
   selectedLogoImageId: string | null;
-  logoTypes: {
-    [key: string]: LogoTypeData;
-  };
-  setSelectedLogoType: (type: string | null) => void;
+  logoTypes: Record<LogoType, { images: LogoImage[] }>;
+  setSelectedLogoType: (type: LogoType | null) => void;
   setSelectedLogoImageId: (id: string | null) => void;
-  setActiveTab: (tab: string) => void;
-  addLogoImageFromFile: (logoType: string, file: File) => void;
-  removeLogoImage: (logoType: string, imageId: string) => void;
-  setLogoTextureFromState: (logoType: string) => void;
-  updateLogoTypeImages: (logoType: string, images: LogoImage[]) => void;
-  openColorSelection: (section: string) => void;
+  setActiveTab: (tab: TabType) => void;
+  addLogoImageFromFile: (logoType: LogoType, file: File) => string;
+  removeLogoImage: (logoType: LogoType, imageId: string) => void;
+  setLogoTextureFromState: (logoType: LogoType) => void;
+  updateLogoTypeImages: (logoType: LogoType, images: LogoImage[]) => void;
+  openColorSelection: (section: 'frame' | 'fork' | 'logo') => void;
 }
 
 const logoTypes_CONFIG = [
@@ -47,12 +45,12 @@ const LogosSection: React.FC<LogosSectionProps> = ({
 }) => {
   const { setSelectionPanelType } = useBikeStore();
 
-  const handleImageSelect = (logoType: string, imageId: string) => {
+  const handleImageSelect = (logoType: LogoType, imageId: string) => {
     setSelectedLogoType(logoType);
     setSelectedLogoImageId(imageId);
   };
 
-  const handleImageImport = (logoType: string) => {
+  const handleImageImport = (logoType: LogoType) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/png,image/jpg,image/jpeg';
@@ -65,7 +63,7 @@ const LogosSection: React.FC<LogosSectionProps> = ({
     input.click();
   };
 
-  const handleImageDelete = (logoType: string, imageId: string) => {
+  const handleImageDelete = (logoType: LogoType, imageId: string) => {
     removeLogoImage(logoType, imageId);
     if (selectedLogoType === logoType && selectedLogoImageId === imageId) {
       setSelectedLogoType(null);
@@ -74,13 +72,13 @@ const LogosSection: React.FC<LogosSectionProps> = ({
     setLogoTextureFromState(logoType);
   };
 
-  const handleImageColorChange = (logoType: string, imageId: string) => {
+  const handleImageColorChange = (logoType: LogoType, imageId: string) => {
     setSelectedLogoType(logoType);
     setSelectedLogoImageId(imageId);
     openColorSelection('logo');
   };
 
-  const handleLogoTypeClick = (logoType: string) => {
+  const handleLogoTypeClick = (logoType: LogoType) => {
     setSelectedLogoType(logoType);
     const images = logoTypes[logoType].images;
     if (images.length > 0) {
@@ -135,9 +133,11 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                     {logoType.name}
                   </div>
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
-                      handleImageImport(logoType.id);
+                      setSelectedLogoType(logoType.id);
+                      setSelectedLogoImageId(null);
+                      setSelectionPanelType('image');
                     }}
                     className="flex cursor-pointer items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
                   >

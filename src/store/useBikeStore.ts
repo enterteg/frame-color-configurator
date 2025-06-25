@@ -229,26 +229,19 @@ export const useBikeStore = create<BikeState>((set, get) => ({
     showBottomPanel: imageId !== null
   }),
   
-  setSelectedLogoType: (logoType) => set((state) => { 
+  setSelectedLogoType: (logoType) => set(() => { 
     const newState: Partial<BikeState> = {
       selectedLogoType: logoType,
       selectedLogoImageId: null,
       showBottomPanel: false
     };
-    
-    // Auto-select the single image if logo type has only one image
-    if (logoType && state.logoTypes[logoType].images.length === 1) {
-      newState.selectedLogoImageId = state.logoTypes[logoType].images[0].id;
-      newState.showBottomPanel = true;
-    }
-    
     return newState;
   }),
   
   setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
   
   setShowLogoEditor: (show) => set({ showLogoEditor: show }),
-  
+    
   setShowBottomPanel: (show) => set(() => {
     // If closing the bottom panel and color picker is open for logo, close the color picker too
     if (!show) {
@@ -366,9 +359,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
           ...state.logoTypes[logoType],
           images: [...state.logoTypes[logoType].images, newImage]
         }
-      },
-      selectedLogoImageId: id,
-      selectedLogoType: logoType,
+      }
     }));
 
     return id;

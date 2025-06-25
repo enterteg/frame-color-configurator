@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useBikeStore, useActiveLogoType } from '../../store/useBikeStore';
+import { useBikeStore } from '../../store/useBikeStore';
 import Image from 'next/image';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { useLogoImageActions } from '../../hooks/useLogoImageActions';
 
 const logoImagesList = [
   '100percent.png',
@@ -30,35 +32,46 @@ const logoImagesList = [
 export default function ImagePickerPanel() {
   const {
     selectedLogoImageId,
-    updateLogoImage,
     selectionPanelType,
     showBottomPanel,
-    bottomPanelHeight
+    bottomPanelHeight,
+    selectedLogoType,
   } = useBikeStore();
-  const TEXTURE_SIZE = 1024;
-  const activeLogoType = useActiveLogoType();
-  const aspectRatio = activeLogoType?.aspectRatio || 1;
   const [logoImages] = useState<string[]>(logoImagesList);
+
+  const {
+    isReplaceMode,
+    addBuiltInImage,
+    replaceBuiltInImage,
+    addUploadedImage,
+    replaceUploadedImage,
+  } = useLogoImageActions();
 
   if (selectionPanelType !== 'image') return null;
 
   const handleImagePick = (img: string) => {
-    if (selectedLogoImageId) {
-      const imageObj = new window.Image();
-      imageObj.onload = () => {
-        const canvasWidth = TEXTURE_SIZE;
-        const canvasHeight = TEXTURE_SIZE / aspectRatio;
-        const scaleW = 0.7 * canvasWidth / imageObj.naturalWidth;
-        const scaleH = 0.7 * canvasHeight / imageObj.naturalHeight;
-        const scale = Math.min(scaleW, scaleH);
-        updateLogoImage(selectedLogoImageId, {
-          url: `/textures/logos/${img}`,
-          scaleX: scale,
-          scaleY: scale
-        });
-      };
-      imageObj.src = `/textures/logos/${img}`;
+    if (isReplaceMode) {
+      replaceBuiltInImage(img);
+    } else {
+      addBuiltInImage(img);
     }
+  };
+
+  const handleAddImage = () => {
+    if (!selectedLogoType && !selectedLogoImageId) return;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpg,image/jpeg';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      if (isReplaceMode) {
+        replaceUploadedImage(file);
+      } else {
+        addUploadedImage(file);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -72,7 +85,16 @@ export default function ImagePickerPanel() {
         height: showBottomPanel ? `calc(100vh - ${bottomPanelHeight}px)` : '100vh'
       }}
     >
-      <div className="p-4 border-b border-gray-200 font-medium text-gray-800">Select a Logo Image</div>
+      <div className="p-4 border-b border-gray-200 font-medium text-gray-800 flex items-center justify-between">
+        <span>{isReplaceMode ? 'Replace Logo Image' : 'Add Logo Image'}</span>
+        <button
+          onClick={handleAddImage}
+          className="p-1 rounded hover:bg-gray-100 transition-colors"
+          title="Upload new image"
+        >
+          <PlusIcon className="h-5 w-5 text-brand-brown-700" />
+        </button>
+      </div>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="grid grid-cols-3 gap-3">
           {logoImages.map(img => (

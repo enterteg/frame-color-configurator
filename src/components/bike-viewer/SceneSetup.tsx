@@ -16,12 +16,13 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         background={false}
         preset="warehouse"
         environmentIntensity={1}
+        backgroundRotation={[0, 1, 0]}
       />
 
       {/* Back directional light - from top back */}
       <directionalLight
         position={[1, 3, -2]}
-        intensity={0.5}
+        intensity={2}
         color="#ffffff"
         castShadow
       />
@@ -33,7 +34,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         castShadow
       />
 
-
+    <ambientLight intensity={0.5} color="white" />
 
       {/* Display plate under the bike with height and metal-with-leaks-bl textures */}
       <Plate />
@@ -45,7 +46,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         enableZoom={true}
         enableRotate={true}
         minDistance={1}
-        maxDistance={3}
+        maxDistance={4}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={-Infinity}
