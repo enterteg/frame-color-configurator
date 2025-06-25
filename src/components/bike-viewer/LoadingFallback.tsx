@@ -1,35 +1,22 @@
 'use client';
 
 import React from 'react';
+import { Html } from '@react-three/drei';
 
 export default function LoadingFallback() {
+  // Use <Html> so this DOM content can be rendered inside a R3F <Canvas>
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%',
-      width: '100%',
-      minHeight: 200,
-      minWidth: 200,
-    }}>
-      <div style={{
-        width: 48,
-        height: 48,
-        border: '6px solid #e0e7ef',
-        borderTop: '6px solid #3b82f6',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-        marginBottom: 16,
-      }} />
-      <span style={{ color: '#3b82f6', fontWeight: 500, fontSize: 18 }}>Loading...</span>
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
+    <Html center>
+      <div
+        className="flex flex-col items-center justify-center h-full w-full min-h-[200px] min-w-[200px]"
+        role="status"
+        aria-live="polite"
+      >
+        <div
+          className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
+        />
+        <span className="text-blue-600 font-medium text-lg">Loading...</span>
+      </div>
+    </Html>
   );
 } 

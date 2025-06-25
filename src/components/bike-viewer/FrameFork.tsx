@@ -34,7 +34,6 @@ export function FrameFork({ mesh }: FrameForkProps) {
   
   const objectName = mesh.name.toLowerCase();
   const baseHex = objectName.includes("frame") ? frameColor.hex : forkColor.hex;
-  console.log(objectName, baseHex);
   const gammaHex = applyGammaToHex(baseHex);
   
   const material = new THREE.MeshPhysicalMaterial({
