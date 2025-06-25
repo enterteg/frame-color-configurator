@@ -6,7 +6,8 @@ import FrameSelector from './left-navigation/FrameSelector';
 import ForkSelector from './left-navigation/ForkSelector';
 import TireWallSelector from './left-navigation/TireWallSelector';
 import RimTypeSelector from './left-navigation/RimTypeSelector';
-import LogosSection from './left-navigation/LogosSection';
+import LogosSection from './left-navigation/LogosSection';  
+import FinishSelector from './FinishSelector';
 import { useBikeStore } from '../../store/useBikeStore';
 
 const LeftNavigation = () => {
@@ -33,7 +34,7 @@ const LeftNavigation = () => {
     loadConfiguration,
     setTireWallColor,
     setRimType,
-    setLogosCollapsed
+    setLogosCollapsed,
   } = useBikeStore();
 
   const handleSave = () => {
@@ -75,32 +76,31 @@ const LeftNavigation = () => {
   return (
     <div className="w-[300px] h-full bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
       {/* Header */}
-      <NavigationHeader 
+      <NavigationHeader
         navigationCollapsed={navigationCollapsed}
         handleSave={handleSave}
         handleLoad={handleLoad}
       />
       {/* Navigation Options */}
       <div className="flex-1 overflow-y-auto">
-        <FrameSelector 
+        <FrameSelector
           activeTab={activeTab}
           frameColor={frameColor}
           setActiveTab={setActiveTab}
           openColorSelection={openColorSelection}
         />
-        <ForkSelector 
+        <ForkSelector
           activeTab={activeTab}
           forkColor={forkColor}
           setActiveTab={setActiveTab}
           openColorSelection={openColorSelection}
         />
-        <TireWallSelector 
+        <FinishSelector />
+        <RimTypeSelector rimType={rimType} setRimType={setRimType} />
+
+        <TireWallSelector
           tireWallColor={tireWallColor}
           setTireWallColor={setTireWallColor}
-        />
-        <RimTypeSelector 
-          rimType={rimType}
-          setRimType={setRimType}
         />
         <LogosSection
           activeTab={activeTab}

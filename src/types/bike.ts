@@ -36,4 +36,8 @@ export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_LEFT' | 'DOWN_TUBE_RIGHT';
 export interface BikeConfiguration {
   colors: BikeColors;
   logoImages: LogoImage[];
-} 
+}
+
+export type TabType = 'frame' | 'fork' | 'logos' | 'tires' | null;
+export type RimType = '35' | '50';
+export type TireWallColor = 'black' | 'brown' | 'white' | 'light_brown'; 

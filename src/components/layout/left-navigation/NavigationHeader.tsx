@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
 interface NavigationHeaderProps {
   navigationCollapsed: boolean;
@@ -20,14 +21,14 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ navigationCollapsed
           className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           title="Save Configuration"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 8l-4-4m4 4l4-4m-8 8h8a2 2 0 002-2V6a2 2 0 00-2-2H8a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <ArrowDownTrayIcon className="h-4 w-4" />
         </button>
         <button
           onClick={handleLoad}
           className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           title="Load Configuration"
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m0-8l-4 4m4-4l4 4m-8-8h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
+          <ArrowUpTrayIcon className="h-4 w-4" />
         </button>
       </div>
     </div>

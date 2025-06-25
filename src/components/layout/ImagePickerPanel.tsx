@@ -78,7 +78,7 @@ export default function ImagePickerPanel() {
           {logoImages.map(img => (
             <button
               key={img}
-              className="w-20 h-20 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-white hover:border-blue-400 focus:border-blue-500 transition-all"
+              className="w-20 h-20 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-white hover:border-brand-brown-100 focus:border-brand-brown-500 transition-all"
               onClick={() => handleImagePick(img)}
             >
               <Image src={`/textures/logos/${img}`} alt={img} width={80} height={80} className="object-contain w-full h-full" unoptimized />

@@ -64,6 +64,9 @@ interface BikeState {
   // Selection panel state
   selectionPanelType: 'color' | 'image';
   
+  // New: metallic/matte toggle
+  isFrameMetallic: boolean;
+  
   // Actions
   setActiveTab: (tab: 'frame' | 'fork' | 'logos' | 'tires' | null) => void;
   toggleNavigationCollapsed: () => void;
@@ -85,6 +88,7 @@ interface BikeState {
   handleColorChangeRequest: (imageId: string) => void;
   clearLogoSelection: () => void;
   setSelectionPanelType: (type: 'color' | 'image') => void;
+  setFrameMetallic: (isMetallic: boolean) => void;
   
   // Logo management actions
   addLogoImage: (logoType: LogoType, image: Omit<LogoImage, 'id'>) => void;
@@ -172,6 +176,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   selectedColorGroup: null,
   colorSelectionType: null,
   selectionPanelType: 'color',
+  // New: metallic/matte toggle
+  isFrameMetallic: true,
 
   // Actions
   setActiveTab: (tab) => set(() => {
@@ -599,7 +605,10 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       console.error('Failed to load configuration:', error);
       throw new Error('Invalid configuration format');
     }
-  }
+  },
+
+  // New action
+  setFrameMetallic: (isMetallic) => set({ isFrameMetallic: isMetallic }),
 }));
 
 // Selector hook for active logo type with shallow memoization

@@ -15,31 +15,25 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       <Environment
         background={false}
         preset="warehouse"
-        backgroundIntensity={1}
         environmentIntensity={1}
       />
 
       {/* Back directional light - from top back */}
       <directionalLight
         position={[1, 3, -2]}
-        intensity={2}
-        color="white"
+        intensity={0.5}
+        color="#ffffff"
         castShadow
       />
 
       <directionalLight
         position={[-1, 2, 2]}
-        intensity={2}
-        color="white"
+        intensity={0.5}
+        color="#ffffff"
         castShadow
       />
 
-      <hemisphereLight
-        intensity={1}
-        color="white"
-      />
 
-      <ambientLight intensity={2} color="white" />
 
       {/* Display plate under the bike with height and metal-with-leaks-bl textures */}
       <Plate />

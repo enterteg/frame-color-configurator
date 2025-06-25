@@ -30,7 +30,7 @@ export default function BikeViewer3D({
           fov: 50,
         }}
         shadows="soft"
-        gl={{ 
+        gl={{
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
@@ -41,9 +41,7 @@ export default function BikeViewer3D({
       >
         <SceneSetup>
           <Suspense fallback={<LoadingFallback />}>
-            <BikeModel
-              modelPath={combinedModelPath}
-            />
+            <BikeModel modelPath={combinedModelPath} />
           </Suspense>
         </SceneSetup>
       </Canvas>

@@ -4,3 +4,7 @@ do not hesitate to question my propsed changes - make sure they make sense befor
 
 try to avoid duplication - where alwasy try to move logic to separate hook and reuse
 when creating new componetnt or adding logic to existing one - ask if we want to separate it to new file/component so we are not adding to existing one but rather creating new separate smaller state section - encapsulation
+Prioritize code quality over speed! always think if we can improve/refactor
+
+prefer enums if possible
+for unions always crete separate type and reuse it - avoid inlining types/other things 

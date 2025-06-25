@@ -85,14 +85,16 @@ export default function ColorPickerPanel() {
   const selectedGroup = ralColorGroups.find(group => group.name === selectedColorGroup);
 
   return (
-    <div 
+    <div
       className="fixed left-[300px] top-0 bg-white shadow-lg border-l border-gray-200 z-30 flex"
       style={{
-        width: 'auto',
+        width: "auto",
         minWidth: 300,
-        maxWidth: '100vw',
-        bottom: showBottomPanel ? `${bottomPanelHeight}px` : '0px',
-        height: showBottomPanel ? `calc(100vh - ${bottomPanelHeight}px)` : '100vh'
+        maxWidth: "100vw",
+        bottom: showBottomPanel ? `${bottomPanelHeight}px` : "0px",
+        height: showBottomPanel
+          ? `calc(100vh - ${bottomPanelHeight}px)`
+          : "100vh",
       }}
     >
       {/* Color Groups */}
@@ -108,7 +110,7 @@ export default function ColorPickerPanel() {
                 onClick={() => setSelectedColorGroup(group.name)}
                 className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
                   selectedColorGroup === group.name
-                    ? "bg-blue-100 border-2 border-blue-500 shadow-md"
+                    ? "bg-brand-brown-100 border-2 border-brand-brown-500 shadow-md"
                     : "hover:bg-gray-100 border-2 border-transparent"
                 }`}
                 title={group.name}
@@ -116,17 +118,13 @@ export default function ColorPickerPanel() {
                 <div
                   className={`w-14 h-14 rounded-full border shadow-sm mb-1 ${
                     selectedColorGroup === group.name
-                      ? "border-blue-400 shadow-md"
+                      ? "border-brand-brown-100 shadow-md"
                       : "border-gray-300"
                   }`}
                   style={{ backgroundColor: getGroupMainColor(group.name) }}
                 />
                 <div
-                  className={`text-[12px] text-center leading-tight max-w-full ${
-                    selectedColorGroup === group.name
-                      ? "text-blue-700 font-medium"
-                      : "text-gray-600"
-                  }`}
+                  className={`text-[12px] text-center text-black leading-tight max-w-full`}
                 >
                   {group.name.split(" ")[0]}
                 </div>
@@ -155,36 +153,50 @@ export default function ColorPickerPanel() {
               <XMarkIcon className="h-4 w-4 text-gray-600" />
             </button>
           </div>
-     
+
           <div className="flex-1 overflow-y-auto min-h-0">
             <div className="p-2">
               <div className="grid grid-cols-4 gap-0.5">
                 {selectedGroup.colorIds.map((colorId) => {
                   const color = getColorById(colorId);
                   if (!color) return null;
-                  
+
                   return (
                     <div key={color.code}>
                       <button
                         onClick={() => handleColorSelect(color)}
                         className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                          (colorSelectionType === 'frame' && color.code === frameColor.code) ||
-                          (colorSelectionType === 'fork' && color.code === forkColor.code) ||
-                          (colorSelectionType === 'logo' && selectedLogoImageId && selectedLogoType && 
-                           logoTypes[selectedLogoType].images.find((img: { id: string; color: RALColor }) => img.id === selectedLogoImageId)?.color.code === color.code)
-                            ? 'bg-blue-100 ring-2 ring-blue-500'
-                            : 'hover:bg-gray-100'
+                          (colorSelectionType === "frame" &&
+                            color.code === frameColor.code) ||
+                          (colorSelectionType === "fork" &&
+                            color.code === forkColor.code) ||
+                          (colorSelectionType === "logo" &&
+                            selectedLogoImageId &&
+                            selectedLogoType &&
+                            logoTypes[selectedLogoType].images.find(
+                              (img: { id: string; color: RALColor }) =>
+                                img.id === selectedLogoImageId
+                            )?.color.code === color.code)
+                            ? "bg-brand-brown-100 ring-2 ring-brand-brown-500"
+                            : "hover:bg-gray-100"
                         }`}
                         title={`${color.code} - ${color.name}`}
                       >
                         <div
                           className={`w-14 h-14 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center ${
-                            (colorSelectionType === 'frame' && color.code === frameColor.code) ||
-                            (colorSelectionType === 'fork' && color.code === forkColor.code) ||
-                            (colorSelectionType === 'logo' && selectedLogoImageId && selectedLogoType && 
-                             logoTypes[selectedLogoType].images.find((img: { id: string; color: RALColor }) => img.id === selectedLogoImageId)?.color.code === color.code)
-                              ? 'ring-2 ring-blue-500'
-                              : ''
+                            (colorSelectionType === "frame" &&
+                              color.code === frameColor.code) ||
+                            (colorSelectionType === "fork" &&
+                              color.code === forkColor.code) ||
+                            (colorSelectionType === "logo" &&
+                              selectedLogoImageId &&
+                              selectedLogoType &&
+                              logoTypes[selectedLogoType].images.find(
+                                (img: { id: string; color: RALColor }) =>
+                                  img.id === selectedLogoImageId
+                              )?.color.code === color.code)
+                              ? "ring-2 ring-brand-brown-500"
+                              : ""
                           }`}
                           style={{ backgroundColor: color.hex }}
                         >

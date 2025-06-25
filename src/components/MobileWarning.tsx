@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon, ComputerDesktopIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const MobileWarning = () => {
   const [showWarning, setShowWarning] = useState(false);
@@ -38,9 +38,7 @@ const MobileWarning = () => {
           <div className="relative">
             <DevicePhoneMobileIcon className="h-16 w-16 text-gray-400" />
             <div className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1">
-              <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XMarkIcon className="h-4 w-4 text-white" />
             </div>
           </div>
         </div>
@@ -57,12 +55,12 @@ const MobileWarning = () => {
         </p>
 
         {/* Desktop recommendation */}
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
+        <div className="bg-brand-brown-50 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-center mb-2">
-            <ComputerDesktopIcon className="h-8 w-8 text-blue-600 mr-2" />
-            <span className="text-blue-800 font-medium">Recommended</span>
+            <ComputerDesktopIcon className="h-8 w-8 text-brand-brown-500 mr-2" />
+            <span className="text-brand-brown-700 font-medium">Recommended</span>
           </div>
-          <p className="text-blue-700 text-sm">
+          <p className="text-brand-brown-700 text-sm">
             Use a desktop or laptop computer for the full experience with all customization features.
           </p>
         </div>

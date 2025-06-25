@@ -1,7 +1,8 @@
 import React from 'react';
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, ChevronUpIcon, ChevronRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useBikeStore } from '../../../store/useBikeStore';
+import { LogoTypeData, useBikeStore } from '../../../store/useBikeStore';
+import { LogoImage } from '@/types/bike';
 
 interface LogosSectionProps {
   activeTab: string;
@@ -9,14 +10,16 @@ interface LogosSectionProps {
   setLogosCollapsed: (collapsed: boolean) => void;
   selectedLogoType: string | null;
   selectedLogoImageId: string | null;
-  logoTypes: any;
+  logoTypes: {
+    [key: string]: LogoTypeData;
+  };
   setSelectedLogoType: (type: string | null) => void;
   setSelectedLogoImageId: (id: string | null) => void;
   setActiveTab: (tab: string) => void;
   addLogoImageFromFile: (logoType: string, file: File) => void;
   removeLogoImage: (logoType: string, imageId: string) => void;
   setLogoTextureFromState: (logoType: string) => void;
-  updateLogoTypeImages: (logoType: string, images: any[]) => void;
+  updateLogoTypeImages: (logoType: string, images: LogoImage[]) => void;
   openColorSelection: (section: string) => void;
 }
 
@@ -92,13 +95,13 @@ const LogosSection: React.FC<LogosSectionProps> = ({
     <>
       <button
         onClick={() => {
-          setActiveTab('logos');
+          setActiveTab("logos");
           setLogosCollapsed(!logosCollapsed);
         }}
         className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-          activeTab === 'logos'
-            ? 'bg-blue-50 text-blue-700 border-l-4 border-l-blue-500'
-            : 'hover:bg-gray-50'
+          activeTab === "logos"
+            ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
+            : "hover:bg-gray-50"
         }`}
       >
         <div className="flex-1 text-left">
@@ -123,8 +126,8 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                 onClick={() => handleLogoTypeClick(logoType.id)}
                 className={`px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors ${
                   selectedLogoType === logoType.id
-                    ? 'bg-gray-100'
-                    : 'hover:bg-gray-50'
+                    ? "bg-gray-100"
+                    : "hover:bg-gray-50"
                 }`}
               >
                 <div className="flex-1 flex flex-row min-w-0 justify-between items-center">
@@ -132,7 +135,7 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                     {logoType.name}
                   </div>
                   <button
-                    onClick={e => {
+                    onClick={(e) => {
                       e.stopPropagation();
                       handleImageImport(logoType.id);
                     }}
@@ -145,22 +148,22 @@ const LogosSection: React.FC<LogosSectionProps> = ({
               <div className="bg-white px-4 py-2">
                 {logoTypes[logoType.id].images.length > 0 && (
                   <div className="space-y-2 mb-3">
-                    {logoTypes[logoType.id].images.map((image: any) => (
+                    {logoTypes[logoType.id].images.map((image: LogoImage) => (
                       <div
                         key={image.id}
                         onClick={() => handleImageSelect(logoType.id, image.id)}
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedLogoType === logoType.id &&
                           selectedLogoImageId === image.id
-                            ? 'bg-gray-100'
-                            : 'hover:bg-gray-50'
+                            ? "bg-gray-100"
+                            : "hover:bg-gray-50"
                         }`}
                       >
                         {(image.url || image.blobUrl) && (
                           <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
                             <Image
-                              src={image.url || image.blobUrl || ''}
-                              alt={image.name || 'Logo image'}
+                              src={image.url || image.blobUrl || ""}
+                              alt={image.name || "Logo image"}
                               width={40}
                               height={40}
                               className="w-full h-full object-contain"
@@ -178,7 +181,7 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                         </div>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               handleImageColorChange(logoType.id, image.id);
                             }}
@@ -191,15 +194,32 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                           </button>
                           {logoTypes[logoType.id].images.length > 1 && (
                             <>
-                              {logoTypes[logoType.id].images.findIndex((img: any) => img.id === image.id) <
+                              {logoTypes[logoType.id].images.findIndex(
+                                (img: LogoImage) => img.id === image.id
+                              ) <
                                 logoTypes[logoType.id].images.length - 1 && (
                                 <button
-                                  onClick={e => {
+                                  onClick={(e) => {
                                     e.stopPropagation();
-                                    const currentIndex = logoTypes[logoType.id].images.findIndex((img: any) => img.id === image.id);
-                                    const newImages = [...logoTypes[logoType.id].images];
-                                    [newImages[currentIndex], newImages[currentIndex + 1]] = [newImages[currentIndex + 1], newImages[currentIndex]];
-                                    updateLogoTypeImages(logoType.id, newImages);
+                                    const currentIndex = logoTypes[
+                                      logoType.id
+                                    ].images.findIndex(
+                                      (img: LogoImage) => img.id === image.id
+                                    );
+                                    const newImages = [
+                                      ...logoTypes[logoType.id].images,
+                                    ];
+                                    [
+                                      newImages[currentIndex],
+                                      newImages[currentIndex + 1],
+                                    ] = [
+                                      newImages[currentIndex + 1],
+                                      newImages[currentIndex],
+                                    ];
+                                    updateLogoTypeImages(
+                                      logoType.id,
+                                      newImages
+                                    );
                                     setLogoTextureFromState(logoType.id);
                                   }}
                                   className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
@@ -208,14 +228,31 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                                   <ArrowDownIcon className="h-4 w-4 text-gray-500" />
                                 </button>
                               )}
-                              {logoTypes[logoType.id].images.findIndex((img: any) => img.id === image.id) > 0 && (
+                              {logoTypes[logoType.id].images.findIndex(
+                                (img: LogoImage) => img.id === image.id
+                              ) > 0 && (
                                 <button
-                                  onClick={e => {
+                                  onClick={(e) => {
                                     e.stopPropagation();
-                                    const currentIndex = logoTypes[logoType.id].images.findIndex((img: any) => img.id === image.id);
-                                    const newImages = [...logoTypes[logoType.id].images];
-                                    [newImages[currentIndex], newImages[currentIndex - 1]] = [newImages[currentIndex - 1], newImages[currentIndex]];
-                                    updateLogoTypeImages(logoType.id, newImages);
+                                    const currentIndex = logoTypes[
+                                      logoType.id
+                                    ].images.findIndex(
+                                      (img: LogoImage) => img.id === image.id
+                                    );
+                                    const newImages = [
+                                      ...logoTypes[logoType.id].images,
+                                    ];
+                                    [
+                                      newImages[currentIndex],
+                                      newImages[currentIndex - 1],
+                                    ] = [
+                                      newImages[currentIndex - 1],
+                                      newImages[currentIndex],
+                                    ];
+                                    updateLogoTypeImages(
+                                      logoType.id,
+                                      newImages
+                                    );
                                     setLogoTextureFromState(logoType.id);
                                   }}
                                   className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
@@ -227,7 +264,7 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                             </>
                           )}
                           <button
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               handleImageDelete(logoType.id, image.id);
                             }}
@@ -236,11 +273,11 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                             <TrashIcon className="h-4 w-4 text-gray-500" />
                           </button>
                           <button
-                            onClick={e => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               setSelectedLogoType(logoType.id);
                               setSelectedLogoImageId(image.id);
-                              setSelectionPanelType('image');
+                              setSelectionPanelType("image");
                             }}
                             className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
                             title="Replace image"

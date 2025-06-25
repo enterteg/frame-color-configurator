@@ -10,7 +10,7 @@ export function LogoTube({ mesh }: LogoTubeProps) {
   const headTubeTexture = useBikeStore((s) => s.logoTypes.HEAD_TUBE.texture);
   const downTubeLeftTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_LEFT.texture);
   const downTubeRightTexture = useBikeStore((s) => s.logoTypes.DOWN_TUBE_RIGHT.texture);
-
+  const isFrameMetallic = useBikeStore((s) => s.isFrameMetallic);
   const materialName = mesh.material instanceof THREE.Material ? mesh.material.name : '';
 
   // Determine which texture to use based on material name
@@ -41,10 +41,10 @@ export function LogoTube({ mesh }: LogoTubeProps) {
 
   const material = new THREE.MeshPhysicalMaterial({
     map: texture,
-    metalness: 1,
-    roughness: 1,
+    metalness: 0.3,
+    roughness: 0,
     clearcoat: 1,
-    clearcoatRoughness: 0,
+    clearcoatRoughness: isFrameMetallic ? 0 : 1,
     polygonOffset: true,
     polygonOffsetFactor: -10,
     transparent: true,
