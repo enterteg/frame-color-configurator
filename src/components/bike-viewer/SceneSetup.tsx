@@ -15,7 +15,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
       <Environment
         background={false}
         preset="warehouse"
-        environmentIntensity={1}
+        environmentIntensity={0.9}
         backgroundRotation={[0, 1, 0]}
       />
 
