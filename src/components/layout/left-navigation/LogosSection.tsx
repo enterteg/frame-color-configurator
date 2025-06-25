@@ -37,7 +37,6 @@ const LogosSection: React.FC<LogosSectionProps> = ({
   setSelectedLogoType,
   setSelectedLogoImageId,
   setActiveTab,
-  addLogoImageFromFile,
   removeLogoImage,
   setLogoTextureFromState,
   updateLogoTypeImages,
@@ -50,18 +49,6 @@ const LogosSection: React.FC<LogosSectionProps> = ({
     setSelectedLogoImageId(imageId);
   };
 
-  const handleImageImport = (logoType: LogoType) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/png,image/jpg,image/jpeg';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        addLogoImageFromFile(logoType, file);
-      }
-    };
-    input.click();
-  };
 
   const handleImageDelete = (logoType: LogoType, imageId: string) => {
     removeLogoImage(logoType, imageId);
