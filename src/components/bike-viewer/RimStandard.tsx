@@ -14,7 +14,7 @@ export function RimStandard({ mesh, material }: RimStandardProps) {
       position={mesh.position}
       rotation={mesh.rotation}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 } 

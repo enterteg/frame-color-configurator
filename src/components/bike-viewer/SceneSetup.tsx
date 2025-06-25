@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Environment, OrbitControls } from '@react-three/drei';
+import Plate from './Plate';
 
 interface SceneSetupProps {
   children: React.ReactNode;
@@ -15,22 +16,34 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         background={false}
         preset="warehouse"
         backgroundIntensity={1}
-        environmentIntensity={0.6}
+        environmentIntensity={1}
       />
 
       {/* Back directional light - from top back */}
       <directionalLight
-        position={[-1, 5, -2]}
-        intensity={4}
+        position={[1, 3, -2]}
+        intensity={2}
         color="white"
+        castShadow
+      />
+
+      <directionalLight
+        position={[-1, 2, 2]}
+        intensity={2}
+        color="white"
+        castShadow
       />
 
       <hemisphereLight
-        intensity={3}
+        intensity={1}
         color="white"
       />
 
-      
+      <ambientLight intensity={2} color="white" />
+
+      {/* Display plate under the bike with height and metal-with-leaks-bl textures */}
+      <Plate />
+
       {children}
 
       <OrbitControls

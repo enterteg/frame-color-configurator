@@ -61,7 +61,7 @@ export function Tire({ mesh }: TireProps) {
       material={material}
       position={mesh.position}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 } 

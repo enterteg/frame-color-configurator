@@ -3,3 +3,4 @@ always try to create new file per component
 do not hesitate to question my propsed changes - make sure they make sense before implementing
 
 try to avoid duplication - where alwasy try to move logic to separate hook and reuse
+when creating new componetnt or adding logic to existing one - ask if we want to separate it to new file/component so we are not adding to existing one but rather creating new separate smaller state section - encapsulation

@@ -4,16 +4,13 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
 import Konva from 'konva';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useBikeStore } from '../../store/useBikeStore';
+import { useBikeStore, useActiveLogoType } from '../../store/useBikeStore';
 import { processImageWithTransformations } from '../../utils/generateLogoTexture';
 import { generateLogoTexture } from '../../utils/generateLogoTexture';
 import { LogoImage } from '@/types/bike';
 
-interface BottomPanelProps {
-  isOpen: boolean;
-}
 
-export default function BottomPanel({ isOpen }: BottomPanelProps) {
+export default function BottomPanel() {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const [isClient, setIsClient] = useState(false);
@@ -25,8 +22,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   const lastProcessedRef = useRef<Record<string, string>>({});
 
   const {
-    selectedLogoType,
-    logoTypes,
+    showBottomPanel: isOpen,
     selectedLogoImageId,
     setSelectedLogoImageId,
     updateLogoImage,
@@ -36,10 +32,11 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     clearLogoSelection,
     setShowBottomPanel
   } = useBikeStore();
+  const activeLogoType = useActiveLogoType();
 
   // Constants
   const TEXTURE_SIZE = 1024; // Always 1024×1024 regardless of logo type
-  const aspectRatio = selectedLogoType ? logoTypes[selectedLogoType].aspectRatio : 1;
+  const aspectRatio = activeLogoType ? activeLogoType.aspectRatio : 1;
   const LOGICAL_CANVAS_WIDTH = TEXTURE_SIZE;
   const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
   const availableHeight = bottomPanelHeight - 80;
@@ -94,7 +91,7 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
 
-  const currentImages = useMemo(() => selectedLogoType ? logoTypes[selectedLogoType].images : [], [selectedLogoType, logoTypes]);
+  const currentImages = useMemo(() => activeLogoType ? activeLogoType.images : [], [activeLogoType]);
 
   // Auto-select first image when autoSelectFirstImage is true and no image is selected
   useEffect(() => {
@@ -105,33 +102,39 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
 
   // Process images when they change
   useEffect(() => {
-    if (!selectedLogoType || processingRef.current) return;
+    if (!currentImages || processingRef.current) return;
 
     const processImages = async () => {
       try {
         processingRef.current = true;
         const newProcessedImages: Record<string, HTMLImageElement> = {};
-        for (const image of logoTypes[selectedLogoType].images) {
+        for (const image of currentImages) {
+          console.log(image);
           // Only process if the image hasn't been processed or if its color has changed
-          const imageKey = `${image.id}_${image.color.hex}`;
-          if (!lastProcessedRef.current[image.id] || lastProcessedRef.current[image.id] !== imageKey) {
+          const imageKey = `${image.id}_${image.color.hex}_${image.url}`;
+          if (
+            !lastProcessedRef.current[image.id] ||
+            lastProcessedRef.current[image.id] !== imageKey
+          ) {
             const processedImage = await processImageWithTransformations(image);
             newProcessedImages[image.id] = processedImage;
             lastProcessedRef.current[image.id] = imageKey;
+            console.log({ newProcessedImages });
           }
         }
         if (Object.keys(newProcessedImages).length > 0) {
-          setProcessedImages(prev => ({ ...prev, ...newProcessedImages }));
+          setProcessedImages((prev) => ({ ...prev, ...newProcessedImages }));
         }
       } catch (error) {
-        console.error('Error processing images:', error);
+        console.error("Error processing images:", error);
       } finally {
         processingRef.current = false;
       }
     };
 
     processImages();
-  }, [selectedLogoType, logoTypes]);
+  }, [currentImages]);
+
 
   // Debounced texture update
   const debouncedTextureUpdate = useCallback(() => {
@@ -140,25 +143,25 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
     }
 
     textureUpdateTimeoutRef.current = setTimeout(async () => {
-      if (selectedLogoType) {
+      if (activeLogoType) {
         try {
           const texture = await generateLogoTexture({
             width: TEXTURE_SIZE,
             height: TEXTURE_SIZE,
-            images: logoTypes[selectedLogoType].images.map(img => ({
+            images: activeLogoType.images.map(img => ({
               ...img,
               processedImage: processedImages[img.id]
             }))
           });
           if (texture) {
-            setLogoTexture(selectedLogoType, texture);
+            setLogoTexture(texture);
           }
         } catch (error) {
           console.error('Error generating texture:', error);
         }
       }
     }, 50); // 100ms debounce
-  }, [selectedLogoType, logoTypes, processedImages, setLogoTexture]);
+  }, [activeLogoType, processedImages, setLogoTexture]);
 
   // Update texture when processed images change
   useEffect(() => {
@@ -191,14 +194,14 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
 
   // Handle logo transform
   const handleTransform = useCallback((id: string, newAttrs: Partial<{ x: number; y: number; scaleX: number; scaleY: number; rotation: number }>) => {
-    if (!selectedLogoType) return;
+    if (!activeLogoType) return;
     
     // Update the image in the store
-    updateLogoImage(selectedLogoType, id, newAttrs);
+    updateLogoImage(id, newAttrs);
     
     // Trigger debounced texture update
     debouncedTextureUpdate();
-  }, [selectedLogoType, updateLogoImage, debouncedTextureUpdate]);
+  }, [activeLogoType, updateLogoImage, debouncedTextureUpdate]);
 
   // Handle logo drag
   const handleDrag = useCallback((id: string, e: Konva.KonvaEventObject<DragEvent>) => {
@@ -252,9 +255,6 @@ export default function BottomPanel({ isOpen }: BottomPanelProps) {
         
         <div className="flex items-center justify-between px-4 py-3 mt-1">
           <div className="flex items-center gap-3">
-            <h3 className="text-sm font-medium text-gray-800">
-              Logo Editor - {selectedLogoType?.replaceAll('_', ' ')}
-            </h3>
             {selectedLogoImageId && (
               <div className="text-xs text-gray-500">
                 Selected: {currentImages.find((img: LogoImage) => img.id === selectedLogoImageId)?.name}

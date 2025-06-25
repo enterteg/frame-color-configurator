@@ -47,7 +47,7 @@ export function BikePart({ mesh }: BikePartProps) {
       material={material}
       position={mesh.position}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 } 

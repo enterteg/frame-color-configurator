@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, DEFAULT_LOGO_COLOR_ID } from '../data/ralColors';
 import { LogoImage, LogoType } from '../types/bike';
 import { generateLogoTexture, processImageWithTransformations } from '../utils/generateLogoTexture';
+import { useShallow } from 'zustand/shallow';
 
 // Get default colors from main definitions
 const DEFAULT_FRAME_COLOR = getColorById(DEFAULT_FRAME_COLOR_ID) || {
@@ -60,6 +61,9 @@ interface BikeState {
   selectedColorGroup: string | null;
   colorSelectionType: 'frame' | 'fork' | 'logo' | null;
   
+  // Selection panel state
+  selectionPanelType: 'color' | 'image';
+  
   // Actions
   setActiveTab: (tab: 'frame' | 'fork' | 'logos' | 'tires' | null) => void;
   toggleNavigationCollapsed: () => void;
@@ -80,14 +84,15 @@ interface BikeState {
   setSelectedColorGroup: (group: string | null) => void;
   handleColorChangeRequest: (imageId: string) => void;
   clearLogoSelection: () => void;
+  setSelectionPanelType: (type: 'color' | 'image') => void;
   
   // Logo management actions
   addLogoImage: (logoType: LogoType, image: Omit<LogoImage, 'id'>) => void;
   addLogoImageFromFile: (logoType: LogoType, file: File) => string;
   removeLogoImage: (logoType: LogoType, imageId: string) => void;
-  updateLogoImage: (logoType: LogoType, imageId: string, updates: Partial<LogoImage>) => void;
+  updateLogoImage: (imageId: string, updates: Partial<LogoImage>) => void;
   updateLogoTypeImages: (logoType: LogoType, images: LogoImage[]) => void;
-  setLogoTexture: (logoType: LogoType, texture: THREE.Texture | null) => void;
+  setLogoTexture: (texture: THREE.Texture | null) => void;
   setLogoColor: (logoType: LogoType, imageId: string, color: RALColor) => void;
   
   // Getters
@@ -141,17 +146,17 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   // Initialize logo types with proper canvas sizes and initial images
   logoTypes: {
     HEAD_TUBE: {
-      images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/loca_front_simple.png')],
+      images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/logos/loca_circles.png')],
       texture: null,
       aspectRatio: 1.2,
     },
     DOWN_TUBE_LEFT: {
-      images: [createDefaultLogoImage('DOWN_TUBE_LEFT', 10, 'Loca half', '/textures/loca_half.png')],
+      images: [createDefaultLogoImage('DOWN_TUBE_LEFT', 10, 'Loca half', '/textures/logos/loca_half.png')],
       texture: null,
       aspectRatio: 8
     },
     DOWN_TUBE_RIGHT: {
-      images: [createDefaultLogoImage('DOWN_TUBE_RIGHT', 10, 'Loca half', '/textures/loca_half.png')],
+      images: [createDefaultLogoImage('DOWN_TUBE_RIGHT', 10, 'Loca half', '/textures/logos/loca_half.png')],
       texture: null,
       aspectRatio: 8
     }
@@ -166,6 +171,7 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   isColorSelectionOpen: false,
   selectedColorGroup: null,
   colorSelectionType: null,
+  selectionPanelType: 'color',
 
   // Actions
   setActiveTab: (tab) => set(() => {
@@ -254,7 +260,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
     colorSelectionType: type,
     selectedColorGroup: null,
     rightPanelOpen: false,
-    activeTab: type === 'logo' ? null : type
+    activeTab: type === 'logo' ? null : type,
+    selectionPanelType: 'color'
   }),
   
   closeColorSelection: () => set({
@@ -279,6 +286,8 @@ export const useBikeStore = create<BikeState>((set, get) => ({
     selectedLogoImageId: null,
     showBottomPanel: false
   }),
+
+  setSelectionPanelType: (type: 'color' | 'image') => set({ selectionPanelType: type }),
 
   // Logo management actions
   addLogoImage: (logoType, image) => set((state) => {
@@ -374,27 +383,35 @@ export const useBikeStore = create<BikeState>((set, get) => ({
     }));
   },
 
-  updateLogoImage: (logoType, imageId, updates) => set((state) => ({
-    logoTypes: {
-      ...state.logoTypes,
-      [logoType]: {
-        ...state.logoTypes[logoType],
-        images: state.logoTypes[logoType].images.map(img =>
-          img.id === imageId ? { ...img, ...updates } : img
-        )
+  updateLogoImage: (imageId, updates) => set((state) => {
+    const type = state.selectedLogoType;
+    if (!type) return {};
+    return {
+      logoTypes: {
+        ...state.logoTypes,
+        [type]: {
+          ...state.logoTypes[type],
+          images: state.logoTypes[type].images.map(img =>
+            img.id === imageId ? { ...img, ...updates } : img
+          )
+        }
       }
-    }
-  })),
+    };
+  }),
 
-  setLogoTexture: (logoType, texture) => set((state) => ({
-    logoTypes: {
-      ...state.logoTypes,
-      [logoType]: {
-        ...state.logoTypes[logoType],
-        texture
+  setLogoTexture: (texture) => set((state) => {
+    const type = state.selectedLogoType;
+    if (!type) return {};
+    return {
+      logoTypes: {
+        ...state.logoTypes,
+        [type]: {
+          ...state.logoTypes[type],
+          texture
+        }
       }
-    }
-  })),
+    };
+  }),
 
   // Logo color setter (from old store)
   setLogoColor: (logoType, imageId, color) => set((state) => {
@@ -577,4 +594,14 @@ export const useBikeStore = create<BikeState>((set, get) => ({
       throw new Error('Invalid configuration format');
     }
   }
-})); 
+}));
+
+// Selector hook for active logo type with shallow memoization
+export function useActiveLogoType() {
+  return useBikeStore(useShallow(
+      state => {
+        const type = state.selectedLogoType;
+        return type ? state.logoTypes[type] : null;
+      })
+  );
+} 

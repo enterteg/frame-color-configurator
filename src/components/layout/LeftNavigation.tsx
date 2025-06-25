@@ -1,20 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-  TrashIcon, 
-  PlusIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
-  ChevronUpIcon,
-  ChevronRightIcon
-} from '@heroicons/react/24/outline';
+import NavigationHeader from './left-navigation/NavigationHeader';
+import FrameSelector from './left-navigation/FrameSelector';
+import ForkSelector from './left-navigation/ForkSelector';
+import TireWallSelector from './left-navigation/TireWallSelector';
+import RimTypeSelector from './left-navigation/RimTypeSelector';
+import LogosSection from './left-navigation/LogosSection';
 import { useBikeStore } from '../../store/useBikeStore';
-import { getContrastTextColor } from '../../utils/colorUtils';
-import { LogoType } from '../../types/bike';
-import Image from 'next/image';
 
 const LeftNavigation = () => {
   const {
@@ -42,74 +35,6 @@ const LeftNavigation = () => {
     setRimType,
     setLogosCollapsed
   } = useBikeStore();
-
-  // Logo types configuration
-  const logoTypes_CONFIG = [
-    { id: 'DOWN_TUBE_RIGHT' as LogoType, name: 'Down Tube Right' },
-    { id: 'DOWN_TUBE_LEFT' as LogoType, name: 'Down Tube Left' },
-    { id: 'HEAD_TUBE' as LogoType, name: 'Head Tube' }
-  ] as const;
-
-  const handleFrameClick = () => {
-    setActiveTab('frame');
-    openColorSelection('frame');
-  };
-
-  const handleForkClick = () => {
-    setActiveTab('fork');
-    openColorSelection('fork');
-  };
-
-  const handleLogosClick = () => {
-    setActiveTab('logos');
-  };
-
-  const handleImageSelect = (logoType: LogoType, imageId: string) => {
-    setSelectedLogoType(logoType);
-    setSelectedLogoImageId(imageId);
-  };
-
-  const handleImageImport = (logoType: LogoType) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/png,image/jpg,image/jpeg';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        addLogoImageFromFile(logoType, file);
-      }
-    };
-    input.click();
-  };
-
-  const handleImageDelete = (logoType: LogoType, imageId: string) => {
-    removeLogoImage(logoType, imageId);
-    // Clear selection if the deleted image was selected
-    if (selectedLogoType === logoType && selectedLogoImageId === imageId) {
-      setSelectedLogoType(null);
-      setSelectedLogoImageId(null);
-    }
-    // Trigger texture regeneration
-    setLogoTextureFromState(logoType);
-  };
-
-  const handleImageColorChange = (logoType: LogoType, imageId: string) => {
-    setSelectedLogoType(logoType);
-    setSelectedLogoImageId(imageId);
-    openColorSelection('logo');
-  };
-
-  const handleLogoTypeClick = (logoType: LogoType) => {
-    setSelectedLogoType(logoType);
-    // Select first image if available
-    const images = logoTypes[logoType].images;
-    if (images.length > 0) {
-      setSelectedLogoImageId(images[0].id);
-    } else {
-      setSelectedLogoImageId(null);
-    }
-    setActiveTab('logos');
-  };
 
   const handleSave = () => {
     const config = saveConfiguration();
@@ -150,367 +75,49 @@ const LeftNavigation = () => {
   return (
     <div className="w-[300px] h-full bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <div className="flex flex-1 items-center justify-between">
-          <h2
-            className={`text-xl text-black font-semibold ${
-              navigationCollapsed ? "hidden" : ""
-            }`}
-          >
-            Frame Configurator
-          </h2>
-          <div className="flex gap-1">
-            <button
-              onClick={handleSave}
-              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              title="Save Configuration"
-            >
-              <ArrowDownTrayIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={handleLoad}
-              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              title="Load Configuration"
-            >
-              <ArrowUpTrayIcon className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
+      <NavigationHeader 
+        navigationCollapsed={navigationCollapsed}
+        handleSave={handleSave}
+        handleLoad={handleLoad}
+      />
       {/* Navigation Options */}
       <div className="flex-1 overflow-y-auto">
-        {/* Frame */}
-        <button
-          onClick={handleFrameClick}
-          className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === "frame"
-              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
-              : "hover:bg-gray-50"
-          }`}
-        >
-          <div className="flex-1 text-left">
-            <div className="font-medium text-gray-800">FRAME</div>
-          </div>
-          <div
-            className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 shadow-md"
-            style={{ backgroundColor: frameColor.hex }}
-          >
-            <span
-              className="text-[10px] font-bold"
-              style={{ color: getContrastTextColor(frameColor.hex) }}
-            >
-              {frameColor.code.replace("RAL ", "")}
-            </span>
-          </div>
-        </button>
-
-        {/* Fork */}
-        <button
-          onClick={handleForkClick}
-          className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === "fork"
-              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
-              : "hover:bg-gray-50"
-          }`}
-        >
-          <div className="flex-1 text-left">
-            <div className="font-medium text-gray-800">FORK</div>
-          </div>
-          <div
-            className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 shadow-md"
-            style={{ backgroundColor: forkColor.hex }}
-          >
-            <span
-              className="text-[10px] font-bold"
-              style={{ color: getContrastTextColor(forkColor.hex) }}
-            >
-              {forkColor.code.replace("RAL ", "")}
-            </span>
-          </div>
-        </button>
-
-        {/* Tires */}
-        <div className="border-b border-gray-100">
-          {/* Tire Wall Colors */}
-          <div className="w-full flex items-center justify-between px-4 py-4 transition-all duration-200 hover:bg-gray-50">
-            <div className="flex-1 text-left">
-              <div className="font-medium text-gray-800">TIRE WALL</div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setTireWallColor("black")}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  tireWallColor === "black"
-                    ? "border-blue-500"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: "#000000" }}
-              />
-              <button
-                onClick={() => setTireWallColor("brown")}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  tireWallColor === "brown"
-                    ? "border-blue-500"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: "#8b4513" }}
-              />
-              <button
-                onClick={() => setTireWallColor("light_brown")}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  tireWallColor === "light_brown"
-                    ? "border-blue-500"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: "#f2dc8c" }}
-              />
-              <button
-                onClick={() => setTireWallColor("white")}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  tireWallColor === "white"
-                    ? "border-blue-500"
-                    : "border-gray-300"
-                }`}
-                style={{ backgroundColor: "#ffffff" }}
-              />
-            </div>
-          </div>
-          
-          {/* Rim Type Selection */}
-          <div className="w-full flex items-center justify-between px-4 py-4 transition-all duration-200 hover:bg-gray-50">
-            <div className="flex-1 text-left">
-              <div className="font-medium text-gray-800">RIM TYPE</div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setRimType("35")}
-                className={`px-3 py-1 text-xs font-medium rounded border-2 transition-colors ${
-                  rimType === "35"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                35mm
-              </button>
-              <button
-                onClick={() => setRimType("50")}
-                className={`px-3 py-1 text-xs font-medium rounded border-2 transition-colors ${
-                  rimType === "50"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                50mm
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Logos */}
-        <button
-          onClick={() => {
-            handleLogosClick();
-            setLogosCollapsed(!logosCollapsed);
-          }}
-          className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
-            activeTab === "logos"
-              ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
-              : "hover:bg-gray-50"
-          }`}
-        >
-          <div className="flex-1 text-left">
-            <div className="font-medium text-gray-800">LOGOS</div>
-          </div>
-          <div className="p-1 rounded hover:bg-gray-100 transition-colors">
-            {logosCollapsed ? (
-              <ChevronRightIcon className="h-4 w-4 text-gray-500" />
-            ) : (
-              <ChevronUpIcon className="h-4 w-4 text-gray-500" />
-            )}
-          </div>
-        </button>
-
-        {/* Always Expanded Logo Types Section */}
-        {!logosCollapsed && (
-          <div className="bg-gray-50 border-b border-gray-100">
-            {logoTypes_CONFIG.map((logoType) => (
-              <div
-                key={logoType.id}
-                className="border-b border-gray-200 last:border-b-0"
-              >
-                {/* Logo Type Header */}
-                <div
-                  onClick={() => handleLogoTypeClick(logoType.id)}
-                  className={`px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors ${
-                    selectedLogoType === logoType.id
-                      ? "bg-gray-100"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="flex-1 flex flex-row min-w-0 justify-between items-center">
-                    <div className="text-sm font-medium text-gray-900">
-                      {logoType.name}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImageImport(logoType.id);
-                      }}
-                      className="flex cursor-pointer items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Images List */}
-                <div className="bg-white px-4 py-2">
-                  {/* Images */}
-                  {logoTypes[logoType.id].images.length > 0 && (
-                    <div className="space-y-2 mb-3">
-                      {logoTypes[logoType.id].images.map((image) => (
-                        <div
-                          key={image.id}
-                          onClick={() =>
-                            handleImageSelect(logoType.id, image.id)
-                          }
-                          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                            selectedLogoType === logoType.id &&
-                            selectedLogoImageId === image.id
-                              ? "bg-gray-100"
-                              : "hover:bg-gray-50"
-                          }`}
-                        >
-                          {(image.url || image.blobUrl) && (
-                          <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex-shrink-0 overflow-hidden">
-                            <Image
-                              src={image.url || image.blobUrl || ''}
-                              alt={image.name || 'Logo image'}
-                              width={40}
-                              height={40}
-                              className="w-full h-full object-contain"
-                              unoptimized={!!image.blobUrl}
-                            />
-                          </div>
-                          )}
-
-                          {/* Image Info */}
-                          <div className="flex-1 flex flex-col min-w-0">
-                            <div className="text-xs font-medium text-gray-800 truncate">
-                              {image.name}
-                            </div>
-                            <div className="text-xs font-medium text-gray-800 truncate">
-                              {image.color.code}
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageColorChange(logoType.id, image.id);
-                              }}
-                              className="p-1 rounded hover:bg-gray-100 transition-colors"
-                            >
-                              <div
-                                className="w-6 h-6 rounded-full cursor-pointer border border-gray-300"
-                                style={{ backgroundColor: image.color.hex }}
-                              />
-                            </button>
-                            {logoTypes[logoType.id].images.length > 1 && (
-                              <>
-                                {logoTypes[logoType.id].images.findIndex(
-                                  (img) => img.id === image.id
-                                ) <
-                                  logoTypes[logoType.id].images.length - 1 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Move image up in layer order
-                                      const currentIndex = logoTypes[
-                                        logoType.id
-                                      ].images.findIndex(
-                                        (img) => img.id === image.id
-                                      );
-                                      const newImages = [
-                                        ...logoTypes[logoType.id].images,
-                                      ];
-                                      [
-                                        newImages[currentIndex],
-                                        newImages[currentIndex + 1],
-                                      ] = [
-                                        newImages[currentIndex + 1],
-                                        newImages[currentIndex],
-                                      ];
-                                      updateLogoTypeImages(
-                                        logoType.id,
-                                        newImages
-                                      );
-                                      setLogoTextureFromState(logoType.id);
-                                    }}
-                                    className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-                                    title="Move up"
-                                  >
-                                    <ArrowDownIcon className="h-4 w-4 text-gray-500" />
-                                  </button>
-                                )}
-                                {logoTypes[logoType.id].images.findIndex(
-                                  (img) => img.id === image.id
-                                ) > 0 && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Move image down in layer order
-                                      const currentIndex = logoTypes[
-                                        logoType.id
-                                      ].images.findIndex(
-                                        (img) => img.id === image.id
-                                      );
-                                      const newImages = [
-                                        ...logoTypes[logoType.id].images,
-                                      ];
-                                      [
-                                        newImages[currentIndex],
-                                        newImages[currentIndex - 1],
-                                      ] = [
-                                        newImages[currentIndex - 1],
-                                        newImages[currentIndex],
-                                      ];
-                                      updateLogoTypeImages(
-                                        logoType.id,
-                                        newImages
-                                      );
-                                      setLogoTextureFromState(logoType.id);
-                                    }}
-                                    className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-                                    title="Move down"
-                                  >
-                                    <ArrowUpIcon className="h-4 w-4 text-gray-500" />
-                                  </button>
-                                )}
-                              </>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageDelete(logoType.id, image.id);
-                              }}
-                              className="p-1.5 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-                            >
-                              <TrashIcon className="h-4 w-4 text-gray-500" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <FrameSelector 
+          activeTab={activeTab}
+          frameColor={frameColor}
+          setActiveTab={setActiveTab}
+          openColorSelection={openColorSelection}
+        />
+        <ForkSelector 
+          activeTab={activeTab}
+          forkColor={forkColor}
+          setActiveTab={setActiveTab}
+          openColorSelection={openColorSelection}
+        />
+        <TireWallSelector 
+          tireWallColor={tireWallColor}
+          setTireWallColor={setTireWallColor}
+        />
+        <RimTypeSelector 
+          rimType={rimType}
+          setRimType={setRimType}
+        />
+        <LogosSection
+          activeTab={activeTab}
+          logosCollapsed={logosCollapsed}
+          setLogosCollapsed={setLogosCollapsed}
+          selectedLogoType={selectedLogoType}
+          selectedLogoImageId={selectedLogoImageId}
+          logoTypes={logoTypes}
+          setSelectedLogoType={setSelectedLogoType}
+          setSelectedLogoImageId={setSelectedLogoImageId}
+          setActiveTab={setActiveTab}
+          addLogoImageFromFile={addLogoImageFromFile}
+          removeLogoImage={removeLogoImage}
+          setLogoTextureFromState={setLogoTextureFromState}
+          updateLogoTypeImages={updateLogoTypeImages}
+          openColorSelection={openColorSelection}
+        />
       </div>
     </div>
   );

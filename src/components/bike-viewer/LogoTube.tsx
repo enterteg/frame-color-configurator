@@ -29,7 +29,7 @@ export function LogoTube({ mesh }: LogoTubeProps) {
         material={originalMaterial}
         position={mesh.position}
         scale={mesh.scale}
-        receiveShadow
+        castShadow
       />
     );
   }
@@ -57,7 +57,7 @@ export function LogoTube({ mesh }: LogoTubeProps) {
       material={material}
       position={mesh.position}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 } 

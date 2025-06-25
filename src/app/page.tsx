@@ -13,14 +13,11 @@ import ControlInfoPanel from "../components/layout/ControlInfoPanel";
 import MobileWarning from "../components/MobileWarning";
 
 export default function BikeCustomizer() {
-  const { showBottomPanel, bottomPanelHeight, initializeAllLogoTextures } = useBikeStore();
-
-  useEffect(() => {
-    initializeAllLogoTextures();
-  }, [initializeAllLogoTextures]);
+  
 
   return (
     <>
+      <InitializeAllLogoTextures />
       <MobileWarning />
       <ControlInfoPanel />
       <MainLayout
@@ -36,10 +33,20 @@ export default function BikeCustomizer() {
           </div>
         }
         rightPanel={null}
-        bottomPanelHeight={showBottomPanel ? bottomPanelHeight : 0}
       />
       <ColorSelection />
-      <BottomPanel isOpen={showBottomPanel} />
+      <BottomPanel />
     </>
   );
+}
+
+
+const InitializeAllLogoTextures = () => {
+  const { initializeAllLogoTextures } = useBikeStore();
+
+  useEffect(() => {
+    initializeAllLogoTextures();
+  }, [initializeAllLogoTextures]);
+
+  return null;
 }

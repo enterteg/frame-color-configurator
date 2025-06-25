@@ -1,15 +1,17 @@
 'use client';
 
+import { useBikeStore } from '@/store/useBikeStore';
 import React from 'react';
 
 interface MainLayoutProps {
   leftNavigation: React.ReactNode;
   mainContent: React.ReactNode;
   rightPanel: React.ReactNode;
-  bottomPanelHeight?: number;
 }
 
-export default function MainLayout({ leftNavigation, mainContent, rightPanel, bottomPanelHeight = 0 }: MainLayoutProps) {
+export default function MainLayout({ leftNavigation, mainContent, rightPanel }: MainLayoutProps) {
+  const bottomPanelHeight = useBikeStore(state => state.bottomPanelHeight);
+  const isBottomPanelOpen = useBikeStore(state => state.showBottomPanel);
   return (
     <div className="h-screen w-screen relative overflow-hidden bg-gray-50">
       {/* Main Content - Always full screen */}
@@ -21,7 +23,7 @@ export default function MainLayout({ leftNavigation, mainContent, rightPanel, bo
       <div 
         className="absolute top-0 left-0 z-20"
         style={{ 
-          bottom: `${bottomPanelHeight}px`
+          bottom: isBottomPanelOpen ? `${bottomPanelHeight}px` : '0px'
         }}
       >
         {leftNavigation}
@@ -31,7 +33,7 @@ export default function MainLayout({ leftNavigation, mainContent, rightPanel, bo
       <div 
         className="absolute top-0 right-0 z-20"
         style={{ 
-          bottom: `${bottomPanelHeight}px`
+          bottom: isBottomPanelOpen ? `${bottomPanelHeight}px` : '0px'
         }}
       >
         {rightPanel}

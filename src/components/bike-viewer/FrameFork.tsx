@@ -13,10 +13,10 @@ export function FrameFork({ mesh }: FrameForkProps) {
   const objectName = mesh.name.toLowerCase();
   
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 1,
+    metalness: 0.8,
     roughness: 1,
     clearcoat: 1,
-    clearcoatRoughness: 0.1,
+    clearcoatRoughness: 0,
     color: objectName.includes("frame") ? frameColor.hex : forkColor.hex
   });
 
@@ -26,7 +26,7 @@ export function FrameFork({ mesh }: FrameForkProps) {
       material={material}
       position={mesh.position}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 } 

@@ -29,7 +29,7 @@ function Rim35Content({ mesh, material }: Rim35Props) {
       position={mesh.position}
       rotation={mesh.rotation}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
     />
   );
 }
@@ -42,7 +42,7 @@ function RimLoadingFallback({ mesh, material }: Rim35Props) {
       position={mesh.position}
       rotation={mesh.rotation}
       scale={mesh.scale}
-      receiveShadow
+      castShadow
       visible={false} // Hide during loading to prevent the "big square"
     />
   );

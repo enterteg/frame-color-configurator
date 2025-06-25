@@ -35,7 +35,7 @@ export default function BikeViewer3D({
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
+          toneMappingExposure: 1,
           outputColorSpace: THREE.SRGBColorSpace,
         }}
       >
