@@ -67,7 +67,6 @@ export default function BottomPanel() {
     if (!isResizing || typeof window === 'undefined') return;
     const newHeight = window.innerHeight - e.clientY;
     const constrainedHeight = Math.max(MIN_PANEL_HEIGHT, Math.min(maxPanelHeight, newHeight));
-    console.log('constrainedHeight', constrainedHeight);
     setBottomPanelHeight(constrainedHeight);
   }, [isResizing, setBottomPanelHeight, MIN_PANEL_HEIGHT, maxPanelHeight]);
 
@@ -109,7 +108,6 @@ export default function BottomPanel() {
         processingRef.current = true;
         const newProcessedImages: Record<string, HTMLImageElement> = {};
         for (const image of currentImages) {
-          console.log(image);
           // Only process if the image hasn't been processed or if its color has changed
           const imageKey = `${image.id}_${image.color.hex}_${image.url}`;
           if (
@@ -119,7 +117,6 @@ export default function BottomPanel() {
             const processedImage = await processImageWithTransformations(image);
             newProcessedImages[image.id] = processedImage;
             lastProcessedRef.current[image.id] = imageKey;
-            console.log({ newProcessedImages });
           }
         }
         if (Object.keys(newProcessedImages).length > 0) {

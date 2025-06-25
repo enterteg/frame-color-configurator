@@ -7,10 +7,10 @@ import { useBikeStore } from "../store/useBikeStore";
 // Layout components
 import MainLayout from "../components/layout/MainLayout";
 import LeftNavigation from "../components/layout/LeftNavigation";
-import ColorSelection from "../components/layout/ColorSelection";
 import BottomPanel from "../components/layout/BottomPanel";
 import ControlInfoPanel from "../components/layout/ControlInfoPanel";
 import MobileWarning from "../components/MobileWarning";
+import SelectionPanel from "../components/layout/SelectionPanel";
 
 export default function BikeCustomizer() {
   
@@ -34,7 +34,7 @@ export default function BikeCustomizer() {
         }
         rightPanel={null}
       />
-      <ColorSelection />
+      <SelectionPanel />
       <BottomPanel />
     </>
   );
