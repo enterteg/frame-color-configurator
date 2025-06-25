@@ -245,12 +245,18 @@ export const useBikeStore = create<BikeState>((set, get) => ({
   
   setShowBottomPanel: (show) => set(() => {
     // If closing the bottom panel and color picker is open for logo, close the color picker too
+    if (!show) {
       return {
-        showBottomPanel: show,
+        showBottomPanel: false,
         isColorSelectionOpen: false,
         colorSelectionType: null,
-        selectedColorGroup: null
-      }
+        selectedColorGroup: null,
+        selectionPanelType: undefined
+      };
+    }
+    return {
+      showBottomPanel: true
+    };
   }),
   
   setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
