@@ -188,7 +188,7 @@ export const useBikeStore = create<BikeState>()(
       rightPanelOpen: false,
       showLogoEditor: false,
       showBottomPanel: false,
-      bottomPanelHeight: 400, // 400 (HEAD_TUBE height) + 120 (header + padding)
+      bottomPanelHeight: 300, // 400 (HEAD_TUBE height) + 120 (header + padding)
       isColorSelectionOpen: false,
       selectedColorGroup: null,
       colorSelectionType: null,
@@ -290,7 +290,7 @@ export const useBikeStore = create<BikeState>()(
         colorSelectionType: type,
         selectedColorGroup: null,
         rightPanelOpen: false,
-        activeTab: type === 'logo' ? null : type,
+        activeTab: type === 'logo' ? 'logos' : type,
         selectionPanelType: 'color'
       }),
       

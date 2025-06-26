@@ -43,16 +43,26 @@ export default function BottomPanel() {
   const aspectRatio = activeLogoType ? activeLogoType.aspectRatio : 1;
   const LOGICAL_CANVAS_WIDTH = TEXTURE_SIZE;
   const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
+  
+  // Make the stage larger to allow dragging outside the texture area
+  const STAGE_PADDING = LOGICAL_CANVAS_HEIGHT * 0.2; // 5% of texture width as extra space around the texture area
+  const STAGE_WIDTH = LOGICAL_CANVAS_WIDTH + (STAGE_PADDING * 2);
+  const STAGE_HEIGHT = LOGICAL_CANVAS_HEIGHT + (STAGE_PADDING * 2);
+  
+  // Texture capture area offset (centered in the larger stage)
+  const TEXTURE_OFFSET_X = STAGE_PADDING;
+  const TEXTURE_OFFSET_Y = STAGE_PADDING;
+  
   const availableHeight = bottomPanelHeight - 80;
-  const availableWidth = Math.min(1000, typeof window !== 'undefined' ? window.innerWidth - 80 : 1200);
+  const availableWidth = typeof window !== 'undefined' ? window.innerWidth - 80 : 1200;
   
-  // Calculate scale while maintaining aspect ratio
-  const scaleByWidth = availableWidth / LOGICAL_CANVAS_WIDTH;
-  const scaleByHeight = availableHeight / LOGICAL_CANVAS_HEIGHT;
-  const visualScale = Math.min(scaleByWidth, scaleByHeight, 3);
+  // Calculate scale while maintaining aspect ratio (based on stage size now)
+  const scaleByWidth = availableWidth / STAGE_WIDTH;
+  const scaleByHeight = availableHeight / STAGE_HEIGHT;
+  const visualScale = Math.min(scaleByWidth, scaleByHeight);
   
-  const VISUAL_DISPLAY_WIDTH = LOGICAL_CANVAS_WIDTH * visualScale;
-  const VISUAL_DISPLAY_HEIGHT = LOGICAL_CANVAS_HEIGHT * visualScale;
+  const VISUAL_DISPLAY_WIDTH = STAGE_WIDTH * visualScale;
+  const VISUAL_DISPLAY_HEIGHT = STAGE_HEIGHT * visualScale;
   const MIN_PANEL_HEIGHT = 200;
 
   useEffect(() => {
@@ -155,6 +165,9 @@ export default function BottomPanel() {
             height: TEXTURE_SIZE,
             images: activeLogoType.images.map(img => ({
               ...img,
+              // Adjust positions relative to the texture capture area
+              x: img.x - TEXTURE_OFFSET_X,
+              y: img.y - TEXTURE_OFFSET_Y,
               processedImage: processedImages[img.id]
             })),
             backgroundColor: activeTab === 'frameTexture' ? frameColor.hex : undefined
@@ -239,9 +252,6 @@ export default function BottomPanel() {
   }
 
   const shouldShow = isOpen
-  const width = TEXTURE_SIZE;
-  const height = Math.round(width / aspectRatio);
-
 
   return (
     <div
@@ -275,7 +285,7 @@ export default function BottomPanel() {
         <div className='flex flex-col items-start justify-start'>
         <div className="py-1 ">
           <span className="text-xs text-gray-400 font-mono">
-            {width}x{height} px
+            Texture: {LOGICAL_CANVAS_WIDTH}x{LOGICAL_CANVAS_HEIGHT} px
           </span>
         </div>
 
@@ -289,35 +299,60 @@ export default function BottomPanel() {
             height: `${VISUAL_DISPLAY_HEIGHT}px`,
             maxWidth: "100%",
             maxHeight: "100%",
-            aspectRatio: `${LOGICAL_CANVAS_WIDTH} / ${LOGICAL_CANVAS_HEIGHT}`,
+            aspectRatio: `${STAGE_WIDTH} / ${STAGE_HEIGHT}`,
           }}
         >
           <div
             style={{
               transform: `scale(${visualScale})`,
               transformOrigin: "top left",
-              width: `${LOGICAL_CANVAS_WIDTH}px`,
-              height: `${LOGICAL_CANVAS_HEIGHT}px`,
+              width: `${STAGE_WIDTH}px`,
+              height: `${STAGE_HEIGHT}px`,
             }}
           >
             <Stage
               ref={stageRef}
-              width={LOGICAL_CANVAS_WIDTH}
-              height={LOGICAL_CANVAS_HEIGHT}
+              width={STAGE_WIDTH}
+              height={STAGE_HEIGHT}
             >
-              {/* Chessboard background layer */}
+              {/* Background layer with texture capture area */}
               <Layer>
+                {/* Checkerboard background for the entire stage */}
+                {(() => {
+                  const size = 32;
+                  const stageCols = Math.ceil(STAGE_WIDTH / size);
+                  const stageRows = Math.ceil(STAGE_HEIGHT / size);
+                  const rects = [];
+                  for (let y = 0; y < stageRows; y++) {
+                    for (let x = 0; x < stageCols; x++) {
+                      const isDark = (x + y) % 2 === 0;
+                      rects.push(
+                        <Rect
+                          key={`stage-bg-${x}-${y}`}
+                          x={x * size}
+                          y={y * size}
+                          width={size}
+                          height={size}
+                          fill={isDark ? '#f3f4f6' : '#ffffff'} // Light checkerboard for stage
+                        />
+                      );
+                    }
+                  }
+                  return rects;
+                })()}
+                
+                {/* Texture capture area overlay */}
                 {activeTab === 'frameTexture' ? (
                   // Solid color background for frame texture
                   <Rect
-                    x={0}
-                    y={0}
+                    x={TEXTURE_OFFSET_X}
+                    y={TEXTURE_OFFSET_Y}
                     width={LOGICAL_CANVAS_WIDTH}
                     height={LOGICAL_CANVAS_HEIGHT}
                     fill={frameColor.hex}
                   />
                 ) : (
-                  // Chessboard pattern for logo textures (transparency visualization)
+                  // Darker checkerboard pattern for logo texture capture area
                   (() => {
                     const size = 32;
                     const cols = Math.ceil(LOGICAL_CANVAS_WIDTH / size);
@@ -328,12 +363,12 @@ export default function BottomPanel() {
                         const isDark = (x + y) % 2 === 0;
                         rects.push(
                           <Rect
-                            key={`bg-${x}-${y}`}
-                            x={x * size}
-                            y={y * size}
+                            key={`texture-bg-${x}-${y}`}
+                            x={TEXTURE_OFFSET_X + (x * size)}
+                            y={TEXTURE_OFFSET_Y + (y * size)}
                             width={size}
                             height={size}
-                            fill={isDark ? '#e5e7eb' : '#f3f4f6'} // Tailwind gray-200/100tran
+                            fill={isDark ? '#e5e7eb' : '#f9fafb'} // Darker checkerboard for texture area
                           />
                         );
                       }
@@ -341,6 +376,18 @@ export default function BottomPanel() {
                     return rects;
                   })()
                 )}
+                
+                {/* Prominent texture boundary outline */}
+                <Rect
+                  x={TEXTURE_OFFSET_X}
+                  y={TEXTURE_OFFSET_Y}
+                  width={LOGICAL_CANVAS_WIDTH}
+                  height={LOGICAL_CANVAS_HEIGHT}
+                  fill="transparent"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dash={[12, 6]}
+                />
               </Layer>
               <Layer>
                 {currentImages.map((imageItem: TextureImage) => {
