@@ -14,7 +14,7 @@ const OptionToggleSelector: React.FC<OptionToggleSelectorProps> = ({ label, opti
       {options.map(opt => (
         <button
           key={opt.value}
-          className={`px-3 py-1 text-sm font-medium rounded-full border-2 transition-colors ${
+          className={`px-3 cursor-pointer py-1 text-sm font-medium rounded-full border-2 transition-colors ${
             selected === opt.value
               ? 'bg-gray-100 border-yellow-200 text-gray-700'
               : 'border-gray-100 bg-white text-gray-700'

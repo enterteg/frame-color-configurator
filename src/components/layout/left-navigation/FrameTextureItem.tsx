@@ -43,14 +43,15 @@ const FrameTextureItem: React.FC = () => {
   return (
     <>
       <div
-        className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
+        className={`w-full cursor-pointer flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
           activeTab === 'frameTexture'
-            ? 'bg-blue-50 text-blue-700 border-l-4 border-l-blue-500'
+            ? 'bg-gray-200 text-blue-700 border-l-4'
             : 'hover:bg-gray-50'
         }`}
+        style={activeTab === 'frameTexture' ? { borderLeftColor: '#4B2E19' } : undefined}
       >
         <button
-          className="flex-1 text-left focus:outline-none"
+          className="flex-1 text-left cursor-pointer focus:outline-none"
           onClick={() => {
             setActiveTab('frameTexture');
             setShowBottomPanel(true);

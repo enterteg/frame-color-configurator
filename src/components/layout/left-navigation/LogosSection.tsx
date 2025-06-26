@@ -81,11 +81,12 @@ const LogosSection: React.FC<LogosSectionProps> = ({
             setActiveTab('logos');
           }
         }}
-        className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
+        className={`w-full cursor-pointer flex items-center justify-between px-4 py-4 border-b border-gray-100 transition-all duration-200 ${
           activeTab === "logos"
-            ? "bg-blue-50 text-blue-700 border-l-4 border-l-blue-500"
+            ? "bg-gray-200 text-blue-700 border-l-4"
             : "hover:bg-gray-50"
         }`}
+        style={activeTab === 'logos' ? { borderLeftColor: '#4B2E19' } : undefined}
       >
         <div className="flex-1 text-left">
           <div className="font-medium text-gray-800">LOGOS</div>

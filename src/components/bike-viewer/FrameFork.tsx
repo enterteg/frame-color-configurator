@@ -40,9 +40,9 @@ export function FrameFork({ mesh }: FrameForkProps) {
   
   const material = new THREE.MeshPhysicalMaterial({
     metalness: 0.4,
-    roughness: isFrameMetallic ? 0.15 : 0.6,
+    roughness: isFrameMetallic ? 0.15 : 0.4,
     clearcoat: 1,
-    clearcoatRoughness: isFrameMetallic ? 0.3 : 1,
+    clearcoatRoughness: isFrameMetallic ? 0.5 : 1,
     color: isFrame && frameTexture.texture ? "white" : gammaHex,
     map: isFrame && frameTexture.texture ? frameTexture.texture : null,
   });

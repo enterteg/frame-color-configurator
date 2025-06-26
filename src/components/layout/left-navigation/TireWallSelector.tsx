@@ -16,28 +16,28 @@ const TireWallSelector: React.FC<TireWallSelectorProps> = ({ tireWallColor, setT
         <div className="flex gap-2">
           <button
             onClick={() => setTireWallColor('black')}
-            className={`w-8 h-8 rounded-full border-2 ${
+            className={`w-8 h-8 cursor-pointer rounded-full border-2 ${
               tireWallColor === 'black' ? 'border-brand-brown-500' : 'border-gray-300'
             }`}
             style={{ backgroundColor: '#000000' }}
           />
           <button
             onClick={() => setTireWallColor('brown')}
-            className={`w-8 h-8 rounded-full border-2 ${
+            className={`w-8 h-8 cursor-pointer rounded-full border-2 ${
               tireWallColor === 'brown' ? 'border-brand-brown-500' : 'border-gray-300'
             }`}
             style={{ backgroundColor: '#8b4513' }}
           />
           <button
             onClick={() => setTireWallColor('light_brown')}
-            className={`w-8 h-8 rounded-full border-2 ${
+            className={`w-8 h-8 cursor-pointer rounded-full border-2 ${
               tireWallColor === 'light_brown' ? 'border-brand-brown-500' : 'border-gray-300'
             }`}
             style={{ backgroundColor: '#f2dc8c' }}
           />
           <button
             onClick={() => setTireWallColor('white')}
-            className={`w-8 h-8 rounded-full border-2 ${
+            className={`w-8 h-8 cursor-pointer rounded-full border-2 ${
               tireWallColor === 'white' ? 'border-brand-brown-500' : 'border-gray-300'
             }`}
             style={{ backgroundColor: '#ffffff' }}

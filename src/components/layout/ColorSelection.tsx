@@ -108,7 +108,7 @@ export default function ColorPickerPanel() {
               <button
                 key={group.name}
                 onClick={() => setSelectedColorGroup(group.name)}
-                className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
+                className={`flex cursor-pointer flex-col items-center p-2 rounded-lg transition-all duration-200 ${
                   selectedColorGroup === group.name
                     ? "bg-brand-brown-100 border-2 border-brand-brown-500 shadow-md"
                     : "hover:bg-gray-100 border-2 border-transparent"
