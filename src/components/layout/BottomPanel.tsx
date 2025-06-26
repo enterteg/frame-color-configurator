@@ -117,7 +117,7 @@ export default function BottomPanel() {
         const newProcessedImages: Record<string, HTMLImageElement> = {};
         for (const image of currentImages) {
           // Only process if the image hasn't been processed or if its color has changed
-          const imageKey = `${image.id}_${image.color?.hex || 'no-color'}_${image.url}`;
+          const imageKey = `${image.id}_${image.color?.hex || 'no-color'}_${image.url || ''}_${image.blobUrl || ''}`;
           if (
             !lastProcessedRef.current[image.id] ||
             lastProcessedRef.current[image.id] !== imageKey
