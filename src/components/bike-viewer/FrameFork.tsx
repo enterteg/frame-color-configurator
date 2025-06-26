@@ -43,7 +43,7 @@ export function FrameFork({ mesh }: FrameForkProps) {
     roughness: isFrameMetallic ? 0.15 : 0.6,
     clearcoat: 1,
     clearcoatRoughness: isFrameMetallic ? 0.3 : 1,
-    color: isFrame ? "white" : gammaHex,
+    color: isFrame && frameTexture.texture ? "white" : gammaHex,
     map: isFrame && frameTexture.texture ? frameTexture.texture : null,
   });
 
