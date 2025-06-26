@@ -5,6 +5,7 @@ import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, 
 import { LogoImage, LogoType } from '../types/bike';
 import { generateLogoTexture, processImageWithTransformations } from '../utils/generateLogoTexture';
 import { useShallow } from 'zustand/shallow';
+import { TEXTURE_SIZE } from '../utils/constants';
 
 // Get default colors from main definitions
 const DEFAULT_FRAME_COLOR = getColorById(DEFAULT_FRAME_COLOR_ID) || {
@@ -27,7 +28,6 @@ export interface LogoTypeData {
 }
 
 // Texture constants
-const TEXTURE_SIZE = 1024; // Always 1024×1024 regardless of logo type
 
 interface BikeState {
   // Navigation state

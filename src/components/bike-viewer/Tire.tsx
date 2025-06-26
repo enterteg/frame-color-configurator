@@ -49,9 +49,9 @@ export function Tire({ mesh }: TireProps) {
   const material = new THREE.MeshPhysicalMaterial({
     metalness: 0,
     roughnessMap: rubberRoughnessMap,
-    roughness: 1,
+    roughness: 0.8,
     normalMap: rubberNormalMap,
-    normalScale: new THREE.Vector2(1, 0.3),
+    normalScale: new THREE.Vector2(1, 1),
     color: isTanWall ? getTireWallColor(tireWallColor) : 0x1a1a1a,
   });
 

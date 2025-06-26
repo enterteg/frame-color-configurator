@@ -16,13 +16,13 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         background={false}
         preset="warehouse"
         environmentIntensity={0.9}
-        backgroundRotation={[0, 1, 0]}
+        backgroundRotation={[0, 0, 0]}
       />
 
       {/* Back directional light - from top back */}
       <directionalLight
         position={[1, 3, -2]}
-        intensity={2}
+        intensity={1.5}
         color="#ffffff"
         castShadow
       />

@@ -7,8 +7,6 @@ import LoadingFallback from './LoadingFallback';
 import SceneSetup from './SceneSetup';
 import BikeModel from './BikeModel';
 
-
-
 interface BikeViewer3DProps {
   combinedModelPath?: string;
   className?: string;
@@ -19,11 +17,11 @@ export default function BikeViewer3D({
   combinedModelPath = '/models/bike.glb',
   className = '',
 }: BikeViewer3DProps) {
-
   return (
     <div
       className={`w-full h-full bg-gray-100 rounded-lg overflow-hidden relative ${className}`}
     >
+
       <Canvas
         camera={{
           position: [0, 0, 10],

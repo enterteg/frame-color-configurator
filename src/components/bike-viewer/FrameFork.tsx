@@ -37,10 +37,10 @@ export function FrameFork({ mesh }: FrameForkProps) {
   const gammaHex = applyGammaToHex(baseHex);
   
   const material = new THREE.MeshPhysicalMaterial({
-    metalness: 0.3,
-    roughness: isFrameMetallic ? 0.1 : 0.4,
+    metalness: 0.4,
+    roughness: isFrameMetallic ? 0.1 : 0.6,
     clearcoat: 1,
-    clearcoatRoughness: isFrameMetallic ? 0 : 1,
+    clearcoatRoughness: isFrameMetallic ? 0.3 : 1,
     color: gammaHex
   });
 

@@ -8,6 +8,7 @@ import { useBikeStore, useActiveLogoType } from '../../store/useBikeStore';
 import { processImageWithTransformations } from '../../utils/generateLogoTexture';
 import { generateLogoTexture } from '../../utils/generateLogoTexture';
 import { LogoImage } from '@/types/bike';
+import { TEXTURE_SIZE } from '../../utils/constants';
 
 
 export default function BottomPanel() {
@@ -36,7 +37,6 @@ export default function BottomPanel() {
   const activeLogoType = useActiveLogoType();
 
   // Constants
-  const TEXTURE_SIZE = 1024; // Always 1024×1024 regardless of logo type
   const aspectRatio = activeLogoType ? activeLogoType.aspectRatio : 1;
   const LOGICAL_CANVAS_WIDTH = TEXTURE_SIZE;
   const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
@@ -241,124 +241,142 @@ export default function BottomPanel() {
   }
 
   const shouldShow = isOpen
+  const width = TEXTURE_SIZE;
+  const height = Math.round(width / aspectRatio);
+
 
   return (
-    <div 
+    <div
       className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 transition-transform duration-300 ${
-        shouldShow ? 'translate-y-0' : 'translate-y-full'
+        shouldShow ? "translate-y-0" : "translate-y-full"
       }`}
       style={{ height: `${bottomPanelHeight}px` }}
     >
-        {/* Resize handle */}
-        <div
-          className="absolute top-0 left-0 right-0 h-1 bg-gray-300 cursor-row-resize hover:bg-gray-400 transition-colors"
-          onMouseDown={handleMouseDown}
-        />
-        
-        <div className="flex items-center justify-between px-4 py-3 mt-1">
-          <div className="text-sm font-bold text-gray-500">Manipulate Logo Texture</div>
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            <XMarkIcon className="h-4 w-4 text-gray-600" />
-          </button>
+      {/* Resize handle */}
+      <div
+        className="absolute top-0 left-0 right-0 h-1 bg-gray-300 cursor-row-resize hover:bg-gray-400 transition-colors"
+        onMouseDown={handleMouseDown}
+      />
+
+      <div className="flex items-center justify-between px-4 py-3 mt-1">
+        <div className="text-sm font-bold text-gray-500">
+          Manipulate Logo Texture
+        </div>
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+        >
+          <XMarkIcon className="h-4 w-4 text-gray-600" />
+        </button>
+      </div>
+
+      <div
+        className="flex-1 flex items-center justify-center p-4"
+        style={{ height: `${bottomPanelHeight - 60}px` }}
+      >
+        <div className='flex flex-col items-start justify-start'>
+        <div className="py-1 ">
+          <span className="text-xs text-gray-400 font-mono">
+            {width}x{height} px
+          </span>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-4" style={{ height: `${bottomPanelHeight - 60}px` }}>
-          <div 
-            className="border border-gray-300 rounded-lg overflow-hidden shadow-sm"
-            style={{ 
-              width: `${VISUAL_DISPLAY_WIDTH}px`,
-              height: `${VISUAL_DISPLAY_HEIGHT}px`,
-              maxWidth: '100%',
-              maxHeight: '100%',
-              aspectRatio: `${LOGICAL_CANVAS_WIDTH} / ${LOGICAL_CANVAS_HEIGHT}`
+        <div
+          className="border border-gray-300 rounded-lg overflow-hidden shadow-sm"
+          style={{
+            width: `${VISUAL_DISPLAY_WIDTH}px`,
+            height: `${VISUAL_DISPLAY_HEIGHT}px`,
+            maxWidth: "100%",
+            maxHeight: "100%",
+            aspectRatio: `${LOGICAL_CANVAS_WIDTH} / ${LOGICAL_CANVAS_HEIGHT}`,
+          }}
+        >
+          <div
+            style={{
+              transform: `scale(${visualScale})`,
+              transformOrigin: "top left",
+              width: `${LOGICAL_CANVAS_WIDTH}px`,
+              height: `${LOGICAL_CANVAS_HEIGHT}px`,
             }}
           >
-            <div
-              style={{
-                transform: `scale(${visualScale})`,
-                transformOrigin: 'top left',
-                width: `${LOGICAL_CANVAS_WIDTH}px`,
-                height: `${LOGICAL_CANVAS_HEIGHT}px`
-              }}
+            <Stage
+              ref={stageRef}
+              width={LOGICAL_CANVAS_WIDTH}
+              height={LOGICAL_CANVAS_HEIGHT}
             >
-              <Stage
-                ref={stageRef}
-                width={LOGICAL_CANVAS_WIDTH}
-                height={LOGICAL_CANVAS_HEIGHT}
-              >
-                <Layer>
-                  {currentImages.map((imageItem: LogoImage) => {
-                    const processedImage = processedImages[imageItem.id];
-                    return (
-                      <KonvaImage
-                        key={imageItem.id}
-                        id={imageItem.id}
-                        image={processedImage}
-                        x={imageItem.x}
-                        y={imageItem.y}
-                        scaleX={imageItem.scaleX ?? 1}
-                        scaleY={imageItem.scaleY ?? 1}
-                        rotation={imageItem.rotation}
-                        offsetX={processedImage ? processedImage.width / 2 : 0}
-                        offsetY={processedImage ? processedImage.height / 2 : 0}
-                        draggable
-                        onClick={() => handleImageClick(imageItem.id)}
-                        onTap={() => handleImageClick(imageItem.id)}
-                        onDragMove={(e) => handleDrag(imageItem.id, e)}
-                        onDragEnd={(e) => {
-                          handleTransform(imageItem.id, {
-                            x: e.target.x(),
-                            y: e.target.y(),
-                          });
-                        }}
-                        onTransform={(e) => handleTransformChange(imageItem.id, e)}
-                        onTransformEnd={(e) => {
-                          const node = e.target;
-                          handleTransform(imageItem.id, {
-                            x: node.x(),
-                            y: node.y(),
-                            scaleX: node.scaleX(),
-                            scaleY: node.scaleY(),
-                            rotation: node.rotation(),
-                          });
-                        }}
-                      />
-                    );
-                  })}
-                </Layer>
-                <Layer>
-                  <Transformer
-                    ref={transformerRef}
-                    borderEnabled={true}
-                    anchorStroke="#0066CC"
-                    anchorFill="#FFFFFF"
-                    anchorStrokeWidth={2}
-                    anchorSize={8}
-                    borderStroke="#0066CC"
-                    borderStrokeWidth={2}
-                    borderDash={[4, 4]}
-                    keepRatio={false}
-                    enabledAnchors={[
-                      'top-left',
-                      'top-center', 
-                      'top-right',
-                      'middle-right',
-                      'bottom-right',
-                      'bottom-center',
-                      'bottom-left',
-                      'middle-left'
-                    ]}
-                    rotateEnabled={true}
-                    rotationSnaps={[0, 90, 180, 270]}
-                  />
-                </Layer>
-              </Stage>
-            </div>
+              <Layer>
+                {currentImages.map((imageItem: LogoImage) => {
+                  const processedImage = processedImages[imageItem.id];
+                  return (
+                    <KonvaImage
+                      key={imageItem.id}
+                      id={imageItem.id}
+                      image={processedImage}
+                      x={imageItem.x}
+                      y={imageItem.y}
+                      scaleX={imageItem.scaleX ?? 1}
+                      scaleY={imageItem.scaleY ?? 1}
+                      rotation={imageItem.rotation}
+                      offsetX={processedImage ? processedImage.width / 2 : 0}
+                      offsetY={processedImage ? processedImage.height / 2 : 0}
+                      draggable
+                      onClick={() => handleImageClick(imageItem.id)}
+                      onTap={() => handleImageClick(imageItem.id)}
+                      onDragMove={(e) => handleDrag(imageItem.id, e)}
+                      onDragEnd={(e) => {
+                        handleTransform(imageItem.id, {
+                          x: e.target.x(),
+                          y: e.target.y(),
+                        });
+                      }}
+                      onTransform={(e) =>
+                        handleTransformChange(imageItem.id, e)
+                      }
+                      onTransformEnd={(e) => {
+                        const node = e.target;
+                        handleTransform(imageItem.id, {
+                          x: node.x(),
+                          y: node.y(),
+                          scaleX: node.scaleX(),
+                          scaleY: node.scaleY(),
+                          rotation: node.rotation(),
+                        });
+                      }}
+                    />
+                  );
+                })}
+              </Layer>
+              <Layer>
+                <Transformer
+                  ref={transformerRef}
+                  borderEnabled={true}
+                  anchorStroke="#0066CC"
+                  anchorFill="#FFFFFF"
+                  anchorStrokeWidth={2}
+                  anchorSize={8}
+                  borderStroke="#0066CC"
+                  borderStrokeWidth={2}
+                  borderDash={[4, 4]}
+                  keepRatio={false}
+                  enabledAnchors={[
+                    "top-left",
+                    "top-center",
+                    "top-right",
+                    "middle-right",
+                    "bottom-right",
+                    "bottom-center",
+                    "bottom-left",
+                    "middle-left",
+                  ]}
+                  rotateEnabled={true}
+                  rotationSnaps={[0, 90, 180, 270]}
+                />
+              </Layer>
+            </Stage>
           </div>
         </div>
+        </div>
       </div>
-    );
+    </div>
+  );
   } 

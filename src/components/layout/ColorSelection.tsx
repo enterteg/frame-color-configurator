@@ -183,7 +183,7 @@ export default function ColorPickerPanel() {
                         title={`${color.code} - ${color.name}`}
                       >
                         <div
-                          className={`w-14 h-14 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center ${
+                          className={`w-18 h-18 rounded-full shadow-sm group-hover:shadow-md transition-shadow flex flex-col items-center justify-center ${
                             (colorSelectionType === "frame" &&
                               color.code === frameColor.code) ||
                             (colorSelectionType === "fork" &&
@@ -202,13 +202,13 @@ export default function ColorPickerPanel() {
                         >
                           <div className="flex flex-col items-center justify-center opacity-60">
                             <span
-                              className="text-[9px] font-bold leading-tight"
+                              className="text-[12px] font-bold leading-tight"
                               style={{ color: getContrastTextColor(color.hex) }}
                             >
                               {color.code.replace("RAL ", "")}
                             </span>
                             <span
-                              className="text-[7px] font-bold leading-tight text-center px-1"
+                              className="text-[10px] leading-tight text-center px-4"
                               style={{ color: getContrastTextColor(color.hex) }}
                             >
                               {color.name}
