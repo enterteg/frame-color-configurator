@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as THREE from 'three';
 import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, DEFAULT_LOGO_COLOR_ID } from '../data/ralColors';
-import { LogoImage, LogoType } from '../types/bike';
-import { generateLogoTexture, processImageWithTransformations } from '../utils/generateLogoTexture';
+import { TextureImage, LogoType, TabType } from '../types/bike';
+import { generateImageTexture, processImageWithTransformations } from '../utils/generateImageTexture';
 import { useShallow } from 'zustand/shallow';
 import { TEXTURE_SIZE } from '../utils/constants';
 
@@ -20,18 +20,16 @@ const DEFAULT_FORK_COLOR = getColorById(DEFAULT_FORK_COLOR_ID) || {
   hex: '#E9E5CE'
 };
 
-// Logo type data with aspect ratio configuration
-export interface LogoTypeData {
-  images: LogoImage[];
+// Generic texture data with aspect ratio configuration
+export interface TextureData {
+  images: TextureImage[];
   texture: THREE.Texture | null;
   aspectRatio: number; // width:height ratio (e.g., 1 for square, 10 for wide)
 }
 
-// Texture constants
-
 interface BikeState {
   // Navigation state
-  activeTab: 'frame' | 'fork' | 'logos' | 'tires' | null;
+  activeTab: TabType;
   navigationCollapsed: boolean;
   logosCollapsed: boolean;
   
@@ -44,9 +42,9 @@ interface BikeState {
   
   // Logo state - now supports multiple logo types with aspect ratios
   logoTypes: {
-    HEAD_TUBE: LogoTypeData;
-    DOWN_TUBE_LEFT: LogoTypeData;
-    DOWN_TUBE_RIGHT: LogoTypeData;
+    HEAD_TUBE: TextureData;
+    DOWN_TUBE_LEFT: TextureData;
+    DOWN_TUBE_RIGHT: TextureData;
   };
   selectedLogoType: LogoType | null;
   selectedLogoImageId: string | null;
@@ -69,7 +67,7 @@ interface BikeState {
   isFrameMetallic: boolean;
   
   // Actions
-  setActiveTab: (tab: 'frame' | 'fork' | 'logos' | 'tires' | null) => void;
+  setActiveTab: (tab: TabType) => void;
   toggleNavigationCollapsed: () => void;
   setLogosCollapsed: (collapsed: boolean) => void;
   setFrameColor: (color: RALColor) => void;
@@ -92,21 +90,21 @@ interface BikeState {
   setFrameMetallic: (isMetallic: boolean) => void;
   
   // Logo management actions
-  addLogoImage: (logoType: LogoType, image: Omit<LogoImage, 'id'>) => void;
+  addLogoImage: (logoType: LogoType, image: Omit<TextureImage, 'id'>) => void;
   addLogoImageFromFile: (logoType: LogoType, file: File) => string;
   removeLogoImage: (logoType: LogoType, imageId: string) => void;
-  updateLogoImage: (imageId: string, updates: Partial<LogoImage>) => void;
-  updateLogoTypeImages: (logoType: LogoType, images: LogoImage[]) => void;
+  updateLogoImage: (imageId: string, updates: Partial<TextureImage>) => void;
+  updateLogoTypeImages: (logoType: LogoType, images: TextureImage[]) => void;
   setLogoTexture: (texture: THREE.Texture | null) => void;
   setLogoColor: (logoType: LogoType, imageId: string, color: RALColor) => void;
   
   // Getters
   getCurrentLogoTexture: () => THREE.Texture | null;
   getCurrentCanvasSize: () => { width: number; height: number };
-  getSelectedLogoImage: () => LogoImage | null;
-  getHeadTubeLogoImages: () => LogoImage[];
-  getDownTubeLeftLogoImages: () => LogoImage[];
-  getDownTubeRightLogoImages: () => LogoImage[];
+  getSelectedLogoImage: () => TextureImage | null;
+  getHeadTubeLogoImages: () => TextureImage[];
+  getDownTubeLeftLogoImages: () => TextureImage[];
+  getDownTubeRightLogoImages: () => TextureImage[];
   
   // New actions
   setLogoTextureFromState: (logoType: LogoType) => Promise<void>;
@@ -118,10 +116,30 @@ interface BikeState {
 
   // New action
   resetStore: () => void;
+
+  // New: frameTexture state
+  frameTexture: TextureData;
+
+  // New actions for frameTexture management
+  addFrameTextureImage: (image: Omit<TextureImage, 'id'>) => void;
+  updateFrameTextureImage: (imageId: string, updates: Partial<TextureImage>) => void;
+  removeFrameTextureImage: (imageId: string) => void;
+  setFrameTexture: (texture: THREE.Texture | null) => void;
+  reorderFrameTextureImages: (images: TextureImage[]) => void;
+
+  // Generic texture image update action
+  updateTextureImage: (imageId: string, updates: Partial<TextureImage>) => void;
+
+  // Processed images state and actions
+  processedImages: Record<string, HTMLImageElement>;
+  updateProcessedImages: (images: Record<string, HTMLImageElement>) => void;
+  removeProcessedImages: (imageIds: string[]) => void;
+  setIsProcessing: (isProcessing: boolean) => void;
+  isProcessing: boolean;
 }
 
 // Create default logo image configuration
-const createDefaultLogoImage = (logoType: string, aspectRatio: number, name: string, url: string): LogoImage => {
+const createDefaultLogoImage = (logoType: string, aspectRatio: number, name: string, url: string): TextureImage => {
   // Calculate canvas size from aspect ratio (base width = TEXTURE_SIZE)
   const canvasWidth = TEXTURE_SIZE;
   const canvasHeight = TEXTURE_SIZE / aspectRatio;
@@ -184,6 +202,13 @@ export const useBikeStore = create<BikeState>()(
       selectionPanelType: 'color',
       // New: metallic/matte toggle
       isFrameMetallic: true,
+
+      // New: frameTexture state
+      frameTexture: {
+        images: [],
+        texture: null,
+        aspectRatio: 1, // 1:1 for square
+      },
 
       // Actions
       setActiveTab: (tab) => set(() => {
@@ -253,6 +278,7 @@ export const useBikeStore = create<BikeState>()(
         if (!show) {
           return {
             showBottomPanel: false,
+            activeTab: null,
             isColorSelectionOpen: false,
             colorSelectionType: null,
             selectedColorGroup: null,
@@ -302,7 +328,7 @@ export const useBikeStore = create<BikeState>()(
 
       // Logo management actions
       addLogoImage: (logoType, image) => set((state) => {
-        const newImage: LogoImage = {
+        const newImage: TextureImage = {
           ...image,
           id: `${logoType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         };
@@ -344,7 +370,7 @@ export const useBikeStore = create<BikeState>()(
         const canvasWidth = TEXTURE_SIZE;
         const canvasHeight = TEXTURE_SIZE / aspectRatio;
         
-        const newImage: LogoImage = {
+        const newImage: TextureImage = {
           id,
           file,
           blobUrl,
@@ -430,7 +456,7 @@ export const useBikeStore = create<BikeState>()(
         );
 
         // Generate new texture with updated images
-        generateLogoTexture({
+        generateImageTexture({
           width: TEXTURE_SIZE,
           height: TEXTURE_SIZE,
           images: updatedImages,
@@ -495,7 +521,7 @@ export const useBikeStore = create<BikeState>()(
         if (!logoData) return;
         const width = TEXTURE_SIZE;
         const height = TEXTURE_SIZE
-        const texture = await generateLogoTexture({
+        const texture = await generateImageTexture({
           width,
           height,
           images: logoData.images,
@@ -616,6 +642,83 @@ export const useBikeStore = create<BikeState>()(
         // Reset all state to initial values
         window.location.reload();
       },
+
+      // New actions for frameTexture management
+      addFrameTextureImage: (image: Omit<TextureImage, 'id'>) => set((state) => {
+        const newImage: TextureImage = {
+          ...image,
+          id: `FRAME_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        };
+        return {
+          frameTexture: {
+            ...state.frameTexture,
+            images: [...state.frameTexture.images, newImage]
+          }
+        };
+      }),
+      updateFrameTextureImage: (imageId: string, updates: Partial<TextureImage>) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          images: state.frameTexture.images.map(img =>
+            img.id === imageId ? { ...img, ...updates } : img
+          )
+        }
+      })),
+      removeFrameTextureImage: (imageId: string) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          images: state.frameTexture.images.filter(img => img.id !== imageId)
+        }
+      })),
+      setFrameTexture: (texture: THREE.Texture | null) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          texture
+        }
+      })),
+      reorderFrameTextureImages: (images: TextureImage[]) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          images
+        }
+      })),
+
+      // Generic texture image update action
+      updateTextureImage: (imageId: string, updates: Partial<TextureImage>) => set((state) => {
+        if (state.activeTab === 'frameTexture') {
+          return {
+            frameTexture: {
+              ...state.frameTexture,
+              images: state.frameTexture.images.map(img =>
+                img.id === imageId ? { ...img, ...updates } : img
+              )
+            }
+          };
+        } else if (state.selectedLogoType) {
+          const type = state.selectedLogoType;
+          return {
+            logoTypes: {
+              ...state.logoTypes,
+              [type]: {
+                ...state.logoTypes[type],
+                images: state.logoTypes[type].images.map(img =>
+                  img.id === imageId ? { ...img, ...updates } : img
+                )
+              }
+            }
+          };
+        }
+        return {};
+      }),
+
+      // Processed images state and actions
+      processedImages: {},
+      updateProcessedImages: (images: Record<string, HTMLImageElement>) => set({ processedImages: images }),
+      removeProcessedImages: (imageIds: string[]) => set((state) => ({
+        processedImages: Object.fromEntries(Object.entries(state.processedImages).filter(([id]) => !imageIds.includes(id)))
+      })),
+      setIsProcessing: (isProcessing: boolean) => set({ isProcessing }),
+      isProcessing: false,
     }),
     {
       name: 'bike-store',
@@ -676,12 +779,17 @@ export const useBikeStore = create<BikeState>()(
   )
 );
 
-// Selector hook for active logo type with shallow memoization
-export function useActiveLogoType() {
+// Selector hook for active texture (logo or frame) with shallow memoization
+export function useActiveTexture() {
   return useBikeStore(useShallow(
-      state => {
+    state => {
+      if (state.activeTab === 'logos') {
         const type = state.selectedLogoType;
         return type ? state.logoTypes[type] : null;
-      })
+      } else if (state.activeTab === 'frameTexture') {
+        return state.frameTexture;
+      }
+      return null;
+    })
   );
 } 

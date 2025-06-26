@@ -46,7 +46,7 @@ export default function SceneSetup({ children }: SceneSetupProps) {
         enableZoom={true}
         enableRotate={true}
         minDistance={1}
-        maxDistance={4}
+        maxDistance={3}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={-Infinity}

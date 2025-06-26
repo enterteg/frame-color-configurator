@@ -9,6 +9,7 @@ import RimTypeSelector from './left-navigation/RimTypeSelector';
 import LogosSection from './left-navigation/LogosSection';  
 import FinishSelector from './FinishSelector';
 import { useBikeStore } from '../../store/useBikeStore';
+import FrameTextureItem from './left-navigation/FrameTextureItem';
 
 const LeftNavigation = () => {
   const {
@@ -21,11 +22,9 @@ const LeftNavigation = () => {
     logoTypes,
     selectedLogoImageId,
     navigationCollapsed,
-    logosCollapsed,
     setActiveTab,
     setSelectedLogoType,
     openColorSelection,
-    addLogoImageFromFile,
     removeLogoImage,
     setSelectedLogoImageId,
     setLogoTextureFromState,
@@ -34,7 +33,6 @@ const LeftNavigation = () => {
     loadConfiguration,
     setTireWallColor,
     setRimType,
-    setLogosCollapsed,
   } = useBikeStore();
 
   const handleSave = () => {
@@ -104,20 +102,19 @@ const LeftNavigation = () => {
         />
         <LogosSection
           activeTab={activeTab}
-          logosCollapsed={logosCollapsed}
-          setLogosCollapsed={setLogosCollapsed}
           selectedLogoType={selectedLogoType}
           selectedLogoImageId={selectedLogoImageId}
           logoTypes={logoTypes}
           setSelectedLogoType={setSelectedLogoType}
           setSelectedLogoImageId={setSelectedLogoImageId}
           setActiveTab={setActiveTab}
-          addLogoImageFromFile={addLogoImageFromFile}
           removeLogoImage={removeLogoImage}
           setLogoTextureFromState={setLogoTextureFromState}
           updateLogoTypeImages={updateLogoTypeImages}
           openColorSelection={openColorSelection}
         />
+        {/* Frame Texture menu item */}
+        <FrameTextureItem />
       </div>
     </div>
   );

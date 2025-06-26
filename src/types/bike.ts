@@ -6,7 +6,7 @@ export interface BikeColors {
   forkColorId: string;
 }
 
-export interface LogoImage {
+export interface TextureImage {
   id: string;
   // File-based properties (optional for URL-based logos)
   file?: File;
@@ -23,8 +23,8 @@ export interface LogoImage {
   scaleY?: number; // For URL-based system
   scale?: number;  // For unified scaling
   rotation: number;
-  // Color (unified as RALColor)
-  color: RALColor;
+  // Color (unified as RALColor) - optional for frame textures
+  color?: RALColor;
   // Processed image for texture generation
   processedImage?: HTMLImageElement;
   // Layer ordering
@@ -35,9 +35,9 @@ export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_LEFT' | 'DOWN_TUBE_RIGHT';
 
 export interface BikeConfiguration {
   colors: BikeColors;
-  logoImages: LogoImage[];
+  logoImages: TextureImage[];
 }
 
-export type TabType = 'frame' | 'fork' | 'logos' | 'tires' | null;
+export type TabType = 'frame' | 'fork' | 'logos' | 'tires' | 'frameTexture' | null;
 export type RimType = '35' | '50';
 export type TireWallColor = 'black' | 'brown' | 'white' | 'light_brown'; 

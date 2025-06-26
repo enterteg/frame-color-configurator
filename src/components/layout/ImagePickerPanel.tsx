@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useBikeStore } from '../../store/useBikeStore';
 import Image from 'next/image';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import UploadImageButton from './UploadImageButton';
 import { useLogoImageActions } from '../../hooks/useLogoImageActions';
 
 const logoImagesList = [
@@ -57,21 +57,13 @@ export default function ImagePickerPanel() {
     }
   };
 
-  const handleAddImage = () => {
+  const handleUploadFile = (file: File) => {
     if (!selectedLogoType && !selectedLogoImageId) return;
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/png,image/jpg,image/jpeg';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      if (isReplaceMode) {
-        replaceUploadedImage(file);
-      } else {
-        addUploadedImage(file);
-      }
-    };
-    input.click();
+    if (isReplaceMode) {
+      replaceUploadedImage(file);
+    } else {
+      addUploadedImage(file);
+    }
   };
 
   return (
@@ -87,13 +79,7 @@ export default function ImagePickerPanel() {
     >
       <div className="p-4 border-b border-gray-200 font-medium text-gray-800 flex items-center justify-between">
         <span>{isReplaceMode ? 'Replace Logo Image' : 'Add Logo Image'}</span>
-        <button
-          onClick={handleAddImage}
-          className="p-1 rounded hover:bg-gray-100 transition-colors"
-          title="Upload new image"
-        >
-          <PlusIcon className="h-5 w-5 text-brand-brown-700" />
-        </button>
+        <UploadImageButton onFile={handleUploadFile} accept="image/png,image/jpg,image/jpeg" title="Upload new image" />
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="grid grid-cols-3 gap-3">

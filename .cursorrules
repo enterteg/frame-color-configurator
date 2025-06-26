@@ -8,3 +8,5 @@ Prioritize code quality over speed! always think if we can improve/refactor
 
 prefer enums if possible
 for unions always crete separate type and reuse it - avoid inlining types/other things 
+
+We are using Zustand so lets prioritize it - useBikeStore.ts

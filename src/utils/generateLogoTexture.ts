@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LogoImage } from '../types/bike';
+import { TextureImage } from '../types/bike';
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -11,9 +11,15 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function processImageWithTransformations(image: LogoImage): Promise<HTMLImageElement> {
+export async function processImageWithTransformations(image: TextureImage): Promise<HTMLImageElement> {
   // Load the source image
   const sourceImage = await loadImage(image.url || image.blobUrl || '');
+  
+  // If no color is defined, return the original image without transformations
+  if (!image.color) {
+    console.log('No color defined, returning original image');
+    return sourceImage;
+  }
   
   // Create a canvas to apply transformations
   const canvas = document.createElement('canvas');
@@ -28,7 +34,7 @@ export async function processImageWithTransformations(image: LogoImage): Promise
   // Draw the image first
   ctx.drawImage(sourceImage, 0, 0);
   
-  // Apply color tint
+  // Apply color tint only if color is defined
   ctx.globalCompositeOperation = 'source-in';
   ctx.fillStyle = image.color.hex;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -45,14 +51,14 @@ export async function processImageWithTransformations(image: LogoImage): Promise
   });
 }
 
-export async function generateLogoTexture({
+export async function generateImageTexture({
   width,
   height,
   images,
 }: {
   width: number;
   height: number;
-  images: LogoImage[];
+  images: TextureImage[];
 }): Promise<THREE.Texture> {
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -79,6 +85,7 @@ export async function generateLogoTexture({
     );
     ctx.restore();
   }
+
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.flipY = false;

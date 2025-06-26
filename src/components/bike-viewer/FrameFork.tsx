@@ -31,17 +31,20 @@ export function FrameFork({ mesh }: FrameForkProps) {
   const frameColor = useBikeStore((s) => s.frameColor);
   const forkColor = useBikeStore((s) => s.forkColor);
   const isFrameMetallic = useBikeStore((s) => s.isFrameMetallic);
+  const frameTexture = useBikeStore((s) => s.frameTexture);
   
   const objectName = mesh.name.toLowerCase();
-  const baseHex = objectName.includes("frame") ? frameColor.hex : forkColor.hex;
+  const isFrame = objectName.includes("frame");
+  const baseHex = isFrame ? frameColor.hex : forkColor.hex;
   const gammaHex = applyGammaToHex(baseHex);
   
   const material = new THREE.MeshPhysicalMaterial({
     metalness: 0.4,
-    roughness: isFrameMetallic ? 0.1 : 0.6,
+    roughness: isFrameMetallic ? 0.15 : 0.6,
     clearcoat: 1,
     clearcoatRoughness: isFrameMetallic ? 0.3 : 1,
-    color: gammaHex
+    color: "white",
+    map: isFrame && frameTexture.texture ? frameTexture.texture : null,
   });
 
   return (

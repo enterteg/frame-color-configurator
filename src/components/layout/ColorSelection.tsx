@@ -22,7 +22,7 @@ export default function ColorPickerPanel() {
     setSelectedColorGroup,
     setFrameColor,
     setForkColor,
-    updateLogoImage,
+    updateTextureImage,
     selectionPanelType,
   } = useBikeStore();
 
@@ -68,7 +68,7 @@ export default function ColorPickerPanel() {
     } else if (colorSelectionType === 'fork') {
       setForkColor(color);
     } else if (colorSelectionType === 'logo' && selectedLogoImageId) {
-      updateLogoImage(selectedLogoImageId, { color });
+      updateTextureImage(selectedLogoImageId, { color });
       // Don't close for logo colors - keep open for multiple selections
     }
   };
@@ -173,10 +173,10 @@ export default function ColorPickerPanel() {
                           (colorSelectionType === "logo" &&
                             selectedLogoImageId &&
                             selectedLogoType &&
-                            logoTypes[selectedLogoType].images.find(
-                              (img: { id: string; color: RALColor }) =>
+                            logoTypes[selectedLogoType]?.images.find(
+                              (img: { id: string; color?: RALColor }) =>
                                 img.id === selectedLogoImageId
-                            )?.color.code === color.code)
+                            )?.color?.code === color.code)
                             ? "bg-brand-brown-100 ring-2 ring-brand-brown-500"
                             : "hover:bg-gray-100"
                         }`}
@@ -191,10 +191,10 @@ export default function ColorPickerPanel() {
                             (colorSelectionType === "logo" &&
                               selectedLogoImageId &&
                               selectedLogoType &&
-                              logoTypes[selectedLogoType].images.find(
-                                (img: { id: string; color: RALColor }) =>
+                              logoTypes[selectedLogoType]?.images.find(
+                                (img: { id: string; color?: RALColor }) =>
                                   img.id === selectedLogoImageId
-                              )?.color.code === color.code)
+                              )?.color?.code === color.code)
                               ? "ring-2 ring-brand-brown-500"
                               : ""
                           }`}

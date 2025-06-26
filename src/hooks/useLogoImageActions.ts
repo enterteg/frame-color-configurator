@@ -1,12 +1,17 @@
-import { useBikeStore, useActiveLogoType } from '../store/useBikeStore';
+import { useBikeStore, useActiveTexture } from '../store/useBikeStore';
 
-function loadImageAndGetScale(imgUrl: string, aspectRatio: number, callback: (scale: number, canvasWidth: number, canvasHeight: number) => void) {
+export function loadImageAndGetScale(
+  imgUrl: string,
+  aspectRatio: number,
+  callback: (scale: number, canvasWidth: number, canvasHeight: number) => void,
+  scaleFactor: number = 0.5
+) {
   const imageObj = new window.Image();
   imageObj.onload = () => {
     const canvasWidth = 1024;
     const canvasHeight = 1024 / aspectRatio;
-    const scaleW = 0.5 * canvasWidth / imageObj.naturalWidth;
-    const scaleH = 0.5 * canvasHeight / imageObj.naturalHeight;
+    const scaleW = scaleFactor * canvasWidth / imageObj.naturalWidth;
+    const scaleH = scaleFactor * canvasHeight / imageObj.naturalHeight;
     const scale = Math.min(scaleW, scaleH);
     callback(scale, canvasWidth, canvasHeight);
   };
@@ -16,13 +21,13 @@ function loadImageAndGetScale(imgUrl: string, aspectRatio: number, callback: (sc
 export function useLogoImageActions() {
   const {
     selectedLogoImageId,
-    updateLogoImage,
+    updateTextureImage,
     selectedLogoType,
     addLogoImageFromFile,
     addLogoImage,
   } = useBikeStore();
-  const activeLogoType = useActiveLogoType();
-  const aspectRatio = activeLogoType?.aspectRatio || 1;
+  const activeTexture = useActiveTexture();
+  const aspectRatio = activeTexture?.aspectRatio || 1;
 
   // Helper: are we in replace mode?
   const isReplaceMode = !!selectedLogoImageId;
@@ -39,7 +44,7 @@ export function useLogoImageActions() {
         scaleX: scale,
         scaleY: scale,
         rotation: 0,
-        color: activeLogoType?.images[0]?.color || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
+        color: activeTexture?.images[0]?.color || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
         zIndex: 0,
       });
     });
@@ -49,7 +54,7 @@ export function useLogoImageActions() {
   const replaceBuiltInImage = (img: string) => {
     if (!selectedLogoImageId) return;
     loadImageAndGetScale(`/textures/logos/${img}`, aspectRatio, (scale) => {
-      updateLogoImage(selectedLogoImageId, {
+      updateTextureImage(selectedLogoImageId, {
         url: `/textures/logos/${img}`,
         scaleX: scale,
         scaleY: scale
@@ -67,7 +72,7 @@ export function useLogoImageActions() {
   const replaceUploadedImage = (file: File) => {
     if (!selectedLogoImageId) return;
     const blobUrl = URL.createObjectURL(file);
-    updateLogoImage(selectedLogoImageId, {
+    updateTextureImage(selectedLogoImageId, {
       file,
       blobUrl,
       name: file.name,

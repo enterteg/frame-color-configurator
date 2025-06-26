@@ -1,15 +1,62 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Stage, Layer, Image as KonvaImage, Transformer } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Transformer, Rect } from 'react-konva';
 import Konva from 'konva';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useBikeStore, useActiveLogoType } from '../../store/useBikeStore';
-import { processImageWithTransformations } from '../../utils/generateLogoTexture';
-import { generateLogoTexture } from '../../utils/generateLogoTexture';
-import { LogoImage } from '@/types/bike';
+import { useBikeStore, useActiveTexture } from '../../store/useBikeStore';
+import { TextureImage } from '@/types/bike';
 import { TEXTURE_SIZE } from '../../utils/constants';
 
+// Hook to load images for Konva display
+function useKonvaImages(images: TextureImage[]) {
+  const [loadedImages, setLoadedImages] = useState<Record<string, HTMLImageElement>>({});
+  const loadedImagesRef = useRef<Record<string, HTMLImageElement>>({});
+
+  useEffect(() => {
+    const loadImages = async () => {
+      const newLoadedImages = { ...loadedImagesRef.current };
+      
+      for (const imageItem of images) {
+        const imageUrl = imageItem.url || imageItem.blobUrl;
+        if (!imageUrl) continue;
+        
+        // Skip if already loaded
+        if (newLoadedImages[imageItem.id]) {
+          continue;
+        }
+        
+        try {
+          const img = new window.Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = imageUrl;
+          });
+          newLoadedImages[imageItem.id] = img;
+        } catch (error) {
+          console.error(`Failed to load image ${imageItem.id}:`, error);
+        }
+      }
+      
+      // Clean up images that are no longer needed
+      const currentImageIds = new Set(images.map(img => img.id));
+      Object.keys(newLoadedImages).forEach(id => {
+        if (!currentImageIds.has(id)) {
+          delete newLoadedImages[id];
+        }
+      });
+      
+      loadedImagesRef.current = newLoadedImages;
+      setLoadedImages(newLoadedImages);
+    };
+
+    loadImages();
+  }, [images]);
+
+  return loadedImages;
+}
 
 export default function BottomPanel() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -17,24 +64,21 @@ export default function BottomPanel() {
   const [isClient, setIsClient] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [maxPanelHeight, setMaxPanelHeight] = useState(300); // Fallback for SSR
-  const [processedImages, setProcessedImages] = useState<Record<string, HTMLImageElement>>({});
-  const textureUpdateTimeoutRef = useRef<NodeJS.Timeout|null>(null);
-  const processingRef = useRef(false);
-  const lastProcessedRef = useRef<Record<string, string>>({});
 
   const {
     showBottomPanel: isOpen,
     selectedLogoImageId,
     setSelectedLogoImageId,
-    updateLogoImage,
+    updateTextureImage,
     bottomPanelHeight,
     setBottomPanelHeight,
-    setLogoTexture,
     clearLogoSelection,
     setShowBottomPanel,
-    selectionPanelType
+    selectionPanelType,
+    activeTab,
+    frameColor
   } = useBikeStore();
-  const activeLogoType = useActiveLogoType();
+  const activeLogoType = useActiveTexture();
 
   // Constants
   const aspectRatio = activeLogoType ? activeLogoType.aspectRatio : 1;
@@ -92,6 +136,9 @@ export default function BottomPanel() {
 
 
   const currentImages = useMemo(() => activeLogoType ? activeLogoType.images : [], [activeLogoType]);
+  
+  // Load images for Konva display
+  const konvaImages = useKonvaImages(currentImages);
 
   // Auto-select first image when autoSelectFirstImage is true and no image is selected
   useEffect(() => {
@@ -103,77 +150,6 @@ export default function BottomPanel() {
       setSelectedLogoImageId(currentImages[0].id);
     }
   }, [currentImages, selectedLogoImageId, setSelectedLogoImageId, selectionPanelType]);
-
-  // Process images when they change
-  useEffect(() => {
-    if (!currentImages || processingRef.current) return;
-
-    const processImages = async () => {
-      try {
-        processingRef.current = true;
-        const newProcessedImages: Record<string, HTMLImageElement> = {};
-        for (const image of currentImages) {
-          // Only process if the image hasn't been processed or if its color has changed
-          const imageKey = `${image.id}_${image.color.hex}_${image.url}`;
-          if (
-            !lastProcessedRef.current[image.id] ||
-            lastProcessedRef.current[image.id] !== imageKey
-          ) {
-            const processedImage = await processImageWithTransformations(image);
-            newProcessedImages[image.id] = processedImage;
-            lastProcessedRef.current[image.id] = imageKey;
-          }
-        }
-        if (Object.keys(newProcessedImages).length > 0) {
-          setProcessedImages((prev) => ({ ...prev, ...newProcessedImages }));
-        }
-      } catch (error) {
-        console.error("Error processing images:", error);
-      } finally {
-        processingRef.current = false;
-      }
-    };
-
-    processImages();
-  }, [currentImages]);
-
-
-  // Debounced texture update
-  const debouncedTextureUpdate = useCallback(() => {
-    if (textureUpdateTimeoutRef.current) {
-      clearTimeout(textureUpdateTimeoutRef.current);
-    }
-
-    textureUpdateTimeoutRef.current = setTimeout(async () => {
-      if (activeLogoType) {
-        try {
-          const texture = await generateLogoTexture({
-            width: TEXTURE_SIZE,
-            height: TEXTURE_SIZE,
-            images: activeLogoType.images.map(img => ({
-              ...img,
-              processedImage: processedImages[img.id]
-            }))
-          });
-          if (texture) {
-            setLogoTexture(texture);
-          }
-        } catch (error) {
-          console.error('Error generating texture:', error);
-        }
-      }
-    }, 50); // 100ms debounce
-  }, [activeLogoType, processedImages, setLogoTexture]);
-
-  // Update texture when processed images change
-  useEffect(() => {
-    debouncedTextureUpdate();
-    return () => {
-      if (textureUpdateTimeoutRef.current) {
-        clearTimeout(textureUpdateTimeoutRef.current);
-      }
-    };
-  }, [debouncedTextureUpdate]);
 
   // Update transformer when selection changes
   useEffect(() => {
@@ -198,12 +174,9 @@ export default function BottomPanel() {
   const handleTransform = useCallback((id: string, newAttrs: Partial<{ x: number; y: number; scaleX: number; scaleY: number; rotation: number }>) => {
     if (!activeLogoType) return;
     
-    // Update the image in the store
-    updateLogoImage(id, newAttrs);
-    
-    // Trigger debounced texture update
-    debouncedTextureUpdate();
-  }, [activeLogoType, updateLogoImage, debouncedTextureUpdate]);
+    // Update the image in the store - TextureManager will handle texture regeneration
+    updateTextureImage(id, newAttrs);
+  }, [activeLogoType, updateTextureImage]);
 
   // Handle logo drag
   const handleDrag = useCallback((id: string, e: Konva.KonvaEventObject<DragEvent>) => {
@@ -260,7 +233,7 @@ export default function BottomPanel() {
 
       <div className="flex items-center justify-between px-4 py-3 mt-1">
         <div className="text-sm font-bold text-gray-500">
-          Manipulate Logo Texture
+          {activeTab === 'frameTexture' ? 'Frame Texture' : 'Logo Texture'}
         </div>
         <button
           onClick={handleClose}
@@ -281,8 +254,11 @@ export default function BottomPanel() {
           </span>
         </div>
 
+        {/* Hide color overlays for frame texture */}
+        {activeTab !== 'frameTexture' && null}
+
         <div
-          className="border border-gray-300 rounded-lg overflow-hidden shadow-sm"
+          className="border border-gray-300 rounded-lg overflow-hidden shadow-sm mb-8"
           style={{
             width: `${VISUAL_DISPLAY_WIDTH}px`,
             height: `${VISUAL_DISPLAY_HEIGHT}px`,
@@ -304,21 +280,55 @@ export default function BottomPanel() {
               width={LOGICAL_CANVAS_WIDTH}
               height={LOGICAL_CANVAS_HEIGHT}
             >
+              {/* Chessboard background layer */}
               <Layer>
-                {currentImages.map((imageItem: LogoImage) => {
-                  const processedImage = processedImages[imageItem.id];
+                {activeTab === 'frameTexture' ? (
+                  // Solid color background for frame texture
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={LOGICAL_CANVAS_WIDTH}
+                    height={LOGICAL_CANVAS_HEIGHT}
+                    fill={frameColor.hex}
+                  />
+                ) : (
+                  // Chessboard pattern for logo textures (transparency visualization)
+                  (() => {
+                    const size = 32;
+                    const cols = Math.ceil(LOGICAL_CANVAS_WIDTH / size);
+                    const rows = Math.ceil(LOGICAL_CANVAS_HEIGHT / size);
+                    const rects = [];
+                    for (let y = 0; y < rows; y++) {
+                      for (let x = 0; x < cols; x++) {
+                        const isDark = (x + y) % 2 === 0;
+                        rects.push(
+                          <Rect
+                            key={`bg-${x}-${y}`}
+                            x={x * size}
+                            y={y * size}
+                            width={size}
+                            height={size}
+                            fill={isDark ? '#e5e7eb' : '#f3f4f6'} // Tailwind gray-200/100tran
+                          />
+                        );
+                      }
+                    }
+                    return rects;
+                  })()
+                )}
+              </Layer>
+              <Layer>
+                {currentImages.map((imageItem: TextureImage) => {
                   return (
                     <KonvaImage
                       key={imageItem.id}
                       id={imageItem.id}
-                      image={processedImage}
+                      image={konvaImages[imageItem.id]} // Use loaded image for Konva display
                       x={imageItem.x}
                       y={imageItem.y}
                       scaleX={imageItem.scaleX ?? 1}
                       scaleY={imageItem.scaleY ?? 1}
                       rotation={imageItem.rotation}
-                      offsetX={processedImage ? processedImage.width / 2 : 0}
-                      offsetY={processedImage ? processedImage.height / 2 : 0}
                       draggable
                       onClick={() => handleImageClick(imageItem.id)}
                       onTap={() => handleImageClick(imageItem.id)}
@@ -352,11 +362,11 @@ export default function BottomPanel() {
                   borderEnabled={true}
                   anchorStroke="#0066CC"
                   anchorFill="#FFFFFF"
-                  anchorStrokeWidth={2}
-                  anchorSize={8}
+                  anchorStrokeWidth={2 / visualScale}
+                  anchorSize={8 / visualScale}
                   borderStroke="#0066CC"
-                  borderStrokeWidth={2}
-                  borderDash={[4, 4]}
+                  borderStrokeWidth={2 / visualScale}
+                  borderDash={[4 / visualScale, 4 / visualScale]}
                   keepRatio={false}
                   enabledAnchors={[
                     "top-left",
@@ -379,4 +389,4 @@ export default function BottomPanel() {
       </div>
     </div>
   );
-  } 
+}
