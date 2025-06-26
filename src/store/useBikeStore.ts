@@ -129,13 +129,6 @@ interface BikeState {
 
   // Generic texture image update action
   updateTextureImage: (imageId: string, updates: Partial<TextureImage>) => void;
-
-  // Processed images state and actions
-  processedImages: Record<string, HTMLImageElement>;
-  updateProcessedImages: (images: Record<string, HTMLImageElement>) => void;
-  removeProcessedImages: (imageIds: string[]) => void;
-  setIsProcessing: (isProcessing: boolean) => void;
-  isProcessing: boolean;
 }
 
 // Create default logo image configuration
@@ -710,15 +703,6 @@ export const useBikeStore = create<BikeState>()(
         }
         return {};
       }),
-
-      // Processed images state and actions
-      processedImages: {},
-      updateProcessedImages: (images: Record<string, HTMLImageElement>) => set({ processedImages: images }),
-      removeProcessedImages: (imageIds: string[]) => set((state) => ({
-        processedImages: Object.fromEntries(Object.entries(state.processedImages).filter(([id]) => !imageIds.includes(id)))
-      })),
-      setIsProcessing: (isProcessing: boolean) => set({ isProcessing }),
-      isProcessing: false,
     }),
     {
       name: 'bike-store',

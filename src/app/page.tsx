@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { BikeViewer3D } from "../components/bike-viewer";
+import { useBikeStore } from "../store/useBikeStore";
 
 // Layout components
 import MainLayout from "../components/layout/MainLayout";
@@ -10,14 +11,13 @@ import BottomPanel from "../components/layout/BottomPanel";
 import ControlInfoPanel from "../components/layout/ControlInfoPanel";
 import MobileWarning from "../components/MobileWarning";
 import SelectionPanel from "../components/layout/SelectionPanel";
-import { TextureManager } from "../components/TextureManager";
 
 export default function BikeCustomizer() {
   
 
   return (
     <>
-      <TextureManager />
+      <InitializeAllLogoTextures />
       <MobileWarning />
       <ControlInfoPanel />
       <MainLayout
@@ -38,4 +38,15 @@ export default function BikeCustomizer() {
       <BottomPanel />
     </>
   );
+}
+
+
+const InitializeAllLogoTextures = () => {
+  const { initializeAllLogoTextures } = useBikeStore();
+
+  useEffect(() => {
+    initializeAllLogoTextures();
+  }, [initializeAllLogoTextures]);
+
+  return null;
 }

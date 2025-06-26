@@ -12,13 +12,23 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 export async function processImageWithTransformations(image: TextureImage): Promise<HTMLImageElement> {
+  console.log('processImageWithTransformations called for:', { 
+    id: image.id, 
+    name: image.name, 
+    hasColor: !!image.color,
+    colorHex: image.color?.hex 
+  });
+  
   // Load the source image
   const sourceImage = await loadImage(image.url || image.blobUrl || '');
   
   // If no color is defined, return the original image without transformations
-  if (!image.color) {   
+  if (!image.color) {
+    console.log('No color defined, returning original image');
     return sourceImage;
   }
+  
+  console.log('Applying color transformation with:', image.color.hex);
   
   // Create a canvas to apply transformations
   const canvas = document.createElement('canvas');
@@ -61,6 +71,8 @@ export async function generateImageTexture({
   images: TextureImage[];
   backgroundColor?: string;
 }): Promise<THREE.Texture> {
+  console.log('generateImageTexture called with:', { width, height, imagesCount: images.length, backgroundColor });
+  
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -78,8 +90,25 @@ export async function generateImageTexture({
   for (const img of images) {
     if (!img.url && !img.blobUrl) continue;
     
+    console.log('Processing image:', { 
+      id: img.id, 
+      name: img.name, 
+      hasColor: !!img.color, 
+      hasProcessedImage: !!img.processedImage 
+    });
+    
     // Use processed image if available, otherwise process it
     const processedImage = img.processedImage || await processImageWithTransformations(img);
+    
+    console.log('Drawing image to canvas:', {
+      imageWidth: processedImage.width,
+      imageHeight: processedImage.height,
+      x: img.x,
+      y: img.y,
+      scaleX: img.scaleX || 1,
+      scaleY: img.scaleY || 1,
+      rotation: img.rotation || 0
+    });
     
     ctx.save();
     ctx.translate(img.x, img.y);

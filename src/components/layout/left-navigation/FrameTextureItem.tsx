@@ -17,7 +17,7 @@ const FrameTextureItem: React.FC = () => {
   } = useBikeStore();
 
   const handleReplaceImage = (imageId: string) => {
-    // Create a hidden file input element
+    // Create a hidden file input
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -31,7 +31,6 @@ const FrameTextureItem: React.FC = () => {
             name: file.name,
             file,
             blobUrl,
-            url: blobUrl,
             scaleX: scale,
             scaleY: scale,
           });
