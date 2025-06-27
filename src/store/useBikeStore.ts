@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as THREE from 'three';
 import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, DEFAULT_LOGO_COLOR_ID } from '../data/ralColors';
-import { TextureImage, LogoType, TabType } from '../types/bike';
+import { TextureImage, LogoType, TabType, GradientSettings } from '../types/bike';
 import { generateImageTexture } from '../utils/generateImageTexture';
 import { useShallow } from 'zustand/shallow';
 import { TEXTURE_SIZE } from '../utils/constants';
@@ -26,6 +26,7 @@ export interface TextureData {
   texture: THREE.Texture | null;
   aspectRatio: number; // width:height ratio (e.g., 1 for square, 10 for wide)
   processedImages: Record<string, HTMLImageElement>; // imageId -> processed HTMLImageElement
+  gradient?: GradientSettings; // Optional gradient overlay/background
 }
 
 interface BikeState {
@@ -59,7 +60,8 @@ interface BikeState {
   // Color selection state
   isColorSelectionOpen: boolean;
   selectedColorGroup: string | null;
-  colorSelectionType: 'frame' | 'fork' | 'logo' | null;
+  colorSelectionType: 'frame' | 'fork' | 'logo' | 'gradient' | null;
+  gradientColorStopIndex: number | null; // Index of the gradient color stop being edited
   
   // Selection panel state
   selectionPanelType: 'color' | 'image';
@@ -83,6 +85,7 @@ interface BikeState {
   setShowBottomPanel: (show: boolean) => void;
   setBottomPanelHeight: (height: number) => void;
   openColorSelection: (type: 'frame' | 'fork' | 'logo') => void;
+  openGradientColorSelection: (colorStopIndex: number) => void;
   closeColorSelection: () => void;
   setSelectedColorGroup: (group: string | null) => void;
   handleColorChangeRequest: (imageId: string) => void;
@@ -135,6 +138,11 @@ interface BikeState {
   setLogoProcessedImages: (logoType: LogoType, processedImages: Record<string, HTMLImageElement>) => void;
   setFrameProcessedImages: (processedImages: Record<string, HTMLImageElement>) => void;
   setLogoTypeTexture: (logoType: LogoType, texture: THREE.Texture | null) => void;
+
+  // Gradient management actions
+  setFrameGradient: (gradient: GradientSettings | undefined) => void;
+  updateFrameGradient: (updates: Partial<GradientSettings>) => void;
+  updateGradientColorStop: (index: number, color: RALColor) => void;
 }
 
 // Create default logo image configuration
@@ -143,13 +151,18 @@ const createDefaultLogoImage = (logoType: string, aspectRatio: number, name: str
   const canvasWidth = TEXTURE_SIZE;
   const canvasHeight = TEXTURE_SIZE / aspectRatio;
   
+  // Calculate texture capture area offset (same logic as useCanvasCalculations)
+  const STAGE_PADDING = canvasHeight * 0.2;
+  const TEXTURE_OFFSET_X = STAGE_PADDING;
+  const TEXTURE_OFFSET_Y = STAGE_PADDING;
+  
   return {
     id: `default_${logoType.toLowerCase()}_logo`,
     name: name,
     url: url,
     color: getColorById('9005') || { code: 'RAL 9005', name: 'Jet black', hex: '#0A0A0A' },
-    x: canvasWidth / 2, // Center horizontally
-    y: canvasHeight / 2, // Center vertically
+    x: TEXTURE_OFFSET_X + canvasWidth / 2, // Center horizontally within texture capture area
+    y: TEXTURE_OFFSET_Y + canvasHeight / 2, // Center vertically within texture capture area
     scaleX: 1,
     scaleY: 1,
     rotation: 0,
@@ -201,6 +214,7 @@ export const useBikeStore = create<BikeState>()(
       isColorSelectionOpen: false,
       selectedColorGroup: null,
       colorSelectionType: null,
+      gradientColorStopIndex: null,
       selectionPanelType: 'color',
       // New: metallic/matte toggle
       isFrameMetallic: true,
@@ -303,11 +317,22 @@ export const useBikeStore = create<BikeState>()(
         activeTab: type === 'logo' ? 'logos' : type,
         selectionPanelType: 'color'
       }),
+
+      openGradientColorSelection: (colorStopIndex) => set({
+        isColorSelectionOpen: true,
+        colorSelectionType: 'gradient',
+        gradientColorStopIndex: colorStopIndex,
+        selectedColorGroup: null,
+        rightPanelOpen: false,
+        activeTab: 'frameTexture',
+        selectionPanelType: 'color'
+      }),
       
       closeColorSelection: () => set({
         isColorSelectionOpen: false,
         colorSelectionType: null,
-        selectedColorGroup: null
+        selectedColorGroup: null,
+        gradientColorStopIndex: null
       }),
       
       setSelectedColorGroup: (group) => set({ selectedColorGroup: group }),
@@ -373,13 +398,18 @@ export const useBikeStore = create<BikeState>()(
         const canvasWidth = TEXTURE_SIZE;
         const canvasHeight = TEXTURE_SIZE / aspectRatio;
         
+        // Calculate texture capture area offset (same logic as useCanvasCalculations)
+        const STAGE_PADDING = canvasHeight * 0.2;
+        const TEXTURE_OFFSET_X = STAGE_PADDING;
+        const TEXTURE_OFFSET_Y = STAGE_PADDING;
+        
         const newImage: TextureImage = {
           id,
           file,
           blobUrl,
           name: file.name,
-          x: canvasWidth / 2,
-          y: canvasHeight / 2,
+          x: TEXTURE_OFFSET_X + canvasWidth / 2, // Center within texture capture area
+          y: TEXTURE_OFFSET_Y + canvasHeight / 2, // Center within texture capture area
           scaleX: 1,
           scaleY: 1,
           rotation: 0,
@@ -716,6 +746,44 @@ export const useBikeStore = create<BikeState>()(
           }
         }
       })),
+
+      // Gradient management actions
+      setFrameGradient: (gradient: GradientSettings | undefined) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          gradient
+        }
+      })),
+
+      updateFrameGradient: (updates: Partial<GradientSettings>) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          gradient: state.frameTexture.gradient ? {
+            ...state.frameTexture.gradient,
+            ...updates
+          } : undefined
+        }
+      })),
+
+      updateGradientColorStop: (index: number, color: RALColor) => set((state) => {
+        if (!state.frameTexture.gradient) return state;
+        
+        const updatedColorStops = [...state.frameTexture.gradient.colorStops];
+        updatedColorStops[index] = {
+          ...updatedColorStops[index],
+          color: color.hex
+        };
+        
+        return {
+          frameTexture: {
+            ...state.frameTexture,
+            gradient: {
+              ...state.frameTexture.gradient,
+              colorStops: updatedColorStops
+            }
+          }
+        };
+      }),
     }),
     {
       name: 'bike-store',

@@ -47,6 +47,7 @@ export function useFrameTextureProcessing() {
     dependencies: [frameColor.hex], // Also listen to frame color changes
     generationKey: 'frameTexture',
     textureOffsetX: TEXTURE_OFFSET_X,
-    textureOffsetY: TEXTURE_OFFSET_Y
+    textureOffsetY: TEXTURE_OFFSET_Y,
+    gradient: frameTexture.gradient // Pass gradient settings
   });
 } 

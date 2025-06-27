@@ -31,6 +31,31 @@ export interface TextureImage {
   zIndex: number;
 }
 
+// Gradient types
+export type GradientType = 'linear' | 'radial' | 'conic';
+export type GradientDirection = 'horizontal' | 'vertical' | 'diagonal-tl-br' | 'diagonal-tr-bl';
+
+export interface GradientColorStop {
+  color: string; // Hex color
+  position: number; // 0-1
+  opacity: number; // 0-1
+}
+
+export interface GradientSettings {
+  id: string;
+  enabled: boolean;
+  type: GradientType;
+  direction: GradientDirection; // For linear gradients
+  centerX: number; // 0-1, for radial/conic gradients
+  centerY: number; // 0-1, for radial/conic gradients
+  radiusX: number; // 0-1, for radial gradients
+  radiusY: number; // 0-1, for radial gradients
+  angle: number; // 0-360, for conic gradients
+  colorStops: GradientColorStop[];
+  opacity: number; // Overall gradient opacity 0-1
+  blendMode: 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light';
+}
+
 export type LogoType = 'HEAD_TUBE' | 'DOWN_TUBE_LEFT' | 'DOWN_TUBE_RIGHT';
 
 export interface BikeConfiguration {

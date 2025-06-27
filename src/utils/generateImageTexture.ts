@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { TextureImage } from '../types/bike';
+import { TextureImage, GradientSettings } from '../types/bike';
+import { generateGradientImage } from './generateGradient';
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -67,6 +68,7 @@ export async function generateImageTexture({
   backgroundColor,
   textureOffsetX = 0,
   textureOffsetY = 0,
+  gradient,
 }: {
   width: number;
   height: number;
@@ -74,6 +76,7 @@ export async function generateImageTexture({
   backgroundColor?: string;
   textureOffsetX?: number;
   textureOffsetY?: number;
+  gradient?: GradientSettings;
 }): Promise<THREE.Texture> {
   console.log('generateImageTexture called with:', { 
     width, 
@@ -96,6 +99,27 @@ export async function generateImageTexture({
   if (backgroundColor) {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
+  }
+
+  // Apply gradient background if provided
+  if (gradient && gradient.enabled) {
+    try {
+      const gradientImage = await generateGradientImage({ width, height, gradient });
+      
+      ctx.save();
+      ctx.globalAlpha = gradient.opacity;
+      ctx.globalCompositeOperation = 
+        gradient.blendMode === 'multiply' ? 'multiply' :
+        gradient.blendMode === 'screen' ? 'screen' :
+        gradient.blendMode === 'overlay' ? 'overlay' :
+        gradient.blendMode === 'soft-light' ? 'soft-light' :
+        gradient.blendMode === 'hard-light' ? 'hard-light' :
+        'source-over';
+      ctx.drawImage(gradientImage, 0, 0, width, height);
+      ctx.restore();
+    } catch (error) {
+      console.error('Error applying gradient to texture:', error);
+    }
   }
 
   for (const img of images) {

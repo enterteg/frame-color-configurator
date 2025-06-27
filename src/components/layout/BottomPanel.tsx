@@ -8,6 +8,7 @@ import { TextureImage } from '@/types/bike';
 import { useBottomPanelResize } from '../../hooks/useBottomPanelResize';
 import { useKonvaTransformer } from '../../hooks/useKonvaTransformer';
 import { useCanvasCalculations } from '../../hooks/useCanvasCalculations';
+import { useGradientImage } from '../../hooks/useGradientImage';
 
 export default function BottomPanel() {
   const [isClient, setIsClient] = useState(false);
@@ -39,6 +40,13 @@ export default function BottomPanel() {
   const canvasCalculations = useCanvasCalculations({
     aspectRatio,
     bottomPanelHeight
+  });
+
+  // Generate gradient image for frame textures
+  const { gradientImage } = useGradientImage({
+    gradient: activeTab === 'frameTexture' ? activeTexture?.gradient : undefined,
+    width: canvasCalculations.LOGICAL_CANVAS_WIDTH,
+    height: canvasCalculations.LOGICAL_CANVAS_HEIGHT
   });
 
   const {
@@ -169,14 +177,35 @@ export default function BottomPanel() {
                   
                   {/* Texture capture area overlay */}
                   {activeTab === 'frameTexture' ? (
-                    // Solid color background for frame texture
-                    <Rect
-                      x={canvasCalculations.TEXTURE_OFFSET_X}
-                      y={canvasCalculations.TEXTURE_OFFSET_Y}
-                      width={canvasCalculations.LOGICAL_CANVAS_WIDTH}
-                      height={canvasCalculations.LOGICAL_CANVAS_HEIGHT}
-                      fill={frameColor.hex}
-                    />
+                    <>
+                      {/* Frame color background */}
+                      <Rect
+                        x={canvasCalculations.TEXTURE_OFFSET_X}
+                        y={canvasCalculations.TEXTURE_OFFSET_Y}
+                        width={canvasCalculations.LOGICAL_CANVAS_WIDTH}
+                        height={canvasCalculations.LOGICAL_CANVAS_HEIGHT}
+                        fill={frameColor.hex}
+                      />
+                      {/* Gradient overlay if enabled */}
+                                              {gradientImage && (
+                          <KonvaImage
+                            x={canvasCalculations.TEXTURE_OFFSET_X}
+                            y={canvasCalculations.TEXTURE_OFFSET_Y}
+                            width={canvasCalculations.LOGICAL_CANVAS_WIDTH}
+                            height={canvasCalculations.LOGICAL_CANVAS_HEIGHT}
+                            image={gradientImage}
+                            globalCompositeOperation={
+                              activeTexture?.gradient?.blendMode === 'multiply' ? 'multiply' :
+                              activeTexture?.gradient?.blendMode === 'screen' ? 'screen' :
+                              activeTexture?.gradient?.blendMode === 'overlay' ? 'overlay' :
+                              activeTexture?.gradient?.blendMode === 'soft-light' ? 'soft-light' :
+                              activeTexture?.gradient?.blendMode === 'hard-light' ? 'hard-light' :
+                              'source-over'
+                            }
+                            opacity={activeTexture?.gradient?.opacity || 1}
+                          />
+                        )}
+                    </>
                   ) : (
                     // Darker checkerboard pattern for logo texture capture area
                     (() => {
