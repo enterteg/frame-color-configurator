@@ -11,6 +11,8 @@ interface UseTextureGenerationCoreProps {
   backgroundColor?: string;
   dependencies?: unknown[]; // Additional dependencies to watch (e.g., frameColor)
   generationKey: string; // Unique key for this generation instance
+  textureOffsetX?: number; // Offset for texture capture area
+  textureOffsetY?: number; // Offset for texture capture area
 }
 
 export function useTextureGenerationCore({
@@ -19,7 +21,9 @@ export function useTextureGenerationCore({
   onTextureUpdate,
   backgroundColor,
   dependencies = [],
-  generationKey
+  generationKey,
+  textureOffsetX = 0,
+  textureOffsetY = 0
 }: UseTextureGenerationCoreProps) {
   useEffect(() => {
     const generateTexture = async () => {
@@ -28,12 +32,14 @@ export function useTextureGenerationCore({
         if (backgroundColor) {
           // Create texture with just background color
           try {
-            const texture = await generateImageTexture({
-              width: TEXTURE_SIZE,
-              height: TEXTURE_SIZE,
-              images: [],
-              backgroundColor
-            });
+                      const texture = await generateImageTexture({
+            width: TEXTURE_SIZE,
+            height: TEXTURE_SIZE,
+            images: [],
+            backgroundColor,
+            textureOffsetX,
+            textureOffsetY
+          });
             onTextureUpdate(texture);
           } catch (error) {
             console.error(`Error generating empty texture for ${generationKey}:`, error);
@@ -50,15 +56,17 @@ export function useTextureGenerationCore({
       
       if (allImagesProcessed) {
         try {
-          const texture = await generateImageTexture({
-            width: TEXTURE_SIZE,
-            height: TEXTURE_SIZE,
-            images: images.map(img => ({
-              ...img,
-              processedImage: processedImages[img.id]
-            })),
-            backgroundColor
-          });
+                  const texture = await generateImageTexture({
+          width: TEXTURE_SIZE,
+          height: TEXTURE_SIZE,
+          images: images.map(img => ({
+            ...img,
+            processedImage: processedImages[img.id]
+          })),
+          backgroundColor,
+          textureOffsetX,
+          textureOffsetY
+        });
           
           if (texture) {
             onTextureUpdate(texture);
@@ -77,6 +85,8 @@ export function useTextureGenerationCore({
     backgroundColor,
     onTextureUpdate,
     generationKey,
+    textureOffsetX,
+    textureOffsetY,
     ...dependencies
   ]);
 } 

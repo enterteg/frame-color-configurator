@@ -4,6 +4,7 @@ import { useBikeStore } from '../store/useBikeStore';
 import { LogoType } from '../types/bike';
 import { useImageProcessingCore } from './useImageProcessingCore';
 import { useTextureGenerationCore } from './useTextureGenerationCore';
+import { TEXTURE_SIZE } from '../utils/constants';
 
 function useLogoTypeProcessing(logoType: LogoType) {
   const { 
@@ -31,13 +32,22 @@ function useLogoTypeProcessing(logoType: LogoType) {
     processingKey: logoType
   });
 
+  // Calculate texture offset (same as canvas calculations)
+  const aspectRatio = logoData.aspectRatio;
+  const LOGICAL_CANVAS_HEIGHT = TEXTURE_SIZE / aspectRatio;
+  const STAGE_PADDING = LOGICAL_CANVAS_HEIGHT * 0.2;
+  const TEXTURE_OFFSET_X = STAGE_PADDING;
+  const TEXTURE_OFFSET_Y = STAGE_PADDING;
+
   // Use shared texture generation logic
   useTextureGenerationCore({
     images: logoData.images, // Pass images array directly to watch for transform changes
     processedImages: logoData.processedImages,
     onTextureUpdate: handleTextureUpdate,
     // No backgroundColor for logo textures (transparent)
-    generationKey: logoType
+    generationKey: logoType,
+    textureOffsetX: TEXTURE_OFFSET_X,
+    textureOffsetY: TEXTURE_OFFSET_Y
   });
 }
 

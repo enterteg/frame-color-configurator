@@ -65,13 +65,24 @@ export async function generateImageTexture({
   height,
   images,
   backgroundColor,
+  textureOffsetX = 0,
+  textureOffsetY = 0,
 }: {
   width: number;
   height: number;
   images: TextureImage[];
   backgroundColor?: string;
+  textureOffsetX?: number;
+  textureOffsetY?: number;
 }): Promise<THREE.Texture> {
-  console.log('generateImageTexture called with:', { width, height, imagesCount: images.length, backgroundColor });
+  console.log('generateImageTexture called with:', { 
+    width, 
+    height, 
+    imagesCount: images.length, 
+    backgroundColor,
+    textureOffsetX,
+    textureOffsetY
+  });
   
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -94,24 +105,32 @@ export async function generateImageTexture({
       id: img.id, 
       name: img.name, 
       hasColor: !!img.color, 
-      hasProcessedImage: !!img.processedImage 
+      hasProcessedImage: !!img.processedImage,
+      originalX: img.x,
+      originalY: img.y,
+      adjustedX: img.x - textureOffsetX,
+      adjustedY: img.y - textureOffsetY
     });
     
     // Use processed image if available, otherwise process it
     const processedImage = img.processedImage || await processImageWithTransformations(img);
     
+    // Adjust coordinates to be relative to texture capture area
+    const adjustedX = img.x - textureOffsetX;
+    const adjustedY = img.y - textureOffsetY;
+    
     console.log('Drawing image to canvas:', {
       imageWidth: processedImage.width,
       imageHeight: processedImage.height,
-      x: img.x,
-      y: img.y,
+      adjustedX,
+      adjustedY,
       scaleX: img.scaleX || 1,
       scaleY: img.scaleY || 1,
       rotation: img.rotation || 0
     });
     
     ctx.save();
-    ctx.translate(img.x, img.y);
+    ctx.translate(adjustedX, adjustedY);
     ctx.rotate((img.rotation || 0) * Math.PI / 180);
     ctx.scale(img.scaleX || 1, img.scaleY || 1);
     ctx.drawImage(
@@ -121,6 +140,7 @@ export async function generateImageTexture({
     );
     ctx.restore();
   }
+  
   const texture = new THREE.CanvasTexture(canvas);
   texture.flipY = false;
   texture.needsUpdate = true;

@@ -180,7 +180,7 @@ export default function BottomPanel() {
                   ) : (
                     // Darker checkerboard pattern for logo texture capture area
                     (() => {
-                      const size = 32;
+                      const size = 24; // Smaller squares for better visibility
                       const cols = Math.ceil(canvasCalculations.LOGICAL_CANVAS_WIDTH / size);
                       const rows = Math.ceil(canvasCalculations.LOGICAL_CANVAS_HEIGHT / size);
                       const rects = [];
@@ -194,7 +194,7 @@ export default function BottomPanel() {
                               y={canvasCalculations.TEXTURE_OFFSET_Y + (y * size)}
                               width={size}
                               height={size}
-                              fill={isDark ? '#e5e7eb' : '#f9fafb'}
+                              fill={isDark ? '#d1d5db' : '#e5e7eb'} // Darker pattern
                             />
                           );
                         }
