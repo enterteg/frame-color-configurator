@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { ralColorGroups, RALColor, getColorById } from '../../data/ralColors';
+import { ralColorGroups, RALColor, getColorById, ralColors } from '../../data/ralColors';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor, getGroupMainColor } from '../../utils/colorUtils';
 
@@ -18,11 +18,14 @@ export default function ColorPickerPanel() {
     logoTypes,
     showBottomPanel,
     bottomPanelHeight,
+    gradientColorStopIndex,
+    frameTexture,
     closeColorSelection,
     setSelectedColorGroup,
     setFrameColor,
     setForkColor,
     updateTextureImage,
+    updateGradientColorStop,
     selectionPanelType,
   } = useBikeStore();
 
@@ -35,6 +38,14 @@ export default function ColorPickerPanel() {
         currentColor = frameColor;
       } else if (colorSelectionType === 'fork') {
         currentColor = forkColor;
+      } else if (colorSelectionType === 'gradient' && gradientColorStopIndex !== null && frameTexture.gradient) {
+        // For gradient colors, try to find the RAL color that matches the current color stop
+        const currentHex = frameTexture.gradient.colorStops[gradientColorStopIndex]?.color;
+        if (currentHex) {
+          // Find RAL color that matches this hex
+          const matchingColor = ralColors[Object.keys(ralColors).find(id => ralColors[id].hex.toLowerCase() === currentHex.toLowerCase()) || ''];
+          currentColor = matchingColor || null;
+        }
       }
       
       if (currentColor) {
@@ -52,11 +63,11 @@ export default function ColorPickerPanel() {
           setSelectedColorGroup(ralColorGroups[0]?.name || null);
         }
       } else {
-        // Default to first group for logo colors
+        // Default to first group for logo colors and gradients
         setSelectedColorGroup(ralColorGroups[0]?.name || null);
       }
     }
-  }, [isColorSelectionOpen, colorSelectionType, frameColor, forkColor, selectedColorGroup, setSelectedColorGroup]);
+  }, [isColorSelectionOpen, colorSelectionType, frameColor, forkColor, selectedColorGroup, setSelectedColorGroup, gradientColorStopIndex, frameTexture.gradient]);
 
   if (!isColorSelectionOpen && selectionPanelType !== 'image') {
     return null;
@@ -65,11 +76,16 @@ export default function ColorPickerPanel() {
   const handleColorSelect = (color: RALColor) => {
     if (colorSelectionType === 'frame') {
       setFrameColor(color);
+      // Don't close for frame colors - keep open for easy color switching
     } else if (colorSelectionType === 'fork') {
       setForkColor(color);
+      // Don't close for fork colors - keep open for easy color switching
     } else if (colorSelectionType === 'logo' && selectedLogoImageId) {
       updateTextureImage(selectedLogoImageId, { color });
       // Don't close for logo colors - keep open for multiple selections
+    } else if (colorSelectionType === 'gradient' && gradientColorStopIndex !== null) {
+      updateGradientColorStop(gradientColorStopIndex, color);
+      // Don't close for gradient colors - keep open for multiple color stop selections
     }
   };
 
@@ -78,6 +94,7 @@ export default function ColorPickerPanel() {
       case 'frame': return 'Choose frame color';
       case 'fork': return 'Choose fork color';
       case 'logo': return 'Choose logo color';
+      case 'gradient': return 'Choose gradient color';
       default: return 'Choose color';
     }
   };
@@ -194,7 +211,11 @@ export default function ColorPickerPanel() {
                               logoTypes[selectedLogoType]?.images.find(
                                 (img: { id: string; color?: RALColor }) =>
                                   img.id === selectedLogoImageId
-                              )?.color?.code === color.code)
+                              )?.color?.code === color.code) ||
+                            (colorSelectionType === "gradient" &&
+                              gradientColorStopIndex !== null &&
+                              frameTexture.gradient &&
+                              frameTexture.gradient.colorStops[gradientColorStopIndex]?.color.toLowerCase() === color.hex.toLowerCase())
                               ? "ring-2 ring-brand-brown-500"
                               : ""
                           }`}

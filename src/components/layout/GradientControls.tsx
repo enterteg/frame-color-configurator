@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { GradientSettings, GradientType, GradientDirection } from '../../types/bike';
 import { createDefaultGradient } from '../../utils/generateGradient';
+import { useBikeStore } from '../../store/useBikeStore';
 
 interface GradientControlsProps {
   gradient?: GradientSettings;
@@ -11,6 +12,7 @@ interface GradientControlsProps {
 
 export default function GradientControls({ gradient, onGradientChange }: GradientControlsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { openGradientColorSelection } = useBikeStore();
 
   const handleEnableGradient = () => {
     if (gradient) {
@@ -264,11 +266,11 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
             <div className="space-y-2">
               {gradient.colorStops.map((stop, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                  <input
-                    type="color"
-                    value={stop.color}
-                    onChange={(e) => handleColorStopChange(index, 'color', e.target.value)}
-                    className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                  <button
+                    onClick={() => openGradientColorSelection(index)}
+                    className="w-8 h-8 border border-gray-300 rounded cursor-pointer flex items-center justify-center"
+                    style={{ backgroundColor: stop.color }}
+                    title="Choose RAL color"
                   />
                   
                   <div className="flex-1">
@@ -312,6 +314,35 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Gradient Preview */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Preview
+            </label>
+            <div 
+              className="w-full h-12 border border-gray-300 rounded"
+              style={{
+                background: gradient.type === 'linear' 
+                  ? `linear-gradient(${
+                      gradient.direction === 'horizontal' ? 'to right' :
+                      gradient.direction === 'vertical' ? 'to bottom' :
+                      gradient.direction === 'diagonal-tl-br' ? 'to bottom right' :
+                      'to bottom left'
+                    }, ${gradient.colorStops.map(stop => 
+                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                    ).join(', ')})`
+                  : gradient.type === 'radial' 
+                  ? `radial-gradient(ellipse ${gradient.radiusX * 100}% ${gradient.radiusY * 100}% at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
+                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                    ).join(', ')})`
+                  : `conic-gradient(from ${gradient.angle}deg at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
+                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 360}deg`
+                    ).join(', ')})`,
+                opacity: gradient.opacity
+              }}
+            />
           </div>
         </div>
       )}

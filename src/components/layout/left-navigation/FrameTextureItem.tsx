@@ -60,19 +60,24 @@ const FrameTextureItem: React.FC = () => {
           }}
           tabIndex={-1}
         >
-          <div className="font-medium text-gray-800">FRAME TEXTURE</div>
+          <div className="font-medium text-gray-800">TEXTURE / GRADIENT</div>
         </button>
         <UploadImageButton
           onFile={file => {
             const blobUrl = URL.createObjectURL(file);
             const aspectRatio = frameTexture.aspectRatio || 1;
             loadImageAndGetScale(blobUrl, aspectRatio, (scale, canvasWidth, canvasHeight) => {
+              // Calculate texture capture area offset (same logic as useCanvasCalculations)
+              const STAGE_PADDING = canvasHeight * 0.2;
+              const TEXTURE_OFFSET_X = STAGE_PADDING;
+              const TEXTURE_OFFSET_Y = STAGE_PADDING;
+              
               addFrameTextureImage({
                 name: file.name,
                 file,
                 blobUrl,
-                x: canvasWidth / 2,
-                y: canvasHeight / 2,
+                x: TEXTURE_OFFSET_X + canvasWidth / 2, // Center within texture capture area
+                y: TEXTURE_OFFSET_Y + canvasHeight / 2, // Center within texture capture area
                 scaleX: scale,
                 scaleY: scale,
                 rotation: 0,
