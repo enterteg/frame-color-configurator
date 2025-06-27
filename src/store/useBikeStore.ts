@@ -577,33 +577,76 @@ export const useBikeStore = create<BikeState>()(
         const config = {
           frameColor: state.frameColor,
           forkColor: state.forkColor,
+          isFrameMetallic: state.isFrameMetallic,
+          tireWallColor: state.tireWallColor,
+          rimType: state.rimType,
           logoTypes: {
             HEAD_TUBE: {
+              ...state.logoTypes.HEAD_TUBE,
               images: state.logoTypes.HEAD_TUBE.images.map(img => ({
-                ...img,
-                // Don't save blob URLs as they can't be serialized
-                blobUrl: undefined,
-                // Don't save processed images as they can be regenerated
-                processedImage: undefined
+                id: img.id,
+                name: img.name,
+                url: img.url,
+                color: img.color,
+                x: img.x,
+                y: img.y,
+                scaleX: img.scaleX,
+                scaleY: img.scaleY,
+                rotation: img.rotation,
+                zIndex: img.zIndex,
               }))
             },
             DOWN_TUBE_LEFT: {
+              ...state.logoTypes.DOWN_TUBE_LEFT,
               images: state.logoTypes.DOWN_TUBE_LEFT.images.map(img => ({
-                ...img,
-                blobUrl: undefined,
-                processedImage: undefined
+                id: img.id,
+                name: img.name,
+                url: img.url,
+                color: img.color,
+                x: img.x,
+                y: img.y,
+                scaleX: img.scaleX,
+                scaleY: img.scaleY,
+                rotation: img.rotation,
+                zIndex: img.zIndex,
               }))
             },
             DOWN_TUBE_RIGHT: {
+              ...state.logoTypes.DOWN_TUBE_RIGHT,
               images: state.logoTypes.DOWN_TUBE_RIGHT.images.map(img => ({
-                ...img,
-                blobUrl: undefined,
-                processedImage: undefined
+                id: img.id,
+                name: img.name,
+                url: img.url,
+                color: img.color,
+                x: img.x,
+                y: img.y,
+                scaleX: img.scaleX,
+                scaleY: img.scaleY,
+                rotation: img.rotation,
+                zIndex: img.zIndex,
               }))
-            }
-          }
+            },
+          },
+          frameTexture: {
+            ...state.frameTexture,
+            images: state.frameTexture.images.map(img => ({
+              id: img.id,
+              name: img.name,
+              url: img.url,
+              // Note: frame textures don't have individual colors
+              x: img.x,
+              y: img.y,
+              scaleX: img.scaleX,
+              scaleY: img.scaleY,
+              rotation: img.rotation,
+              zIndex: img.zIndex,
+            })),
+            gradient: state.frameTexture.gradient // Save gradient settings
+          },
+          selectedLogoType: state.selectedLogoType,
+          selectedLogoImageId: state.selectedLogoImageId,
         };
-        return JSON.stringify(config);
+        return JSON.stringify(config, null, 2); // Pretty print JSON
       },
 
       loadConfiguration: (configString: string) => {
@@ -612,23 +655,33 @@ export const useBikeStore = create<BikeState>()(
           
           // Update the state with the loaded configuration
           set((state) => ({
-            frameColor: config.frameColor,
-            forkColor: config.forkColor,
+            frameColor: config.frameColor || state.frameColor,
+            forkColor: config.forkColor || state.forkColor,
+            isFrameMetallic: config.isFrameMetallic ?? state.isFrameMetallic,
+            tireWallColor: config.tireWallColor || state.tireWallColor,
+            rimType: config.rimType || state.rimType,
             logoTypes: {
               ...state.logoTypes,
               HEAD_TUBE: {
                 ...state.logoTypes.HEAD_TUBE,
-                images: config.logoTypes.HEAD_TUBE.images
+                images: config.logoTypes?.HEAD_TUBE?.images || state.logoTypes.HEAD_TUBE.images
               },
               DOWN_TUBE_LEFT: {
                 ...state.logoTypes.DOWN_TUBE_LEFT,
-                images: config.logoTypes.DOWN_TUBE_LEFT.images
+                images: config.logoTypes?.DOWN_TUBE_LEFT?.images || state.logoTypes.DOWN_TUBE_LEFT.images
               },
               DOWN_TUBE_RIGHT: {
                 ...state.logoTypes.DOWN_TUBE_RIGHT,
-                images: config.logoTypes.DOWN_TUBE_RIGHT.images
+                images: config.logoTypes?.DOWN_TUBE_RIGHT?.images || state.logoTypes.DOWN_TUBE_RIGHT.images
               }
-            }
+            },
+            frameTexture: {
+              ...state.frameTexture,
+              images: config.frameTexture?.images || state.frameTexture.images,
+              gradient: config.frameTexture?.gradient || state.frameTexture.gradient
+            },
+            selectedLogoType: config.selectedLogoType ?? state.selectedLogoType,
+            selectedLogoImageId: config.selectedLogoImageId ?? state.selectedLogoImageId,
           }));
 
           // Note: textures will be automatically re-processed by useTextureProcessingManager
@@ -773,7 +826,7 @@ export const useBikeStore = create<BikeState>()(
         const updatedColorStops = [...state.frameTexture.gradient.colorStops];
         updatedColorStops[index] = {
           ...updatedColorStops[index],
-          color: color.hex
+          color: color
         };
         
         return {

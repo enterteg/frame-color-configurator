@@ -34,9 +34,10 @@ export interface TextureImage {
 // Gradient types
 export type GradientType = 'linear' | 'radial' | 'conic';
 export type GradientDirection = 'horizontal' | 'vertical' | 'diagonal-tl-br' | 'diagonal-tr-bl';
+export type GradientTransition = 'smooth' | 'hard-stop' | 'stepped' | 'ease-in' | 'ease-out';
 
 export interface GradientColorStop {
-  color: string; // Hex color
+  color: RALColor; // RAL color instead of hex
   position: number; // 0-1
   opacity: number; // 0-1
 }
@@ -46,6 +47,7 @@ export interface GradientSettings {
   enabled: boolean;
   type: GradientType;
   direction: GradientDirection; // For linear gradients
+  transition: GradientTransition; // How colors blend together
   centerX: number; // 0-1, for radial/conic gradients
   centerY: number; // 0-1, for radial/conic gradients
   radiusX: number; // 0-1, for radial gradients

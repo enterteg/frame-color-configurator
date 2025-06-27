@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { ralColorGroups, RALColor, getColorById, ralColors } from '../../data/ralColors';
+import { ralColorGroups, RALColor, getColorById } from '../../data/ralColors';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor, getGroupMainColor } from '../../utils/colorUtils';
 import { LEFT_NAVIGATION_WIDTH } from '../../utils/constants';
@@ -40,13 +40,8 @@ export default function ColorPickerPanel() {
       } else if (colorSelectionType === 'fork') {
         currentColor = forkColor;
       } else if (colorSelectionType === 'gradient' && gradientColorStopIndex !== null && frameTexture.gradient) {
-        // For gradient colors, try to find the RAL color that matches the current color stop
-        const currentHex = frameTexture.gradient.colorStops[gradientColorStopIndex]?.color;
-        if (currentHex) {
-          // Find RAL color that matches this hex
-          const matchingColor = ralColors[Object.keys(ralColors).find(id => ralColors[id].hex.toLowerCase() === currentHex.toLowerCase()) || ''];
-          currentColor = matchingColor || null;
-        }
+        // For gradient colors, the current color is already a RAL color
+        currentColor = frameTexture.gradient.colorStops[gradientColorStopIndex]?.color || null;
       }
       
       if (currentColor) {
@@ -180,22 +175,45 @@ export default function ColorPickerPanel() {
                   const color = getColorById(colorId);
                   if (!color) return null;
 
+                  // Debug: Check what we're comparing
+                  const isFrameSelected = colorSelectionType === "frame" && color.code === frameColor.code;
+                  const isForkSelected = colorSelectionType === "fork" && color.code === forkColor.code;
+                  const isGradientSelected = colorSelectionType === "gradient" &&
+                    gradientColorStopIndex !== null &&
+                    frameTexture.gradient &&
+                    frameTexture.gradient.colorStops[gradientColorStopIndex]?.color?.code === color.code;
+                  
+                  const isLogoSelected = colorSelectionType === "logo" &&
+                    selectedLogoImageId &&
+                    selectedLogoType &&
+                    logoTypes[selectedLogoType]?.images.find(
+                      (img: { id: string; color?: RALColor }) =>
+                        img.id === selectedLogoImageId
+                    )?.color?.code === color.code;
+
+                  const isSelected = isFrameSelected || isForkSelected || isLogoSelected || isGradientSelected;
+
+                  // Debug logging for the first few colors
+                  if (colorId === selectedGroup.colorIds[0] || colorId === selectedGroup.colorIds[1]) {
+                    console.log('Color debug:', {
+                      colorCode: color.code,
+                      colorHex: color.hex,
+                      colorSelectionType,
+                      frameColorCode: frameColor.code,
+                      gradientColorStopIndex,
+                      gradientColor: frameTexture.gradient?.colorStops[gradientColorStopIndex || 0]?.color,
+                      isFrameSelected,
+                      isGradientSelected,
+                      isSelected
+                    });
+                  }
+
                   return (
                     <div key={color.code}>
                       <button
                         onClick={() => handleColorSelect(color)}
                         className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                          (colorSelectionType === "frame" &&
-                            color.code === frameColor.code) ||
-                          (colorSelectionType === "fork" &&
-                            color.code === forkColor.code) ||
-                          (colorSelectionType === "logo" &&
-                            selectedLogoImageId &&
-                            selectedLogoType &&
-                            logoTypes[selectedLogoType]?.images.find(
-                              (img: { id: string; color?: RALColor }) =>
-                                img.id === selectedLogoImageId
-                            )?.color?.code === color.code)
+                          isSelected
                             ? "bg-brand-brown-100 ring-2 ring-brand-brown-500"
                             : "hover:bg-gray-100"
                         }`}
@@ -214,10 +232,10 @@ export default function ColorPickerPanel() {
                                 (img: { id: string; color?: RALColor }) =>
                                   img.id === selectedLogoImageId
                               )?.color?.code === color.code) ||
-                            (colorSelectionType === "gradient" &&
-                              gradientColorStopIndex !== null &&
-                              frameTexture.gradient &&
-                              frameTexture.gradient.colorStops[gradientColorStopIndex]?.color.toLowerCase() === color.hex.toLowerCase())
+                                                      (colorSelectionType === "gradient" &&
+                            gradientColorStopIndex !== null &&
+                            frameTexture.gradient &&
+                            frameTexture.gradient.colorStops[gradientColorStopIndex]?.color?.code === color.code)
                               ? "ring-2 ring-brand-brown-500"
                               : ""
                           }`}

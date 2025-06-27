@@ -2,9 +2,12 @@
 
 import React, { useState } from 'react';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
-import { GradientSettings, GradientType, GradientDirection } from '../../types/bike';
+import { GradientSettings, GradientDirection, GradientTransition } from '../../types/bike';
 import { createDefaultGradient } from '../../utils/generateGradient';
 import { useBikeStore } from '../../store/useBikeStore';
+import { ralColors } from '../../data/ralColors';
+import { getContrastTextColor } from '../../utils/colorUtils';
+import CustomDropdown from './CustomDropdown';
 
 interface GradientControlsProps {
   gradient?: GradientSettings;
@@ -17,8 +20,10 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
 
   const handleEnableGradient = () => {
     if (gradient) {
-      onGradientChange(undefined);
+      // Toggle the enabled state instead of removing the gradient
+      onGradientChange({ ...gradient, enabled: !gradient.enabled });
     } else {
+      // Create new gradient with enabled: true
       onGradientChange(createDefaultGradient());
     }
   };
@@ -44,9 +49,12 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
   const addColorStop = () => {
     if (!gradient) return;
     
+    // Use a default RAL color (RAL 7040 Window grey)
+    const defaultColor = ralColors['7040'];
+    
     const newColorStops = [...gradient.colorStops];
     newColorStops.push({
-      color: '#808080',
+      color: defaultColor,
       position: 0.5,
       opacity: 1
     });
@@ -72,14 +80,14 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
             id="enable-gradient"
             onClick={handleEnableGradient}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
-              !!gradient ? 'bg-gray-700' : 'bg-gray-200'
+              gradient?.enabled ? 'bg-gray-700' : 'bg-gray-200'
             }`}
             role="switch"
-            aria-checked={!!gradient}
+            aria-checked={gradient?.enabled || false}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                !!gradient ? 'translate-x-6' : 'translate-x-1'
+                gradient?.enabled ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>
@@ -99,40 +107,32 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
 
       {gradient && isExpanded && (
         <div className="space-y-4 mt-3">
-          {/* Gradient Type */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Gradient Type
-            </label>
-            <select
-              value={gradient.type}
-              onChange={(e) => handleGradientUpdate({ type: e.target.value as GradientType })}
-              className="w-full px-3 py-1 text-black border border-gray-300 rounded-md text-sm focus:ring-gray-500 focus:border-gray-500"
-            >
-              <option value="linear">Linear</option>
-              <option value="radial">Radial</option>
-              <option value="conic">Conic</option>
-            </select>
+          {/* Direction and Transition */}
+          <div className="grid grid-cols-2 gap-3">
+            <CustomDropdown
+              label="Direction"
+              value={gradient.direction}
+              onChange={(value) => handleGradientUpdate({ direction: value as GradientDirection })}
+              options={[
+                { value: 'horizontal', label: 'Horizontal' },
+                { value: 'vertical', label: 'Vertical' },
+                { value: 'diagonal-tl-br', label: 'Diagonal ↘' },
+                { value: 'diagonal-tr-bl', label: 'Diagonal ↙' }
+              ]}
+            />
+            <CustomDropdown
+              label="Transition"
+              value={gradient.transition}
+              onChange={(value) => handleGradientUpdate({ transition: value as GradientTransition })}
+              options={[
+                { value: 'smooth', label: 'Smooth' },
+                { value: 'hard-stop', label: 'Hard Stop' },
+                { value: 'stepped', label: 'Stepped' },
+                { value: 'ease-in', label: 'Ease In' },
+                { value: 'ease-out', label: 'Ease Out' }
+              ]}
+            />
           </div>
-
-          {/* Direction (Linear only) */}
-          {gradient.type === 'linear' && (
-            <div>
-              <label className="block  text-xs font-medium text-gray-700 mb-1">
-                Direction
-              </label>
-              <select
-                value={gradient.direction}
-                onChange={(e) => handleGradientUpdate({ direction: e.target.value as GradientDirection })}
-                className="w-full px-3 py-1 text-black border border-gray-300 rounded-md text-sm focus:ring-gray-500 focus:border-gray-500"
-              >
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-                <option value="diagonal-tl-br">Diagonal ↘</option>
-                <option value="diagonal-tr-bl">Diagonal ↙</option>
-              </select>
-            </div>
-          )}
 
           {/* Center Position (Radial/Conic) */}
           {(gradient.type === 'radial' || gradient.type === 'conic') && (
@@ -242,24 +242,7 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
             <span className="text-xs text-gray-700">{Math.round(gradient.opacity * 100)}%</span>
           </div>
 
-          {/* Blend Mode */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Blend Mode
-            </label>
-            <select
-              value={gradient.blendMode}
-              onChange={(e) => handleGradientUpdate({ blendMode: e.target.value as GradientSettings['blendMode'] })}
-              className="w-full px-3 py-1 text-black border border-gray-300 rounded-md text-sm focus:ring-gray-500 focus:border-gray-500"
-            >
-              <option value="normal">Normal</option>
-              <option value="multiply">Multiply</option>
-              <option value="screen">Screen</option>
-              <option value="overlay">Overlay</option>
-              <option value="soft-light">Soft Light</option>
-              <option value="hard-light">Hard Light</option>
-            </select>
-          </div>
+
 
           {/* Color Stops */}
           <div>
@@ -269,9 +252,9 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
               </label>
               <button
                 onClick={addColorStop}
-                className="px-2 py-1 text-xs bg-gray-700 text-white rounded hover:bg-gray-800"
+                className="px-3 py-1 text-xs bg-gray-100 text-black rounded hover:bg-gray-200 cursor-pointer"
               >
-                Add Color
+                Add Color +
               </button>
             </div>
             
@@ -280,10 +263,17 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
                 <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                   <button
                     onClick={() => openGradientColorSelection(index)}
-                    className="w-8 h-8 border border-gray-300 rounded cursor-pointer flex items-center justify-center"
-                    style={{ backgroundColor: stop.color }}
-                    title="Choose RAL color"
-                  />
+                    className="w-12 h-12 border border-gray-300 rounded-full cursor-pointer flex items-center justify-center shadow-md"
+                    style={{ backgroundColor: stop.color?.hex || '#ffffff' }}
+                    title={`Choose RAL color - ${stop.color?.code || 'Unknown'}`}
+                  >
+                    <span
+                      className="text-[10px] font-bold"
+                      style={{ color: getContrastTextColor(stop.color?.hex || '#ffffff') }}
+                    >
+                      {stop.color?.code?.replace("RAL ", "") || '?'}
+                    </span>
+                  </button>
                   
                   <div className="flex-1">
                     <div className="text-xs text-gray-500 mb-1">Position</div>
@@ -343,14 +333,14 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
                       gradient.direction === 'diagonal-tl-br' ? 'to bottom right' :
                       'to bottom left'
                     }, ${gradient.colorStops.map(stop => 
-                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
                     ).join(', ')})`
                   : gradient.type === 'radial' 
                   ? `radial-gradient(ellipse ${gradient.radiusX * 100}% ${gradient.radiusY * 100}% at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
                     ).join(', ')})`
                   : `conic-gradient(from ${gradient.angle}deg at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 360}deg`
+                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 360}deg`
                     ).join(', ')})`,
                 opacity: gradient.opacity
               }}

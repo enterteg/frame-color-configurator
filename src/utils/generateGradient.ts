@@ -1,4 +1,5 @@
 import { GradientSettings, GradientColorStop } from '../types/bike';
+import { ralColors } from '../data/ralColors';
 
 /**
  * Generates a gradient as HTMLImageElement from GradientSettings
@@ -65,11 +66,68 @@ export async function generateGradientImage({
     throw new Error(`Unsupported gradient type: ${gradient.type}`);
   }
 
-  // Add color stops
-  gradient.colorStops.forEach(stop => {
-    const color = `${stop.color}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
-    canvasGradient.addColorStop(stop.position, color);
-  });
+  // Add color stops based on transition type
+  if (gradient.transition === 'hard-stop') {
+    // For hard stops, add each color twice at the same position
+    gradient.colorStops.forEach((stop, index) => {
+      const hexColor = stop.color?.hex || '#ffffff';
+      const color = `${hexColor}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
+      
+      if (index > 0) {
+        // Add the previous color just before this position
+        const prevStop = gradient.colorStops[index - 1];
+        const prevHexColor = prevStop.color?.hex || '#ffffff';
+        const prevColor = `${prevHexColor}${Math.round(prevStop.opacity * 255).toString(16).padStart(2, '0')}`;
+        canvasGradient.addColorStop(Math.max(0, stop.position - 0.001), prevColor);
+      }
+      
+      canvasGradient.addColorStop(stop.position, color);
+    });
+  } else if (gradient.transition === 'stepped') {
+    // For stepped transitions, create distinct bands
+    gradient.colorStops.forEach((stop, index) => {
+      const hexColor = stop.color?.hex || '#ffffff';
+      const color = `${hexColor}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
+      
+      if (index < gradient.colorStops.length - 1) {
+        const nextStop = gradient.colorStops[index + 1];
+        const midPoint = (stop.position + nextStop.position) / 2;
+        
+        canvasGradient.addColorStop(stop.position, color);
+        canvasGradient.addColorStop(midPoint - 0.001, color);
+        canvasGradient.addColorStop(midPoint, color);
+      } else {
+        canvasGradient.addColorStop(stop.position, color);
+      }
+    });
+  } else if (gradient.transition === 'ease-in') {
+    // For ease-in, adjust color stop positions to create easing effect
+    gradient.colorStops.forEach((stop) => {
+      const hexColor = stop.color?.hex || '#ffffff';
+      const color = `${hexColor}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
+      
+      // Apply ease-in curve (quadratic)
+      const easedPosition = stop.position * stop.position;
+      canvasGradient.addColorStop(easedPosition, color);
+    });
+  } else if (gradient.transition === 'ease-out') {
+    // For ease-out, adjust color stop positions to create easing effect
+    gradient.colorStops.forEach((stop) => {
+      const hexColor = stop.color?.hex || '#ffffff';
+      const color = `${hexColor}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
+      
+      // Apply ease-out curve (inverse quadratic)
+      const easedPosition = 1 - Math.pow(1 - stop.position, 2);
+      canvasGradient.addColorStop(easedPosition, color);
+    });
+  } else {
+    // Default smooth transition
+    gradient.colorStops.forEach(stop => {
+      const hexColor = stop.color?.hex || '#ffffff';
+      const color = `${hexColor}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')}`;
+      canvasGradient.addColorStop(stop.position, color);
+    });
+  }
 
   // Apply gradient
   ctx.globalAlpha = gradient.opacity;
@@ -124,7 +182,8 @@ async function generateConicGradientImage({
     ctx.moveTo(centerX, centerY);
     ctx.arc(centerX, centerY, radius, startAngle, endAngle);
     ctx.closePath();
-    ctx.fillStyle = `${color}${Math.round(gradient.opacity * 255).toString(16).padStart(2, '0')}`;
+    const hexColor = color?.hex || '#ffffff';
+    ctx.fillStyle = `${hexColor}${Math.round(gradient.opacity * 255).toString(16).padStart(2, '0')}`;
     ctx.fill();
   }
 
@@ -140,7 +199,7 @@ async function generateConicGradientImage({
 /**
  * Interpolates color from gradient color stops at given position
  */
-function interpolateGradientColor(colorStops: GradientColorStop[], position: number): string {
+function interpolateGradientColor(colorStops: GradientColorStop[], position: number): { hex: string } {
   // Sort color stops by position
   const sortedStops = [...colorStops].sort((a, b) => a.position - b.position);
   
@@ -163,7 +222,8 @@ function interpolateGradientColor(colorStops: GradientColorStop[], position: num
   
   // Interpolate between the two colors
   const ratio = (position - beforeStop.position) / (afterStop.position - beforeStop.position);
-  return interpolateHexColors(beforeStop.color, afterStop.color, ratio);
+  const interpolatedHex = interpolateHexColors(beforeStop.color.hex, afterStop.color.hex, ratio);
+  return { hex: interpolatedHex };
 }
 
 /**
@@ -189,19 +249,24 @@ function interpolateHexColors(color1: string, color2: string, ratio: number): st
  * Creates a default gradient configuration
  */
 export function createDefaultGradient(): GradientSettings {
+  // Use beige (RAL 1001) and yellow (RAL 1003) as default colors
+  const beigeColor = ralColors['1001']; // RAL 1001 Beige
+  const yellowColor = ralColors['1003']; // RAL 1003 Signal yellow
+  
   return {
     id: `gradient_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     enabled: true,
     type: 'linear',
     direction: 'vertical',
+    transition: 'smooth',
     centerX: 0.5,
     centerY: 0.5,
     radiusX: 0.5,
     radiusY: 0.5,
     angle: 0,
     colorStops: [
-      { color: '#ffffff', position: 0, opacity: 1 },
-      { color: '#000000', position: 1, opacity: 1 }
+      { color: beigeColor, position: 0, opacity: 1 },
+      { color: yellowColor, position: 1, opacity: 1 }
     ],
     opacity: 1,
     blendMode: 'normal'

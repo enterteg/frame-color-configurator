@@ -28,3 +28,58 @@ body {
   color: var(--foreground);
   font-family: 'Lato', sans-serif;
 }
+
+/* Custom range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #8B7355; /* Darker brown for better visibility on white background */
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #8B7355; /* Darker brown for better visibility on white background */
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+/* Thumb styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #4B2E19; /* Brown color matching your brand */
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: -6px; /* Centers the thumb on the track (16px thumb - 4px track) / 2 */
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #4B2E19; /* Brown color matching your brand */
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus states */
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(75, 46, 25, 0.2);
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(75, 46, 25, 0.2);
+}
