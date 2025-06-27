@@ -63,6 +63,6 @@ export interface BikeConfiguration {
   logoImages: TextureImage[];
 }
 
-export type TabType = 'frame' | 'fork' | 'logos' | 'tires' | 'frameTexture' | null;
+export type TabType = 'frame' | 'fork' | 'logos' | 'tires' | null;
 export type RimType = '35' | '50';
 export type TireWallColor = 'black' | 'brown' | 'white' | 'light_brown'; 

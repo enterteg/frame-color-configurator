@@ -8,7 +8,6 @@ import { TextureImage } from '@/types/bike';
 import { useBottomPanelResize } from '../../hooks/useBottomPanelResize';
 import { useKonvaTransformer } from '../../hooks/useKonvaTransformer';
 import { useCanvasCalculations } from '../../hooks/useCanvasCalculations';
-import { useGradientImage } from '../../hooks/useGradientImage';
 
 export default function BottomPanel() {
   const [isClient, setIsClient] = useState(false);
@@ -24,12 +23,16 @@ export default function BottomPanel() {
     setShowBottomPanel,
     selectionPanelType,
     activeTab,
-    frameColor
+    selectedLogoType,
+    frameTexture
   } = useBikeStore();
   
   const activeTexture = useActiveTexture();
   const aspectRatio = activeTexture ? activeTexture.aspectRatio : 1;
   const currentImages = useMemo(() => activeTexture ? activeTexture.images : [], [activeTexture]);
+  
+  // Helper to determine if we're in frame texture mode
+  const isFrameTextureMode = activeTab === 'frame' && !selectedLogoType && frameTexture.images.length > 0;
 
   // Custom hooks
   const { handleMouseDown } = useBottomPanelResize({
@@ -42,12 +45,7 @@ export default function BottomPanel() {
     bottomPanelHeight
   });
 
-  // Generate gradient image for frame textures
-  const { gradientImage } = useGradientImage({
-    gradient: activeTab === 'frameTexture' ? activeTexture?.gradient : undefined,
-    width: canvasCalculations.LOGICAL_CANVAS_WIDTH,
-    height: canvasCalculations.LOGICAL_CANVAS_HEIGHT
-  });
+  // Note: Gradient rendering removed from preview - only used in texture generation
 
   const {
     stageRef,
@@ -105,7 +103,7 @@ export default function BottomPanel() {
 
       <div className="flex items-center justify-between px-4 py-3 mt-1">
         <div className="text-sm font-bold text-gray-500">
-          {activeTab === 'frameTexture' ? 'Frame Texture' : 'Logo Texture'}
+          {isFrameTextureMode ? 'Frame Texture' : 'Logo Texture'}
         </div>
         <button
           onClick={handleClose}
@@ -175,62 +173,29 @@ export default function BottomPanel() {
                     return rects;
                   })()}
                   
-                  {/* Texture capture area overlay */}
-                  {activeTab === 'frameTexture' ? (
-                    <>
-                      {/* Frame color background */}
-                      <Rect
-                        x={canvasCalculations.TEXTURE_OFFSET_X}
-                        y={canvasCalculations.TEXTURE_OFFSET_Y}
-                        width={canvasCalculations.LOGICAL_CANVAS_WIDTH}
-                        height={canvasCalculations.LOGICAL_CANVAS_HEIGHT}
-                        fill={frameColor.hex}
-                      />
-                      {/* Gradient overlay if enabled */}
-                                              {gradientImage && (
-                          <KonvaImage
-                            x={canvasCalculations.TEXTURE_OFFSET_X}
-                            y={canvasCalculations.TEXTURE_OFFSET_Y}
-                            width={canvasCalculations.LOGICAL_CANVAS_WIDTH}
-                            height={canvasCalculations.LOGICAL_CANVAS_HEIGHT}
-                            image={gradientImage}
-                            globalCompositeOperation={
-                              activeTexture?.gradient?.blendMode === 'multiply' ? 'multiply' :
-                              activeTexture?.gradient?.blendMode === 'screen' ? 'screen' :
-                              activeTexture?.gradient?.blendMode === 'overlay' ? 'overlay' :
-                              activeTexture?.gradient?.blendMode === 'soft-light' ? 'soft-light' :
-                              activeTexture?.gradient?.blendMode === 'hard-light' ? 'hard-light' :
-                              'source-over'
-                            }
-                            opacity={activeTexture?.gradient?.opacity || 1}
+                  {/* Texture capture area overlay - transparent checkerboard for all modes */}
+                  {(() => {
+                    const size = 24; // Smaller squares for better visibility
+                    const cols = Math.ceil(canvasCalculations.LOGICAL_CANVAS_WIDTH / size);
+                    const rows = Math.ceil(canvasCalculations.LOGICAL_CANVAS_HEIGHT / size);
+                    const rects = [];
+                    for (let y = 0; y < rows; y++) {
+                      for (let x = 0; x < cols; x++) {
+                        const isDark = (x + y) % 2 === 0;
+                        rects.push(
+                          <Rect
+                            key={`texture-bg-${x}-${y}`}
+                            x={canvasCalculations.TEXTURE_OFFSET_X + (x * size)}
+                            y={canvasCalculations.TEXTURE_OFFSET_Y + (y * size)}
+                            width={size}
+                            height={size}
+                            fill={isDark ? '#d1d5db' : '#e5e7eb'} // Darker pattern to indicate texture area
                           />
-                        )}
-                    </>
-                  ) : (
-                    // Darker checkerboard pattern for logo texture capture area
-                    (() => {
-                      const size = 24; // Smaller squares for better visibility
-                      const cols = Math.ceil(canvasCalculations.LOGICAL_CANVAS_WIDTH / size);
-                      const rows = Math.ceil(canvasCalculations.LOGICAL_CANVAS_HEIGHT / size);
-                      const rects = [];
-                      for (let y = 0; y < rows; y++) {
-                        for (let x = 0; x < cols; x++) {
-                          const isDark = (x + y) % 2 === 0;
-                          rects.push(
-                            <Rect
-                              key={`texture-bg-${x}-${y}`}
-                              x={canvasCalculations.TEXTURE_OFFSET_X + (x * size)}
-                              y={canvasCalculations.TEXTURE_OFFSET_Y + (y * size)}
-                              width={size}
-                              height={size}
-                              fill={isDark ? '#d1d5db' : '#e5e7eb'} // Darker pattern
-                            />
-                          );
-                        }
+                        );
                       }
-                      return rects;
-                    })()
-                  )}
+                    }
+                    return rects;
+                  })()}
                   
                   {/* Prominent texture boundary outline */}
                   <Rect

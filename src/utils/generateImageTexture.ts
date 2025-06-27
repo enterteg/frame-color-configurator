@@ -139,6 +139,12 @@ export async function generateImageTexture({
     // Use processed image if available, otherwise process it
     const processedImage = img.processedImage || await processImageWithTransformations(img);
     
+    // Validate that processedImage is a valid image element
+    if (!processedImage || !(processedImage instanceof HTMLImageElement) || !processedImage.complete) {
+      console.warn('Invalid or incomplete processed image for:', img.id, processedImage);
+      continue;
+    }
+    
     // Adjust coordinates to be relative to texture capture area
     const adjustedX = img.x - textureOffsetX;
     const adjustedY = img.y - textureOffsetY;

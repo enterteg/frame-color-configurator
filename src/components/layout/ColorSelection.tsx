@@ -5,6 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ralColorGroups, RALColor, getColorById, ralColors } from '../../data/ralColors';
 import { useBikeStore } from '../../store/useBikeStore';
 import { getContrastTextColor, getGroupMainColor } from '../../utils/colorUtils';
+import { LEFT_NAVIGATION_WIDTH } from '../../utils/constants';
 
 export default function ColorPickerPanel() {
   const {
@@ -103,8 +104,9 @@ export default function ColorPickerPanel() {
 
   return (
     <div
-      className="fixed left-[300px] top-0 bg-white shadow-lg border-l border-gray-200 z-30 flex"
+      className="fixed top-0 bg-white shadow-lg border-l border-gray-200 z-30 flex"
       style={{
+        left: `${LEFT_NAVIGATION_WIDTH}px`,
         width: "auto",
         minWidth: 300,
         maxWidth: "100vw",

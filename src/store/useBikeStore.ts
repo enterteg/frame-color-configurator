@@ -324,7 +324,7 @@ export const useBikeStore = create<BikeState>()(
         gradientColorStopIndex: colorStopIndex,
         selectedColorGroup: null,
         rightPanelOpen: false,
-        activeTab: 'frameTexture',
+        activeTab: 'frame',
         selectionPanelType: 'color'
       }),
       
@@ -693,7 +693,9 @@ export const useBikeStore = create<BikeState>()(
 
       // Generic texture image update action
       updateTextureImage: (imageId: string, updates: Partial<TextureImage>) => set((state) => {
-        if (state.activeTab === 'frameTexture') {
+        // Check if this is a frame texture image
+        const isFrameTextureImage = state.frameTexture.images.some(img => img.id === imageId);
+        if (isFrameTextureImage) {
           return {
             frameTexture: {
               ...state.frameTexture,
@@ -790,6 +792,9 @@ export const useBikeStore = create<BikeState>()(
       partialize: (state) => ({
         frameColor: state.frameColor,
         forkColor: state.forkColor,
+        isFrameMetallic: state.isFrameMetallic,
+        tireWallColor: state.tireWallColor,
+        rimType: state.rimType,
         logoTypes: {
           HEAD_TUBE: {
             ...state.logoTypes.HEAD_TUBE,
@@ -837,6 +842,22 @@ export const useBikeStore = create<BikeState>()(
             }))
           },
         },
+        frameTexture: {
+          ...state.frameTexture,
+          images: state.frameTexture.images.map(img => ({
+            id: img.id,
+            name: img.name,
+            url: img.url,
+            // Note: frame textures don't have individual colors
+            x: img.x,
+            y: img.y,
+            scaleX: img.scaleX,
+            scaleY: img.scaleY,
+            rotation: img.rotation,
+            zIndex: img.zIndex,
+          })),
+          gradient: state.frameTexture.gradient // Save gradient settings
+        },
         selectedLogoType: state.selectedLogoType,
         selectedLogoImageId: state.selectedLogoImageId,
       }),
@@ -851,7 +872,7 @@ export function useActiveTexture() {
       if (state.activeTab === 'logos') {
         const type = state.selectedLogoType;
         return type ? state.logoTypes[type] : null;
-      } else if (state.activeTab === 'frameTexture') {
+      } else if (state.activeTab === 'frame' && state.frameTexture.images.length > 0) {
         return state.frameTexture;
       }
       return null;

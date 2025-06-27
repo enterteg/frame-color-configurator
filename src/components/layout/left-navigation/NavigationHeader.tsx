@@ -24,21 +24,21 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({ navigationCollapsed
             className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
             title="Save Configuration"
           >
-            <ArrowDownTrayIcon className="h-4 w-4" />
+            <ArrowDownTrayIcon className="h-5 w-5" />
           </button>
           <button
             onClick={handleLoad}
             className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
             title="Load Configuration"
           >
-            <ArrowUpTrayIcon className="h-4 w-4" />
+            <ArrowUpTrayIcon className="h-5 w-5" />
           </button>
           <button
             onClick={resetStore}
             className="text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"
             title="Reset All"
           >
-            <ArrowPathIcon className="h-4 w-4" />
+            <ArrowPathIcon className="h-5 w-5" />
           </button>
         </div>
       </div>

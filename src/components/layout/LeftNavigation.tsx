@@ -9,7 +9,8 @@ import RimTypeSelector from './left-navigation/RimTypeSelector';
 import LogosSection from './left-navigation/LogosSection';  
 import FinishSelector from './FinishSelector';
 import { useBikeStore } from '../../store/useBikeStore';
-import FrameTextureItem from './left-navigation/FrameTextureItem';
+import { LEFT_NAVIGATION_WIDTH } from '../../utils/constants';
+
 
 const LeftNavigation = () => {
   const {
@@ -72,7 +73,10 @@ const LeftNavigation = () => {
   };
 
   return (
-    <div className="w-[300px] h-full bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
+    <div 
+      className="h-full bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 z-20"
+      style={{ width: `${LEFT_NAVIGATION_WIDTH}px` }}
+    >
       {/* Header */}
       <NavigationHeader
         navigationCollapsed={navigationCollapsed}
@@ -113,8 +117,7 @@ const LeftNavigation = () => {
           updateLogoTypeImages={updateLogoTypeImages}
           openColorSelection={openColorSelection}
         />
-        {/* Frame Texture menu item */}
-        <FrameTextureItem />
+
       </div>
     </div>
   );

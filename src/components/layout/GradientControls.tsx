@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { GradientSettings, GradientType, GradientDirection } from '../../types/bike';
 import { createDefaultGradient } from '../../utils/generateGradient';
 import { useBikeStore } from '../../store/useBikeStore';
@@ -61,26 +62,37 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
   };
 
   return (
-    <div className="bg-white px-4 py-3 border-b border-gray-100">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="enable-gradient"
-            checked={!!gradient}
-            onChange={handleEnableGradient}
-            className="rounded border-gray-300 text-gray-700 focus:ring-gray-500"
-          />
+    <div className="bg-white px-5 pb-3 pt-5 border-b flex-col items-center justify-between border-gray-100">
+      <div className="flex flex-1 items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
           <label htmlFor="enable-gradient" className="text-sm font-medium text-gray-700">
             Gradient Background
           </label>
+          <button
+            id="enable-gradient"
+            onClick={handleEnableGradient}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+              !!gradient ? 'bg-gray-700' : 'bg-gray-200'
+            }`}
+            role="switch"
+            aria-checked={!!gradient}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                !!gradient ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
         </div>
         {gradient && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm text-gray-700 hover:text-gray-900"
+            className={`text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors cursor-pointer ${
+              isExpanded ? 'bg-gray-200' : ''
+            }`}
+            title={isExpanded ? 'Hide gradient controls' : 'Show gradient controls'}
           >
-            {isExpanded ? 'Hide' : 'Show'} Controls
+            <AdjustmentsHorizontalIcon className="h-6 w-6" />
           </button>
         )}
       </div>
