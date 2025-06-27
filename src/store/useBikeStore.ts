@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import * as THREE from 'three';
 import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, DEFAULT_LOGO_COLOR_ID } from '../data/ralColors';
 import { TextureImage, LogoType, TabType } from '../types/bike';
-import { generateImageTexture, processImageWithTransformations } from '../utils/generateImageTexture';
+import { generateImageTexture } from '../utils/generateImageTexture';
 import { useShallow } from 'zustand/shallow';
 import { TEXTURE_SIZE } from '../utils/constants';
 
@@ -25,6 +25,7 @@ export interface TextureData {
   images: TextureImage[];
   texture: THREE.Texture | null;
   aspectRatio: number; // width:height ratio (e.g., 1 for square, 10 for wide)
+  processedImages: Record<string, HTMLImageElement>; // imageId -> processed HTMLImageElement
 }
 
 interface BikeState {
@@ -108,7 +109,7 @@ interface BikeState {
   
   // New actions
   setLogoTextureFromState: (logoType: LogoType) => Promise<void>;
-  initializeAllLogoTextures: () => Promise<void>;
+
 
   // Configuration actions
   saveConfiguration: () => string;
@@ -129,6 +130,11 @@ interface BikeState {
 
   // Generic texture image update action
   updateTextureImage: (imageId: string, updates: Partial<TextureImage>) => void;
+
+  // Processed images management actions
+  setLogoProcessedImages: (logoType: LogoType, processedImages: Record<string, HTMLImageElement>) => void;
+  setFrameProcessedImages: (processedImages: Record<string, HTMLImageElement>) => void;
+  setLogoTypeTexture: (logoType: LogoType, texture: THREE.Texture | null) => void;
 }
 
 // Create default logo image configuration
@@ -170,16 +176,19 @@ export const useBikeStore = create<BikeState>()(
           images: [createDefaultLogoImage('HEAD_TUBE', 1, 'Loca front', '/textures/logos/loca_circles.png')],
           texture: null,
           aspectRatio: 1.2,
+          processedImages: {},
         },
         DOWN_TUBE_LEFT: {
           images: [createDefaultLogoImage('DOWN_TUBE_LEFT', 10, 'Loca half', '/textures/logos/loca_half.png')],
           texture: null,
-          aspectRatio: 8
+          aspectRatio: 8,
+          processedImages: {},
         },
         DOWN_TUBE_RIGHT: {
           images: [createDefaultLogoImage('DOWN_TUBE_RIGHT', 10, 'Loca half', '/textures/logos/loca_half.png')],
           texture: null,
-          aspectRatio: 8
+          aspectRatio: 8,
+          processedImages: {},
         }
       },
       selectedLogoType: null,
@@ -201,6 +210,7 @@ export const useBikeStore = create<BikeState>()(
         images: [],
         texture: null,
         aspectRatio: 1, // 1:1 for square
+        processedImages: {},
       },
 
       // Actions
@@ -530,31 +540,7 @@ export const useBikeStore = create<BikeState>()(
         }));
       },
 
-      initializeAllLogoTextures: async () => {
-        const state = get();
-        for (const logoType of Object.keys(state.logoTypes) as LogoType[]) {
-          // Process all images first
-          const logoData = state.logoTypes[logoType];
-          for (const image of logoData.images) {
-            if (!image.processedImage) {
-              const processedImage = await processImageWithTransformations(image);
-              set(state => ({
-                logoTypes: {
-                  ...state.logoTypes,
-                  [logoType]: {
-                    ...state.logoTypes[logoType],
-                    images: state.logoTypes[logoType].images.map(img =>
-                      img.id === image.id ? { ...img, processedImage } : img
-                    )
-                  }
-                }
-              }));
-            }
-          }
-          // Then generate texture
-          await state.setLogoTextureFromState(logoType);
-        }
-      },
+
 
       saveConfiguration: () => {
         const state = get();
@@ -615,8 +601,7 @@ export const useBikeStore = create<BikeState>()(
             }
           }));
 
-          // Reinitialize textures after loading configuration
-          get().initializeAllLogoTextures();
+          // Note: textures will be automatically re-processed by useTextureProcessingManager
         } catch (error) {
           console.error('Failed to load configuration:', error);
           throw new Error('Invalid configuration format');
@@ -703,6 +688,34 @@ export const useBikeStore = create<BikeState>()(
         }
         return {};
       }),
+
+      // Processed images management actions
+      setLogoProcessedImages: (logoType: LogoType, processedImages: Record<string, HTMLImageElement>) => set((state) => ({
+        logoTypes: {
+          ...state.logoTypes,
+          [logoType]: {
+            ...state.logoTypes[logoType],
+            processedImages
+          }
+        }
+      })),
+
+      setFrameProcessedImages: (processedImages: Record<string, HTMLImageElement>) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          processedImages
+        }
+      })),
+
+      setLogoTypeTexture: (logoType: LogoType, texture: THREE.Texture | null) => set((state) => ({
+        logoTypes: {
+          ...state.logoTypes,
+          [logoType]: {
+            ...state.logoTypes[logoType],
+            texture
+          }
+        }
+      })),
     }),
     {
       name: 'bike-store',

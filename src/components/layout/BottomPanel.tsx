@@ -6,8 +6,6 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useBikeStore, useActiveTexture } from '../../store/useBikeStore';
 import { TextureImage } from '@/types/bike';
 import { useBottomPanelResize } from '../../hooks/useBottomPanelResize';
-import { useImageProcessing } from '../../hooks/useImageProcessing';
-import { useTextureGeneration } from '../../hooks/useTextureGeneration';
 import { useKonvaTransformer } from '../../hooks/useKonvaTransformer';
 import { useCanvasCalculations } from '../../hooks/useCanvasCalculations';
 
@@ -21,8 +19,6 @@ export default function BottomPanel() {
     updateTextureImage,
     bottomPanelHeight,
     setBottomPanelHeight,
-    setLogoTexture,
-    setFrameTexture,
     clearLogoSelection,
     setShowBottomPanel,
     selectionPanelType,
@@ -40,22 +36,9 @@ export default function BottomPanel() {
     minPanelHeight: 200
   });
 
-  const { processedImages } = useImageProcessing(currentImages);
-
   const canvasCalculations = useCanvasCalculations({
     aspectRatio,
     bottomPanelHeight
-  });
-
-  const { debouncedTextureUpdate } = useTextureGeneration({
-    activeTexture,
-    processedImages,
-    setLogoTexture,
-    setFrameTexture,
-    activeTab,
-    frameColor,
-    textureOffsetX: canvasCalculations.TEXTURE_OFFSET_X,
-    textureOffsetY: canvasCalculations.TEXTURE_OFFSET_Y
   });
 
   const {
@@ -69,7 +52,7 @@ export default function BottomPanel() {
     selectedLogoImageId,
     activeTexture,
     updateTextureImage,
-    debouncedTextureUpdate,
+    debouncedTextureUpdate: () => {}, // No-op since texture processing is handled centrally
     setSelectedLogoImageId
   });
 
@@ -235,7 +218,7 @@ export default function BottomPanel() {
                 
                 <Layer>
                   {currentImages.map((imageItem: TextureImage) => {
-                    const processedImage = processedImages[imageItem.id];
+                    const processedImage = activeTexture?.processedImages[imageItem.id];
                     return (
                       <KonvaImage
                         key={imageItem.id}
