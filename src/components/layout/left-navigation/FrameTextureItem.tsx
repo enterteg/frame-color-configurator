@@ -3,6 +3,7 @@ import { useBikeStore } from '@/store/useBikeStore';
 import UploadImageButton from '@/components/layout/UploadImageButton';
 import { loadImageAndGetScale } from '@/hooks/useLogoImageActions';
 import ImageRow from './ImageRow';
+import GradientControls from '../GradientControls';
 
 const FrameTextureItem: React.FC = () => {
   const {
@@ -14,6 +15,7 @@ const FrameTextureItem: React.FC = () => {
     removeFrameTextureImage,
     reorderFrameTextureImages,
     updateFrameTextureImage,
+    setFrameGradient,
   } = useBikeStore();
 
   const handleReplaceImage = (imageId: string) => {
@@ -114,6 +116,12 @@ const FrameTextureItem: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+      {activeTab === 'frameTexture' && (
+        <GradientControls
+          gradient={frameTexture.gradient}
+          onGradientChange={setFrameGradient}
+        />
       )}
     </>
   );

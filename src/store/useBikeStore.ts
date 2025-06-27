@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as THREE from 'three';
 import { RALColor, getColorById, DEFAULT_FRAME_COLOR_ID, DEFAULT_FORK_COLOR_ID, DEFAULT_LOGO_COLOR_ID } from '../data/ralColors';
-import { TextureImage, LogoType, TabType } from '../types/bike';
+import { TextureImage, LogoType, TabType, GradientSettings } from '../types/bike';
 import { generateImageTexture } from '../utils/generateImageTexture';
 import { useShallow } from 'zustand/shallow';
 import { TEXTURE_SIZE } from '../utils/constants';
@@ -26,6 +26,7 @@ export interface TextureData {
   texture: THREE.Texture | null;
   aspectRatio: number; // width:height ratio (e.g., 1 for square, 10 for wide)
   processedImages: Record<string, HTMLImageElement>; // imageId -> processed HTMLImageElement
+  gradient?: GradientSettings; // Optional gradient overlay/background
 }
 
 interface BikeState {
@@ -135,6 +136,10 @@ interface BikeState {
   setLogoProcessedImages: (logoType: LogoType, processedImages: Record<string, HTMLImageElement>) => void;
   setFrameProcessedImages: (processedImages: Record<string, HTMLImageElement>) => void;
   setLogoTypeTexture: (logoType: LogoType, texture: THREE.Texture | null) => void;
+
+  // Gradient management actions
+  setFrameGradient: (gradient: GradientSettings | undefined) => void;
+  updateFrameGradient: (updates: Partial<GradientSettings>) => void;
 }
 
 // Create default logo image configuration
@@ -714,6 +719,24 @@ export const useBikeStore = create<BikeState>()(
             ...state.logoTypes[logoType],
             texture
           }
+        }
+      })),
+
+      // Gradient management actions
+      setFrameGradient: (gradient: GradientSettings | undefined) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          gradient
+        }
+      })),
+
+      updateFrameGradient: (updates: Partial<GradientSettings>) => set((state) => ({
+        frameTexture: {
+          ...state.frameTexture,
+          gradient: state.frameTexture.gradient ? {
+            ...state.frameTexture.gradient,
+            ...updates
+          } : undefined
         }
       })),
     }),
