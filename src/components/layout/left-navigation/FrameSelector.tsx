@@ -6,6 +6,7 @@ import { useBikeStore } from '../../../store/useBikeStore';
 import { loadImageAndGetScale } from '../../../hooks/useLogoImageActions';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import GradientControls from '../GradientControls';
+import GradientPreview from './GradientPreview';
 
 interface FrameSelectorProps {
   activeTab: TabType;
@@ -27,21 +28,35 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
     updateFrameTextureImage,
     setSelectionPanelType,
     setShowBottomPanel,
-    setFrameGradient
+    setFrameGradient,
+    closeColorSelection
   } = useBikeStore();
 
   const handleFrameClick = () => {
     if (activeTab === 'frame') {
-      setActiveTab(null);
+      if (frameTexture.gradient?.enabled) {
+        setActiveTab(null);
+        closeColorSelection();
+      } else {
+        setActiveTab(null);
+      }
     } else {
-      setActiveTab('frame');
-      openColorSelection('frame');
+      if (frameTexture.gradient?.enabled) {
+        setActiveTab('frame');
+      } else {
+        setActiveTab('frame');
+        openColorSelection('frame');
+      }
     }
   };
 
   const handleColorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    openColorSelection('frame');
+    if (frameTexture.gradient?.enabled) {
+      setActiveTab('frame');
+    } else {
+      openColorSelection('frame');
+    }
   };
 
   const handleTextureImageSelect = () => {
@@ -76,8 +91,6 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
     input.click();
   };
 
-
-
   const handleUploadTexture = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectionPanelType('image');
@@ -102,22 +115,40 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
           <div className="font-medium text-gray-800">FRAME</div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleColorClick}
-            className="p-1 rounded hover:bg-gray-100 transition-colors"
-          >
-            <div
-              className="w-12 h-12 rounded-full cursor-pointer border border-gray-300 shadow-md flex items-center justify-center"
-              style={{ backgroundColor: frameColor.hex }}
+          {/* Show solid color only when gradient is not enabled */}
+          {!frameTexture.gradient?.enabled && (
+            <button
+              onClick={handleColorClick}
+              className="p-1 rounded hover:bg-gray-100 transition-colors"
             >
-              <span
-                className="text-[10px] font-bold"
-                style={{ color: getContrastTextColor(frameColor.hex) }}
+              <div
+                className="w-12 h-12 rounded-full cursor-pointer border border-gray-300 shadow-md flex items-center justify-center"
+                style={{ backgroundColor: frameColor.hex }}
               >
-                {frameColor.code.replace("RAL ", "")}
-              </span>
+                <span
+                  className="text-[10px] font-bold"
+                  style={{ color: getContrastTextColor(frameColor.hex) }}
+                >
+                  {frameColor.code.replace("RAL ", "")}
+                </span>
+              </div>
+            </button>
+          )}
+          
+          {/* Show gradient preview if gradient is enabled */}
+          {frameTexture.gradient?.enabled && (
+            <div 
+              className="p-1 rounded hover:bg-gray-100 transition-colors"
+              onClick={handleColorClick}
+            >
+              <GradientPreview 
+                gradient={frameTexture.gradient} 
+                size={48}
+                className="cursor-pointer"
+              />
             </div>
-          </button>
+          )}
+          
           <div 
             className="p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer"
             onClick={handleFrameClick}
@@ -146,6 +177,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
             <GradientControls
               gradient={frameTexture.gradient}
               onGradientChange={setFrameGradient}
+              autoExpand={activeTab === 'frame'}
             />
             <div className="border-b border-gray-200">
               <div 

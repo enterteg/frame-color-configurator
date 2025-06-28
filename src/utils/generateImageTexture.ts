@@ -107,7 +107,6 @@ export async function generateImageTexture({
       const gradientImage = await generateGradientImage({ width, height, gradient });
       
       ctx.save();
-      ctx.globalAlpha = gradient.opacity;
       ctx.globalCompositeOperation = 
         gradient.blendMode === 'multiply' ? 'multiply' :
         gradient.blendMode === 'screen' ? 'screen' :

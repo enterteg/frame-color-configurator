@@ -39,7 +39,6 @@ export type GradientTransition = 'smooth' | 'hard-stop' | 'stepped' | 'ease-in' 
 export interface GradientColorStop {
   color: RALColor; // RAL color instead of hex
   position: number; // 0-1
-  opacity: number; // 0-1
 }
 
 export interface GradientSettings {
@@ -54,7 +53,6 @@ export interface GradientSettings {
   radiusY: number; // 0-1, for radial gradients
   angle: number; // 0-360, for conic gradients
   colorStops: GradientColorStop[];
-  opacity: number; // Overall gradient opacity 0-1
   blendMode: 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light';
 }
 

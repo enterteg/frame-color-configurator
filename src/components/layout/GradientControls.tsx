@@ -1,22 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { GradientSettings, GradientDirection, GradientTransition } from '../../types/bike';
 import { createDefaultGradient } from '../../utils/generateGradient';
 import { useBikeStore } from '../../store/useBikeStore';
 import { ralColors } from '../../data/ralColors';
-import { getContrastTextColor } from '../../utils/colorUtils';
+import { getContrastTextColor } from '@/utils/colorUtils';
 import CustomDropdown from './CustomDropdown';
+import { applyGammaToHex } from '../../utils/colorCorrections';
 
 interface GradientControlsProps {
   gradient?: GradientSettings;
   onGradientChange: (gradient: GradientSettings | undefined) => void;
+  autoExpand?: boolean; // Auto-expand when gradient is enabled
 }
 
-export default function GradientControls({ gradient, onGradientChange }: GradientControlsProps) {
+export default function GradientControls({ gradient, onGradientChange, autoExpand = false }: GradientControlsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { openGradientColorSelection } = useBikeStore();
+
+  // Auto-expand when gradient is enabled and autoExpand is true
+  useEffect(() => {
+    if (autoExpand && gradient?.enabled) {
+      setIsExpanded(true);
+    }
+  }, [autoExpand, gradient?.enabled]);
 
   const handleEnableGradient = () => {
     if (gradient) {
@@ -34,32 +43,45 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
     }
   };
 
-  const handleColorStopChange = (index: number, field: 'color' | 'position' | 'opacity', value: string | number) => {
+  const handleColorStopChange = (index: number, field: 'color' | 'position', value: string | number) => {
     if (!gradient) return;
     
-    const newColorStops = [...gradient.colorStops];
-    newColorStops[index] = {
-      ...newColorStops[index],
-      [field]: value
-    };
-    
-    handleGradientUpdate({ colorStops: newColorStops });
+    const updatedColorStops = [...gradient.colorStops];
+    if (field === 'position') {
+      updatedColorStops[index] = { ...updatedColorStops[index], position: value as number };
+    }
+    handleGradientUpdate({ colorStops: updatedColorStops });
   };
 
   const addColorStop = () => {
     if (!gradient) return;
     
-    // Use a default RAL color (RAL 7040 Window grey)
-    const defaultColor = ralColors['7040'];
+    // Find a good position for the new color stop (midpoint of largest gap)
+    const sortedStops = [...gradient.colorStops].sort((a, b) => a.position - b.position);
+    let newPosition = 0.5;
     
-    const newColorStops = [...gradient.colorStops];
-    newColorStops.push({
-      color: defaultColor,
-      position: 0.5,
-      opacity: 1
+    if (sortedStops.length >= 2) {
+      let maxGap = 0;
+      let gapPosition = 0.5;
+      
+      for (let i = 0; i < sortedStops.length - 1; i++) {
+        const gap = sortedStops[i + 1].position - sortedStops[i].position;
+        if (gap > maxGap) {
+          maxGap = gap;
+          gapPosition = sortedStops[i].position + gap / 2;
+        }
+      }
+      newPosition = gapPosition;
+    }
+    
+    const newColorStop = {
+      color: ralColors['1003'], // Default to yellow
+      position: newPosition
+    };
+    
+    handleGradientUpdate({
+      colorStops: [...gradient.colorStops, newColorStop]
     });
-    
-    handleGradientUpdate({ colorStops: newColorStops });
   };
 
   const removeColorStop = (index: number) => {
@@ -225,25 +247,6 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
             </div>
           )}
 
-          {/* Overall Opacity */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Opacity
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={gradient.opacity}
-              onChange={(e) => handleGradientUpdate({ opacity: parseFloat(e.target.value) })}
-              className="w-full"
-            />
-            <span className="text-xs text-gray-700">{Math.round(gradient.opacity * 100)}%</span>
-          </div>
-
-
-
           {/* Color Stops */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -289,20 +292,7 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
                     <div className="text-xs text-gray-700">{Math.round(stop.position * 100)}%</div>
                   </div>
                   
-                  <div className="w-16">
-                    <div className="text-xs text-gray-700 mb-1">Opacity</div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                     color='black'
-                      value={stop.opacity}
-                      onChange={(e) => handleColorStopChange(index, 'opacity', parseFloat(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-700">{Math.round(stop.opacity * 100)}%</div>
-                  </div>
+
                   
                   {gradient.colorStops.length > 2 && (
                     <button
@@ -333,16 +323,15 @@ export default function GradientControls({ gradient, onGradientChange }: Gradien
                       gradient.direction === 'diagonal-tl-br' ? 'to bottom right' :
                       'to bottom left'
                     }, ${gradient.colorStops.map(stop => 
-                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 100}%`
                     ).join(', ')})`
                   : gradient.type === 'radial' 
                   ? `radial-gradient(ellipse ${gradient.radiusX * 100}% ${gradient.radiusY * 100}% at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 100}%`
+                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 100}%`
                     ).join(', ')})`
                   : `conic-gradient(from ${gradient.angle}deg at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${stop.color?.hex || '#ffffff'}${Math.round(stop.opacity * 255).toString(16).padStart(2, '0')} ${stop.position * 360}deg`
-                    ).join(', ')})`,
-                opacity: gradient.opacity
+                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 360}deg`
+                    ).join(', ')})`
               }}
             />
           </div>
