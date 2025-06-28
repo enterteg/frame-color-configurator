@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { GradientSettings, GradientDirection, GradientTransition } from '../../types/bike';
-import { createDefaultGradient } from '../../utils/generateGradient';
+import { createDefaultGradient, generateCSSGradient, getSortedColorStops } from '../../utils/generateGradient';
 import { useBikeStore } from '../../store/useBikeStore';
 import { ralColors } from '../../data/ralColors';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import CustomDropdown from './CustomDropdown';
-import { applyGammaToHex } from '../../utils/colorCorrections';
+
 
 interface GradientControlsProps {
   gradient?: GradientSettings;
@@ -57,7 +57,7 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
     if (!gradient) return;
     
     // Find a good position for the new color stop (midpoint of largest gap)
-    const sortedStops = [...gradient.colorStops].sort((a, b) => a.position - b.position);
+    const sortedStops = getSortedColorStops(gradient.colorStops);
     let newPosition = 0.5;
     
     if (sortedStops.length >= 2) {
@@ -316,22 +316,7 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
             <div 
               className="w-full h-12 border border-gray-300 rounded"
               style={{
-                background: gradient.type === 'linear' 
-                  ? `linear-gradient(${
-                      gradient.direction === 'horizontal' ? 'to right' :
-                      gradient.direction === 'vertical' ? 'to bottom' :
-                      gradient.direction === 'diagonal-tl-br' ? 'to bottom right' :
-                      'to bottom left'
-                    }, ${gradient.colorStops.map(stop => 
-                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 100}%`
-                    ).join(', ')})`
-                  : gradient.type === 'radial' 
-                  ? `radial-gradient(ellipse ${gradient.radiusX * 100}% ${gradient.radiusY * 100}% at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 100}%`
-                    ).join(', ')})`
-                  : `conic-gradient(from ${gradient.angle}deg at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${gradient.colorStops.map(stop => 
-                      `${applyGammaToHex(stop.color?.hex || '#ffffff')} ${stop.position * 360}deg`
-                    ).join(', ')})`
+                background: generateCSSGradient(gradient)
               }}
             />
           </div>

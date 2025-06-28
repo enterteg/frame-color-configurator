@@ -3,6 +3,7 @@ import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, ChevronUpIcon, Chevron
 import Image from 'next/image';
 import { useBikeStore } from '../../../store/useBikeStore';
 import { TabType, LogoType, TextureImage } from "../../../types/bike";
+import ColorPreview from '../ColorPreview';
 
 interface LogosSectionProps {
   activeTab: TabType;
@@ -171,18 +172,20 @@ const LogosSection: React.FC<LogosSectionProps> = ({
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleImageColorChange(logoType.id, image.id);
-                              }}
-                              className="p-1 rounded hover:bg-gray-100 transition-colors"
-                            >
-                              <div
-                                className="w-6 h-6 rounded-full cursor-pointer border border-gray-300"
-                                style={{ backgroundColor: image.color?.hex || '#ccc' }}
-                              />
-                            </button>
+                            {image.color && (
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleImageColorChange(logoType.id, image.id);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <ColorPreview 
+                                  color={image.color}
+                                  size="medium"
+                                />
+                              </div>
+                            )}
                             {logoTypes[logoType.id].images.length > 1 && (
                               <>
                                 {logoTypes[logoType.id].images.findIndex(

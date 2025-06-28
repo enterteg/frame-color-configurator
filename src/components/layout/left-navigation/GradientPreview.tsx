@@ -1,7 +1,7 @@
 import React from 'react';
 import { GradientSettings } from '../../../types/bike';
 import { getContrastTextColor } from '@/utils/colorUtils';
-import { applyGammaToHex } from '../../../utils/colorCorrections';
+import { getSortedColorStops, generateCSSGradientForPreview } from '../../../utils/generateGradient';
 
 interface GradientPreviewProps {
   gradient: GradientSettings;
@@ -14,8 +14,8 @@ const GradientPreview: React.FC<GradientPreviewProps> = ({
   size = 48, 
   className = '' 
 }) => {
-  // Get first and last color stops for the split preview (matching GradientControls order)
-  const sortedStops = [...gradient.colorStops].sort((a, b) => a.position - b.position);
+  // Get first and last color stops for the split preview using unified sorting
+  const sortedStops = getSortedColorStops(gradient.colorStops);
   const firstColor = sortedStops[0]?.color; // First color (position 0)
   const lastColor = sortedStops[sortedStops.length - 1]?.color; // Last color (position 1)
 
@@ -30,20 +30,8 @@ const GradientPreview: React.FC<GradientPreviewProps> = ({
     );
   }
 
-  // Create gradient background for the circle
-  const gradientStyle = gradient.type === 'linear' 
-    ? `linear-gradient(${gradient.direction === 'horizontal' ? '90deg' : 
-        gradient.direction === 'vertical' ? '180deg' : 
-        gradient.direction === 'diagonal-tl-br' ? '135deg' : '225deg'}, ${
-        gradient.colorStops.map(stop => `${applyGammaToHex(stop.color.hex)} ${stop.position * 100}%`).join(', ')
-      })`
-    : gradient.type === 'radial'
-    ? `radial-gradient(circle at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${
-        gradient.colorStops.map(stop => `${applyGammaToHex(stop.color.hex)} ${stop.position * 100}%`).join(', ')
-      })`
-    : `conic-gradient(from ${gradient.angle}deg at ${gradient.centerX * 100}% ${gradient.centerY * 100}%, ${
-        gradient.colorStops.map(stop => `${applyGammaToHex(stop.color.hex)} ${stop.position * 360}deg`).join(', ')
-      })`;
+  // Use unified CSS gradient generation
+  const gradientStyle = generateCSSGradientForPreview(gradient);
 
   return (
     <div className={`relative ${className}`} style={{ width: size, height: size }}>

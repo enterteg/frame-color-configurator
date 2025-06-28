@@ -1,5 +1,5 @@
 import React from 'react';
-import { getContrastTextColor } from '../../utils/colorUtils';
+import ColorPreview from './ColorPreview';
 
 interface ColorSelectorRowProps {
   label: string;
@@ -21,17 +21,7 @@ const ColorSelectorRow: React.FC<ColorSelectorRowProps> = ({ label, active, colo
     <div className="flex-1 text-left">
       <div className="font-medium text-gray-800">{label}</div>
     </div>
-    <div
-      className="w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 shadow-md"
-      style={{ backgroundColor: color.hex }}
-    >
-      <span
-        className="text-[10px] font-bold"
-        style={{ color: getContrastTextColor(color.hex) }}
-      >
-        {color.code.replace('RAL ', '')}
-      </span>
-    </div>
+    <ColorPreview color={color} size="large" />
   </button>
 );
 
