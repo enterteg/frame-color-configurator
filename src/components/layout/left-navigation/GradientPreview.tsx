@@ -45,10 +45,10 @@ const GradientPreview: React.FC<GradientPreviewProps> = ({
       
       {/* Split text overlay with color names */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center h-full">
+        <div className="flex flex-col items-center justify-center gap-2 h-full">
           {/* First color name - top half */}
           <div 
-            className="flex-1 flex items-center justify-center text-center px-1"
+            className="flex items-center justify-center text-center px-1"
             style={{ 
               fontSize: `${Math.max(8, size * 0.18)}px`,
               lineHeight: 1,
@@ -64,7 +64,7 @@ const GradientPreview: React.FC<GradientPreviewProps> = ({
           
           {/* Last color name - bottom half */}
           <div 
-            className="flex-1 flex items-center justify-center text-center px-1"
+            className="flex items-center justify-center text-center px-1"
             style={{ 
               fontSize: `${Math.max(8, size * 0.18)}px`,
               lineHeight: 1,
