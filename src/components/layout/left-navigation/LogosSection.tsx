@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useBikeStore } from '../../../store/useBikeStore';
 import { TabType, LogoType, TextureImage } from "../../../types/bike";
 import ColorPreview from '../ColorPreview';
+import AnimatedCollapse from '../AnimatedCollapse';
 
 interface LogosSectionProps {
   activeTab: TabType;
@@ -100,13 +101,11 @@ const LogosSection: React.FC<LogosSectionProps> = ({
           )}
         </div>
       </button>
-      <div
-        className={`bg-gray-50 border-b border-gray-100 transition-max-height ${activeTab === 'logos' ? 'expanded' : 'collapsed'}`}
-        style={{ maxHeight: activeTab === 'logos' ? '1000px' : '0', opacity: activeTab === 'logos' ? 1 : 0 }}
-        aria-hidden={activeTab !== 'logos'}
+      <AnimatedCollapse
+        isOpen={activeTab === 'logos'}
+        className="bg-gray-50 border-b border-gray-100"
       >
-        {activeTab === 'logos' && (
-          <div className="bg-gray-50 border-b border-gray-100">
+        <div className="bg-gray-50 border-b border-gray-100">
             {logoTypes_CONFIG.map((logoType) => (
               <div
                 key={logoType.id}
@@ -287,22 +286,7 @@ const LogosSection: React.FC<LogosSectionProps> = ({
               </div>
             ))}
           </div>
-        )}
-      </div>
-      <style jsx>{`
-        .transition-max-height {
-          transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
-          overflow: hidden;
-        }
-        .collapsed {
-          max-height: 0 !important;
-          opacity: 0 !important;
-        }
-        .expanded {
-          max-height: 1000px !important;
-          opacity: 1 !important;
-        }
-      `}</style>
+        </AnimatedCollapse>
     </>
   );
 };

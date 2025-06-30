@@ -111,7 +111,9 @@ export function generateCSSGradient(gradient: GradientSettings): string {
     const direction = gradient.direction === 'horizontal' ? 'to right' :
                      gradient.direction === 'vertical' ? 'to bottom' :
                      gradient.direction === 'diagonal-tl-br' ? 'to bottom right' :
-                     'to bottom left';
+                     gradient.direction === 'diagonal-tr-bl' ? 'to bottom left' :
+                     gradient.direction === 'diagonal-bl-tr' ? 'to top right' :
+                     'to top left';
     
     const colorStopsCSS = generateColorStopsWithTransition(gradient, true, true);
     return `linear-gradient(${direction}, ${colorStopsCSS})`;
@@ -133,7 +135,9 @@ export function generateCSSGradientForPreview(gradient: GradientSettings): strin
   if (gradient.type === 'linear') {
     const angle = gradient.direction === 'horizontal' ? '90deg' : 
                  gradient.direction === 'vertical' ? '180deg' : 
-                 gradient.direction === 'diagonal-tl-br' ? '135deg' : '225deg';
+                 gradient.direction === 'diagonal-tl-br' ? '135deg' : 
+                 gradient.direction === 'diagonal-tr-bl' ? '225deg' :
+                 gradient.direction === 'diagonal-bl-tr' ? '45deg' : '315deg';
     
     const colorStopsCSS = generateColorStopsWithTransition(gradient, true, false);
     return `linear-gradient(${angle}, ${colorStopsCSS})`;
@@ -191,6 +195,14 @@ export async function generateGradientImage({
       case 'diagonal-tr-bl':
         x0 = width; y0 = 0;
         x1 = 0; y1 = height;
+        break;
+      case 'diagonal-bl-tr':
+        x0 = 0; y0 = height;
+        x1 = width; y1 = 0;
+        break;
+      case 'diagonal-br-tl':
+        x0 = width; y0 = height;
+        x1 = 0; y1 = 0;
         break;
     }
     

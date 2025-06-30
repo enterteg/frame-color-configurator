@@ -7,6 +7,7 @@ import { loadImageAndGetScale } from '../../../hooks/useLogoImageActions';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import GradientControls from '../GradientControls';
 import GradientPreview from './GradientPreview';
+import AnimatedCollapse from '../AnimatedCollapse';
 
 interface FrameSelectorProps {
   activeTab: TabType;
@@ -161,24 +162,17 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
           </div>
         </div>
       </div>
-      <div
-        className={`bg-gray-50 border-b border-gray-100 transition-max-height ${
-          activeTab === "frame" ? "expanded" : "collapsed"
-        }`}
-        style={{
-          maxHeight: activeTab === "frame" ? "1000px" : "0",
-          opacity: activeTab === "frame" ? 1 : 0,
-        }}
-        aria-hidden={activeTab !== "frame"}
+      <AnimatedCollapse
+        isOpen={activeTab === "frame"}
+        className="bg-gray-50 border-b border-gray-100"
       >
-        {activeTab === "frame" && (
-          <div className="border-b border-gray-100">
-            {/* Gradient Controls */}
-            <GradientControls
-              gradient={frameTexture.gradient}
-              onGradientChange={setFrameGradient}
-              autoExpand={activeTab === 'frame'}
-            />
+        <div className="border-b border-gray-100">
+          {/* Gradient Controls */}
+          <GradientControls
+            gradient={frameTexture.gradient}
+            onGradientChange={setFrameGradient}
+            autoExpand={activeTab === 'frame'}
+          />
             <div className="border-b border-gray-200">
               <div 
                 onClick={() => {
@@ -298,22 +292,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
               </div>
             </div>
           </div>
-        )}
-      </div>
-      <style jsx>{`
-        .transition-max-height {
-          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
-          overflow: hidden;
-        }
-        .collapsed {
-          max-height: 0 !important;
-          opacity: 0 !important;
-        }
-        .expanded {
-          max-height: 1000px !important;
-          opacity: 1 !important;
-        }
-      `}</style>
+        </AnimatedCollapse>
     </>
   );
 };

@@ -33,7 +33,7 @@ export interface TextureImage {
 
 // Gradient types
 export type GradientType = 'linear' | 'radial' | 'conic';
-export type GradientDirection = 'horizontal' | 'vertical' | 'diagonal-tl-br' | 'diagonal-tr-bl';
+export type GradientDirection = 'horizontal' | 'vertical' | 'diagonal-tl-br' | 'diagonal-tr-bl' | 'diagonal-bl-tr' | 'diagonal-br-tl';
 export type GradientTransition = 'smooth' | 'hard-stop' | 'stepped' | 'ease-in' | 'ease-out';
 
 export interface GradientColorStop {

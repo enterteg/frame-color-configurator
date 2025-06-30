@@ -8,6 +8,7 @@ import { useBikeStore } from '../../store/useBikeStore';
 import { ralColors } from '../../data/ralColors';
 import { getContrastTextColor } from '@/utils/colorUtils';
 import CustomDropdown from './CustomDropdown';
+import AnimatedCollapse from './AnimatedCollapse';
 
 
 interface GradientControlsProps {
@@ -18,7 +19,7 @@ interface GradientControlsProps {
 
 export default function GradientControls({ gradient, onGradientChange, autoExpand = false }: GradientControlsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { openGradientColorSelection } = useBikeStore();
+  const { openGradientColorSelection, closeColorSelection } = useBikeStore();
 
   // Auto-expand when gradient is enabled and autoExpand is true
   useEffect(() => {
@@ -30,10 +31,21 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
   const handleEnableGradient = () => {
     if (gradient) {
       // Toggle the enabled state instead of removing the gradient
-      onGradientChange({ ...gradient, enabled: !gradient.enabled });
+      const newEnabled = !gradient.enabled;
+      onGradientChange({ ...gradient, enabled: newEnabled });
+      
+      if (newEnabled) {
+        // Close color picker when enabling gradient (switching from solid color to gradient)
+        closeColorSelection();
+      } else {
+        // Close gradient configuration when disabling gradient
+        setIsExpanded(false);
+      }
     } else {
       // Create new gradient with enabled: true
       onGradientChange(createDefaultGradient());
+      // Close color picker when creating new gradient
+      closeColorSelection();
     }
   };
 
@@ -96,7 +108,7 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
       <div className="flex flex-1 items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <label htmlFor="enable-gradient" className="text-sm font-medium text-gray-700">
-            Gradient Background
+            Multicolor
           </label>
           <button
             id="enable-gradient"
@@ -114,7 +126,7 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
             />
           </button>
         </div>
-        {gradient && (
+        {gradient?.enabled && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={`text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors cursor-pointer ${
@@ -127,8 +139,9 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
         )}
       </div>
 
-      {gradient && isExpanded && (
-        <div className="space-y-4 mt-3">
+      {gradient && (
+        <AnimatedCollapse isOpen={isExpanded}>
+          <div className="space-y-4 mt-3">
           {/* Direction and Transition */}
           <div className="grid grid-cols-2 gap-3">
             <CustomDropdown
@@ -136,10 +149,12 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
               value={gradient.direction}
               onChange={(value) => handleGradientUpdate({ direction: value as GradientDirection })}
               options={[
-                { value: 'horizontal', label: 'Horizontal' },
-                { value: 'vertical', label: 'Vertical' },
+                { value: 'horizontal', label: 'Horizontal →' },
+                { value: 'vertical', label: 'Vertical ↓' },
                 { value: 'diagonal-tl-br', label: 'Diagonal ↘' },
-                { value: 'diagonal-tr-bl', label: 'Diagonal ↙' }
+                { value: 'diagonal-tr-bl', label: 'Diagonal ↙' },
+                { value: 'diagonal-bl-tr', label: 'Diagonal ↗' },
+                { value: 'diagonal-br-tl', label: 'Diagonal ↖' }
               ]}
             />
             <CustomDropdown
@@ -320,7 +335,8 @@ export default function GradientControls({ gradient, onGradientChange, autoExpan
               }}
             />
           </div>
-        </div>
+          </div>
+        </AnimatedCollapse>
       )}
     </div>
   );
